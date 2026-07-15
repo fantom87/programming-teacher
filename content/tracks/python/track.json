@@ -1,0 +1,99 @@
+{
+  "id": "python",
+  "title": "Python",
+  "language": "python",
+  "philosophy": "The entry track — it teaches programming itself (what a program is, how to think in steps) before it teaches Python, with instant browser-run feedback and zero setup.",
+  "units": [
+    {
+      "id": "01-first-steps",
+      "title": "First Steps",
+      "tier": "foundations",
+      "summary": "What a program is: output, variables, decisions, loops.",
+      "lessons": [],
+      "plannedLessons": [
+        "01-hello-world",
+        "02-printing-and-strings",
+        "03-variables",
+        "04-numbers-and-math",
+        "05-strings-and-f-strings",
+        "06-true-or-false",
+        "07-making-decisions",
+        "08-loops-that-count",
+        "09-loops-that-wait",
+        "10-mini-project-pattern-machine"
+      ]
+    },
+    {
+      "id": "02-data-and-collections",
+      "title": "Data and Collections",
+      "tier": "foundations",
+      "summary": "Lists, dicts, strings in depth, iterating over data.",
+      "lessons": [],
+      "planned": true,
+      "topics": ["lists", "indexing and slicing", "tuples", "dicts", "sets", "string methods", "nested data", "membership tests"]
+    },
+    {
+      "id": "03-functions-and-program-design",
+      "title": "Functions and Program Design",
+      "tier": "core",
+      "summary": "Functions, scope, decomposition, modules.",
+      "lessons": [],
+      "planned": true,
+      "topics": ["defining functions", "parameters and returns", "default and keyword args", "scope", "decomposing problems", "modules and imports", "docstrings", "__main__ guard"]
+    },
+    {
+      "id": "04-classes-errors-and-files",
+      "title": "Classes, Errors, and Files",
+      "tier": "core",
+      "summary": "OOP basics, exceptions, file I/O; ends with the Core capstone.",
+      "lessons": [],
+      "planned": true,
+      "topics": ["classes and __init__", "methods and dunders", "inheritance vs composition", "raising and handling exceptions", "custom exceptions", "reading and writing files", "pathlib", "capstone: CLI text-adventure or flashcard app"]
+    },
+    {
+      "id": "05-pythonic-idioms",
+      "title": "Pythonic Idioms",
+      "tier": "intermediate",
+      "summary": "Comprehensions, generators, dataclasses, typing intro.",
+      "lessons": [],
+      "planned": true,
+      "topics": ["list/dict/set comprehensions", "generators and yield", "iterators", "unpacking", "enumerate and zip", "itertools and functools", "dataclasses", "type hints intro", "EAFP style"]
+    },
+    {
+      "id": "06-real-world-python",
+      "title": "Real-World Python",
+      "tier": "intermediate",
+      "summary": "Stdlib tour, CLI tools, venv/pip; ends with the Intermediate capstone.",
+      "lessons": [],
+      "planned": true,
+      "topics": ["json and csv", "datetime", "regex", "argparse", "virtual environments", "pip and requirements", "structuring a small project", "capstone: data-crunching CLI tool"]
+    },
+    {
+      "id": "07-professional-python",
+      "title": "Professional Python",
+      "tier": "advanced",
+      "summary": "pytest, packaging, tooling, logging, project structure.",
+      "lessons": [],
+      "planned": true,
+      "topics": ["pytest fundamentals", "fixtures and parametrize", "mocking", "coverage", "ruff and black", "mypy", "logging", "pyproject and packaging", "project layout conventions"]
+    },
+    {
+      "id": "08-language-depth-and-concurrency",
+      "title": "Language Depth and Concurrency",
+      "tier": "advanced",
+      "summary": "Decorators, metaclasses, asyncio, performance; ends with the Advanced capstone.",
+      "lessons": [],
+      "planned": true,
+      "topics": ["decorators", "context managers", "descriptors and properties", "metaclasses and protocols", "asyncio and async/await", "threads vs processes and the GIL", "profiling and optimization", "capstone: async multi-source aggregator with test suite"]
+    },
+    {
+      "id": "09-python-refresher",
+      "title": "Python Refresher",
+      "tier": "refresher",
+      "summary": "Dense recap for returning developers, with challenging checks.",
+      "lessons": [],
+      "planned": true,
+      "topics": ["syntax sprint", "collections and comprehensions", "OOP, typing, protocols", "generators, decorators, context managers", "async and concurrency", "tooling, testing, packaging"]
+    }
+  ]
+}

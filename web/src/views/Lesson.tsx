@@ -1,69 +1,145 @@
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { marked } from "marked";
-import type { RunResult } from "@teacher/shared";
+import type { Lesson, RunResult } from "@teacher/shared";
 import EditorPane from "../components/EditorPane";
 import OutputPane from "../components/OutputPane";
 import { runJs } from "../runners/jsWorkerRunner";
+import { api } from "../api/client";
+import type { Route } from "../App";
 
-// M0: one hardcoded lesson. The curriculum engine replaces this in M1.
-const DEMO_LESSON = {
-  title: "Hello, JavaScript (M0 demo)",
-  goal: 'Print "Hello, world!" to the console.',
-  filename: "main.js",
-  starter: `// Welcome! Type some JavaScript and press Run.\nconsole.log("Hello, world!");\n`,
-  body: `
-## Your first program
+interface Props {
+  lessonKey: string;
+  theme: "dark" | "light";
+  navigate: (r: Route) => void;
+  onProgressChange: () => void;
+}
 
-This is the **walking-skeleton demo lesson**. The real curriculum arrives in the next milestone.
-
-A *program* is a list of instructions the computer follows from top to bottom.
-The instruction below tells the computer to print some text:
-
-\`\`\`js
-console.log("Hello, world!");
-\`\`\`
-
-Try changing the message, or add a second line. Then press **Run** (or Ctrl+Enter).
-`,
-};
-
-export default function LessonView({ theme }: { theme: "dark" | "light" }) {
-  const [code, setCode] = useState(DEMO_LESSON.starter);
+export default function LessonView({ lessonKey, theme, navigate, onProgressChange }: Props) {
+  const [lesson, setLesson] = useState<Lesson | null>(null);
+  const [files, setFiles] = useState<Record<string, string>>({});
+  const [activeFile, setActiveFile] = useState("");
   const [result, setResult] = useState<RunResult | null>(null);
   const [running, setRunning] = useState(false);
+  const [completed, setCompleted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const filesRef = useRef(files);
+  filesRef.current = files;
+
+  useEffect(() => {
+    let cancelled = false;
+    setLesson(null);
+    setResult(null);
+    (async () => {
+      try {
+        const l = await api.lesson(lessonKey);
+        const draft = await api.draft(lessonKey).catch(() => ({ files: null }));
+        if (cancelled) return;
+        setLesson(l);
+        setFiles(draft.files ?? l.starterFiles);
+        setActiveFile(l.files[0]?.path ?? "");
+        const progress = await api.progress();
+        if (!cancelled) setCompleted(Boolean(progress.lessons[lessonKey]?.completedAt));
+        localStorage.setItem("lastLessonKey", lessonKey);
+        localStorage.setItem("lastLessonTitle", l.title);
+      } catch (err) {
+        if (!cancelled) setError(String(err));
+      }
+    })();
+    return () => {
+      cancelled = true;
+      if (saveTimer.current) clearTimeout(saveTimer.current);
+    };
+  }, [lessonKey]);
+
+  const scheduleSave = useCallback(() => {
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    saveTimer.current = setTimeout(() => {
+      api.saveDraft(lessonKey, filesRef.current).catch(console.error);
+    }, 800);
+  }, [lessonKey]);
+
+  function handleChange(code: string) {
+    setFiles((f) => ({ ...f, [activeFile]: code }));
+    scheduleSave();
+  }
 
   async function handleRun() {
+    if (!lesson) return;
+    if (lesson.runner !== "browser" || lesson.language !== "javascript") {
+      setResult({
+        ok: false,
+        exitCode: null,
+        stdout: "",
+        stderr: "This lesson's runner arrives in milestone M2.",
+        durationMs: 0,
+        timedOut: false,
+      });
+      return;
+    }
     setRunning(true);
     try {
-      setResult(await runJs(code));
+      setResult(await runJs(files[lesson.files[0].path] ?? ""));
     } finally {
       setRunning(false);
     }
   }
 
+  async function handleComplete() {
+    await api.completeLesson(lessonKey);
+    setCompleted(true);
+    onProgressChange();
+  }
+
+  function handleReset() {
+    if (!lesson) return;
+    setFiles(lesson.starterFiles);
+    scheduleSave();
+  }
+
+  if (error) return <div className="view-pad">Failed to load lesson: {error}</div>;
+  if (!lesson) return <div className="view-pad">Loading…</div>;
+
   return (
     <div className="lesson-layout">
       <section className="pane pane-lesson" aria-label="Lesson">
-        <h2>{DEMO_LESSON.title}</h2>
+        <button className="back-link" onClick={() => navigate({ view: "track", trackId: lesson.trackId })}>
+          ← Back to {lesson.trackId}
+        </button>
+        <h2>
+          {lesson.title} {completed && <span className="check done">✓</span>}
+        </h2>
         <div className="goal-box">
           <div className="label">Goal</div>
-          {DEMO_LESSON.goal}
+          {lesson.goal}
         </div>
-        <div
-          className="lesson-md"
-          // Lesson markdown is authored content, not user input.
-          dangerouslySetInnerHTML={{ __html: marked.parse(DEMO_LESSON.body) as string }}
-        />
+        <div className="lesson-md" dangerouslySetInnerHTML={{ __html: marked.parse(lesson.body) as string }} />
       </section>
 
       <section className="pane pane-work" aria-label="Code workspace">
+        {lesson.files.length > 1 && (
+          <div className="file-tabs" role="tablist">
+            {lesson.files.map((f) => (
+              <button
+                key={f.path}
+                role="tab"
+                aria-selected={activeFile === f.path}
+                className={`file-tab ${activeFile === f.path ? "active" : ""}`}
+                onClick={() => setActiveFile(f.path)}
+              >
+                {f.path}
+              </button>
+            ))}
+          </div>
+        )}
         <EditorPane
-          code={code}
-          filename={DEMO_LESSON.filename}
-          language="javascript"
+          key={`${lessonKey}:${activeFile}`}
+          code={files[activeFile] ?? ""}
+          filename={activeFile}
+          language={lesson.language}
           dark={theme === "dark"}
           running={running}
-          onChange={setCode}
+          onChange={handleChange}
           onRun={handleRun}
         />
         <OutputPane result={result} />
@@ -72,10 +148,14 @@ export default function LessonView({ theme }: { theme: "dark" | "light" }) {
       <section className="pane pane-tutor" aria-label="Tutor">
         <div className="tutor-placeholder">
           <strong>AI Tutor</strong>
-          <p>
-            The tutor moves in at milestone M3 — chat, assistance slider, goal checking, the works.
-            For now, enjoy the peace and quiet.
-          </p>
+          <p>The tutor moves in at milestone M3.</p>
+          <hr />
+          <button onClick={handleReset}>Reset to starter code</button>
+          {!completed && (
+            <button className="primary" style={{ marginTop: 8 }} onClick={handleComplete}>
+              Mark complete (dev)
+            </button>
+          )}
         </div>
       </section>
     </div>

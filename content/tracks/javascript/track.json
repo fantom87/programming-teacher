@@ -1,0 +1,87 @@
+{
+  "id": "javascript",
+  "title": "JavaScript / TypeScript",
+  "language": "javascript",
+  "philosophy": "Taught where it lives — the browser — with visible results from lesson one; TypeScript arrives at Intermediate as how professionals write JS, not a separate language.",
+  "units": [
+    {
+      "id": "01-js-first-steps",
+      "title": "JavaScript First Steps",
+      "tier": "foundations",
+      "summary": "Standalone basics: values, branching, loops, functions, arrays, objects.",
+      "lessons": ["01-hello-javascript", "02-values-and-variables", "03-numbers-and-strings"],
+      "plannedLessons": [
+        "04-booleans-and-comparisons",
+        "05-branching",
+        "06-loops",
+        "07-first-functions",
+        "08-arrays-first-look",
+        "09-objects-first-look",
+        "10-mini-project-quiz-engine"
+      ]
+    },
+    {
+      "id": "02-functions-arrays-objects",
+      "title": "Functions, Arrays, Objects",
+      "tier": "core",
+      "summary": "The three workhorses of JS, plus a first look at closures.",
+      "lessons": [],
+      "planned": true,
+      "topics": ["arrow functions", "callbacks", "map/filter/reduce", "array methods tour", "object methods and this", "nested data", "closures first look", "JSON"]
+    },
+    {
+      "id": "03-the-dom-and-events",
+      "title": "The DOM and Events",
+      "tier": "core",
+      "summary": "Making pages interactive; ends with the Core capstone.",
+      "lessons": [],
+      "planned": true,
+      "topics": ["querySelector", "creating and modifying elements", "classList", "event listeners", "forms and input values", "event delegation", "rendering lists from data", "capstone: interactive todo-list widget"]
+    },
+    {
+      "id": "04-modern-javascript",
+      "title": "Modern JavaScript",
+      "tier": "intermediate",
+      "summary": "ES modules, destructuring, classes, promises and async.",
+      "lessons": [],
+      "planned": true,
+      "topics": ["ES modules", "destructuring and spread/rest", "optional chaining", "classes and prototypes", "closures in depth", "promises", "async/await", "error handling in async code"]
+    },
+    {
+      "id": "05-typescript-essentials",
+      "title": "TypeScript Essentials",
+      "tier": "intermediate",
+      "summary": "Types, interfaces, generics, narrowing; ends with the Intermediate capstone.",
+      "lessons": [],
+      "planned": true,
+      "topics": ["type annotations", "interfaces vs type aliases", "unions and narrowing", "generics", "unknown/any/never", "typing functions and objects", "tsconfig basics", "migrating JS to TS", "capstone: typed browser app"]
+    },
+    {
+      "id": "06-node-and-tooling",
+      "title": "Node and Tooling",
+      "tier": "advanced",
+      "summary": "The Node runtime, npm, testing, bundling, linting (local runner).",
+      "lessons": [],
+      "planned": true,
+      "topics": ["Node runtime and globals", "npm and package.json", "file system and paths", "fetch and APIs", "vitest testing", "ESLint and Prettier", "bundlers and builds", "debugging", "environment config"]
+    },
+    {
+      "id": "07-advanced-patterns-and-types",
+      "title": "Advanced Patterns and Types",
+      "tier": "advanced",
+      "summary": "Event loop depth, advanced TS, architecture; ends with the Advanced capstone.",
+      "lessons": [],
+      "planned": true,
+      "topics": ["event loop and microtasks", "generators and iterators", "advanced async patterns", "mapped/conditional/template-literal types", "declaration files", "module architecture", "performance profiling", "capstone: tested, typed Node CLI"]
+    },
+    {
+      "id": "08-js-ts-refresher",
+      "title": "JS/TS Refresher",
+      "tier": "refresher",
+      "summary": "Dense recap including TypeScript, for returning developers.",
+      "lessons": [],
+      "planned": true,
+      "topics": ["syntax and scoping sprint", "arrays, objects, functional patterns", "async and the event loop", "TypeScript speedrun", "DOM and browser APIs", "Node, tooling, testing"]
+    }
+  ]
+}

@@ -1,0 +1,89 @@
+{
+  "id": "csharp",
+  "title": "C#",
+  "language": "csharp",
+  "philosophy": "The second language done right — leaning on concepts you already own to move fast, while giving static typing, the compiler, and the .NET ecosystem the serious treatment scripting languages skip.",
+  "units": [
+    {
+      "id": "01-csharp-fast-foundations",
+      "title": "C# Fast Foundations",
+      "tier": "foundations",
+      "summary": "Compressed basics; assumes any prior track's Foundations but stands alone.",
+      "lessons": [],
+      "plannedLessons": [
+        "01-hello-dotnet",
+        "02-static-types",
+        "03-strings-and-interpolation",
+        "04-control-flow",
+        "05-loops",
+        "06-methods",
+        "07-arrays-and-lists",
+        "08-your-first-class",
+        "09-mini-project-console-toolkit"
+      ]
+    },
+    {
+      "id": "02-types-and-oop",
+      "title": "Types and Object-Oriented C#",
+      "tier": "core",
+      "summary": "Classes, structs, interfaces, inheritance — the typed way.",
+      "lessons": [],
+      "planned": true,
+      "topics": ["value vs reference types", "properties", "constructors and initialization", "inheritance and virtual/override", "abstract classes", "interfaces", "enums", "structs", "access modifiers"]
+    },
+    {
+      "id": "03-collections-generics-linq",
+      "title": "Collections, Generics, LINQ",
+      "tier": "core",
+      "summary": "Data manipulation idioms; ends with the Core capstone.",
+      "lessons": [],
+      "planned": true,
+      "topics": ["List, Dictionary, HashSet", "generic methods and classes", "constraints", "LINQ query and method syntax", "projection, filtering, grouping, aggregation", "deferred execution", "capstone: data-driven console app"]
+    },
+    {
+      "id": "04-dotnet-in-practice",
+      "title": ".NET in Practice",
+      "tier": "intermediate",
+      "summary": "Projects, NuGet, file I/O, JSON, nullable reference types, debugging.",
+      "lessons": [],
+      "planned": true,
+      "topics": ["solutions and project files", "dotnet CLI", "NuGet packages", "file and directory I/O", "System.Text.Json", "exception handling strategy", "nullable reference types", "debugging and diagnostics", "configuration basics"]
+    },
+    {
+      "id": "05-modern-csharp",
+      "title": "Modern C#",
+      "tier": "intermediate",
+      "summary": "Records, pattern matching, delegates and events; ends with the Intermediate capstone.",
+      "lessons": [],
+      "planned": true,
+      "topics": ["records and immutability", "pattern matching in depth", "delegates and lambdas", "events", "extension methods", "tuples and deconstruction", "capstone: inventory or budget tracker"]
+    },
+    {
+      "id": "06-async-testing-architecture",
+      "title": "Async, Testing, Architecture",
+      "tier": "advanced",
+      "summary": "async/await, xUnit, dependency injection, layering, performance.",
+      "lessons": [],
+      "planned": true,
+      "topics": ["Task and async/await", "cancellation", "parallelism basics", "xUnit testing and mocking", "dependency injection", "layered architecture", "Span<T> and performance awareness", "benchmarking intro"]
+    },
+    {
+      "id": "07-capstone-console-app",
+      "title": "Capstone: Real Console App",
+      "tier": "advanced",
+      "summary": "Multi-session capstone: a persistent, tested console/TUI app.",
+      "lessons": [],
+      "planned": true,
+      "topics": ["spec and architecture", "core domain with tests", "persistence and async I/O", "polish and final review"]
+    },
+    {
+      "id": "08-csharp-refresher",
+      "title": "C# Refresher",
+      "tier": "refresher",
+      "summary": "Dense recap including modern language features.",
+      "lessons": [],
+      "planned": true,
+      "topics": ["syntax and types sprint", "OOP and interfaces drills", "LINQ workout", "modern language features", "async in anger", ".NET tooling and testing"]
+    }
+  ]
+}

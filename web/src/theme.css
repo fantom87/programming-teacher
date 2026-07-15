@@ -274,6 +274,213 @@ button.primary {
   color: var(--error);
 }
 
+/* ---------- Views: home & track ---------- */
+
+.view-pad {
+  padding: 24px 32px;
+  max-width: 960px;
+  margin: 0 auto;
+  overflow-y: auto;
+  height: 100%;
+}
+
+.dim {
+  color: var(--text-dim);
+}
+
+.small {
+  font-size: 13px;
+}
+
+.title-btn {
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+.streak-chip {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 3px 12px;
+  font-size: 14px;
+}
+
+.continue-btn {
+  font-size: 16px;
+  padding: 10px 20px;
+  margin: 8px 0 20px;
+}
+
+.track-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.track-card {
+  text-align: left;
+  padding: 16px 18px;
+  background: var(--bg-panel);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.track-card h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.track-card p {
+  margin: 0;
+}
+
+.progress-bar {
+  position: relative;
+  height: 18px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--accent);
+}
+
+.progress-label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.tier-heading {
+  margin: 24px 0 8px;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 4px;
+}
+
+.unit {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 8px;
+  padding: 4px 12px;
+}
+
+.unit summary {
+  cursor: pointer;
+  padding: 6px 0;
+}
+
+.unit-title {
+  font-weight: 600;
+}
+
+.badge-planned {
+  margin-left: 8px;
+  font-size: 11px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+}
+
+.lesson-list {
+  list-style: none;
+  margin: 4px 0 8px;
+  padding: 0;
+}
+
+.lesson-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 8px;
+}
+
+button.lesson-row:hover {
+  background: var(--bg-elevated);
+}
+
+.lesson-row .lesson-title {
+  flex: 1;
+}
+
+.lesson-row.ghost {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.check {
+  color: var(--text-dim);
+}
+
+.check.done {
+  color: var(--success);
+  font-weight: 700;
+}
+
+.unit-topics {
+  margin: 2px 0 10px;
+}
+
+.content-errors {
+  margin-top: 24px;
+  border: 1px solid var(--error);
+  border-radius: 8px;
+  padding: 12px 16px;
+}
+
+.back-link {
+  background: none;
+  border: none;
+  color: var(--accent);
+  padding: 0;
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+
+.file-tabs {
+  display: flex;
+  gap: 2px;
+  background: var(--bg-panel);
+  border-bottom: 1px solid var(--border);
+  padding: 4px 8px 0;
+}
+
+.file-tab {
+  border: 1px solid var(--border);
+  border-bottom: none;
+  border-radius: 6px 6px 0 0;
+  padding: 4px 12px;
+  font-size: 13px;
+  background: var(--bg);
+  color: var(--text-dim);
+}
+
+.file-tab.active {
+  background: var(--bg-elevated);
+  color: var(--text);
+  font-weight: 600;
+}
+
 /* ---------- Tutor placeholder ---------- */
 
 .tutor-placeholder {

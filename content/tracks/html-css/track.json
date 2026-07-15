@@ -1,0 +1,90 @@
+{
+  "id": "html-css",
+  "title": "HTML / CSS",
+  "language": "html-css",
+  "philosophy": "Every lesson produces something you can see — visual judgment grows alongside technique, with semantics and accessibility treated as core skills, not add-ons.",
+  "units": [
+    {
+      "id": "01-first-page",
+      "title": "Your First Page",
+      "tier": "foundations",
+      "summary": "From your first tag to a styled personal page.",
+      "lessons": [],
+      "plannedLessons": [
+        "01-your-first-page",
+        "02-tags-and-nesting",
+        "03-headings-and-text",
+        "04-links-and-images",
+        "05-page-anatomy",
+        "06-first-css",
+        "07-classes-and-selectors",
+        "08-boxes-and-spacing",
+        "09-a-touch-of-layout",
+        "10-mini-project-about-me"
+      ]
+    },
+    {
+      "id": "02-styling-fundamentals",
+      "title": "Styling Fundamentals",
+      "tier": "core",
+      "summary": "Selectors, cascade, box model, color, typography.",
+      "lessons": [],
+      "planned": true,
+      "topics": ["selector types and combinators", "specificity and cascade", "inheritance", "box model in depth", "display values", "color systems", "units", "typography and web fonts", "pseudo-classes and pseudo-elements"]
+    },
+    {
+      "id": "03-layout",
+      "title": "Layout",
+      "tier": "core",
+      "summary": "Flow, flexbox, grid; ends with the Core capstone.",
+      "lessons": [],
+      "planned": true,
+      "topics": ["normal flow", "position", "flexbox", "grid", "choosing flex vs grid", "navbar, card-grid, sidebar patterns", "overflow", "capstone: styled landing page"]
+    },
+    {
+      "id": "04-responsive-design",
+      "title": "Responsive Design",
+      "tier": "intermediate",
+      "summary": "Mobile-first, fluid units, media and container queries.",
+      "lessons": [],
+      "planned": true,
+      "topics": ["mobile-first methodology", "media queries", "fluid units and clamp()", "responsive typography", "responsive images (srcset, picture)", "container queries", "viewport meta"]
+    },
+    {
+      "id": "05-accessibility-and-semantics",
+      "title": "Accessibility and Semantics",
+      "tier": "intermediate",
+      "summary": "Semantic HTML depth, ARIA, accessible forms; ends with the Intermediate capstone.",
+      "lessons": [],
+      "planned": true,
+      "topics": ["semantic element depth", "document outline", "ARIA roles and when not to use them", "accessible forms", "keyboard navigation and focus styles", "color contrast", "alt-text strategy", "capstone: accessible multi-section form page"]
+    },
+    {
+      "id": "06-polish-and-modern-css",
+      "title": "Polish and Modern CSS",
+      "tier": "advanced",
+      "summary": "Animation, custom properties, CSS architecture, performance.",
+      "lessons": [],
+      "planned": true,
+      "topics": ["transitions", "transforms", "keyframe animations", "custom properties and theming", "dark mode", "CSS nesting and layers", "organization at scale", "rendering performance"]
+    },
+    {
+      "id": "07-capstone-site",
+      "title": "Capstone: Complete Site",
+      "tier": "advanced",
+      "summary": "Multi-session capstone: a responsive, accessible multi-page site.",
+      "lessons": [],
+      "planned": true,
+      "topics": ["brief and wireframe", "semantic structure build", "responsive layout pass", "theming", "accessibility audit and final polish"]
+    },
+    {
+      "id": "08-html-css-refresher",
+      "title": "HTML/CSS Refresher",
+      "tier": "refresher",
+      "summary": "Dense recap for returning developers.",
+      "lessons": [],
+      "planned": true,
+      "topics": ["semantic HTML sprint", "cascade, selectors, specificity", "flexbox and grid drills", "responsive patterns", "modern CSS and a11y audit"]
+    }
+  ]
+}
