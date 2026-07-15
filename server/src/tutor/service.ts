@@ -4,7 +4,7 @@ import { query, tool, createSdkMcpServer } from "@anthropic-ai/claude-agent-sdk"
 import { z } from "zod";
 import type { AssistanceLevel, Lesson, RunResult, Settings } from "@teacher/shared";
 import { DEFAULT_SETTINGS } from "@teacher/shared";
-import { buildSystemPrompt, wrapTurn } from "./prompts.js";
+import { buildPlacementPrompt, buildPlaygroundPrompt, buildSystemPrompt, wrapTurn } from "./prompts.js";
 import { sdkEnv } from "./judge.js";
 import { runLocal } from "../runner/localRunner.js";
 import { evaluateDomAssertions } from "../runner/domCheck.js";
@@ -23,6 +23,7 @@ export type SseEvent =
   | { type: "doc"; slug: string }
   | { type: "complete" }
   | { type: "turn-end" }
+  | { type: "recommendation"; unitId: string; assistanceLevel: number; reasoning: string }
   | { type: "error"; message: string };
 
 class SseHub {
@@ -80,9 +81,18 @@ class AsyncQueue<T> {
   }
 }
 
+export type SessionMode = "lesson" | "playground" | "placement";
+
+export interface PlacementInfo {
+  trackTitle: string;
+  units: { id: string; title: string; tier: string; summary: string }[];
+}
+
 interface TutorSession {
   key: string;
   lesson: Lesson;
+  mode: SessionMode;
+  placementInfo?: PlacementInfo;
   level: AssistanceLevel;
   levelChanged: boolean;
   latestFiles: Record<string, string>;
@@ -261,10 +271,30 @@ function buildTools(deps: TutorDeps, session: TutorSession) {
     },
   );
 
+  const recommendStart = tool(
+    "recommend_start",
+    "Deliver the placement recommendation: which unit the learner should start at and their initial assistance level.",
+    {
+      unitId: z.string(),
+      assistanceLevel: z.number().int().min(1).max(5),
+      reasoning: z.string().max(300),
+    },
+    async (args) => {
+      hub.send(key, { type: "recommendation", unitId: args.unitId, assistanceLevel: args.assistanceLevel, reasoning: args.reasoning });
+      return { content: [{ type: "text" as const, text: "Recommendation delivered — now tell the learner in one or two warm sentences." }] };
+    },
+  );
+
+  const toolsByMode = {
+    lesson: [runCode, checkGoal, markComplete, showHint, showDoc, updateProfile],
+    playground: [runCode, showDoc, updateProfile],
+    placement: [recommendStart, updateProfile],
+  }[session.mode];
+
   return createSdkMcpServer({
     name: "tutor",
     version: "1.0.0",
-    tools: [runCode, checkGoal, markComplete, showHint, showDoc, updateProfile],
+    tools: toolsByMode,
   });
 }
 
@@ -275,6 +305,7 @@ const TOOL_NAMES = [
   "mcp__tutor__show_hint",
   "mcp__tutor__show_doc",
   "mcp__tutor__update_profile",
+  "mcp__tutor__recommend_start",
 ];
 
 // ---------- the session loop ----------
@@ -288,13 +319,22 @@ async function startSession(deps: TutorDeps, session: TutorSession): Promise<voi
   const docSlugs = await deps.getDocSlugs();
   const stored = await readJson<{ sessionId?: string | null }>(sessionFile(dataDir, key), {});
 
-  const systemPrompt = buildSystemPrompt({
-    lesson: session.lesson,
-    solution,
-    level: session.level,
-    profile,
-    docSlugs,
-  });
+  const systemPrompt =
+    session.mode === "playground"
+      ? buildPlaygroundPrompt({ language: session.lesson.language, profile, docSlugs, level: session.level })
+      : session.mode === "placement"
+        ? buildPlacementPrompt({
+            trackTitle: session.placementInfo?.trackTitle ?? session.lesson.trackId,
+            units: session.placementInfo?.units ?? [],
+            profile,
+          })
+        : buildSystemPrompt({
+            lesson: session.lesson,
+            solution,
+            level: session.level,
+            profile,
+            docSlugs,
+          });
 
   async function* turns() {
     while (true) {
@@ -351,7 +391,14 @@ async function startSession(deps: TutorDeps, session: TutorSession): Promise<voi
 export async function sendMessage(
   deps: TutorDeps,
   lesson: Lesson,
-  opts: { text: string; files: Record<string, string>; lastRun?: RunResult | null; level: AssistanceLevel },
+  opts: {
+    text: string;
+    files: Record<string, string>;
+    lastRun?: RunResult | null;
+    level: AssistanceLevel;
+    mode?: SessionMode;
+    placementInfo?: PlacementInfo;
+  },
 ): Promise<void> {
   const key = `${lesson.trackId}/${lesson.unitId}/${lesson.id}`;
   let session = sessions.get(key);
@@ -359,6 +406,8 @@ export async function sendMessage(
     session = {
       key,
       lesson,
+      mode: opts.mode ?? "lesson",
+      placementInfo: opts.placementInfo,
       level: opts.level,
       levelChanged: false,
       latestFiles: opts.files,

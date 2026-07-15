@@ -1,0 +1,22 @@
+{
+  "pages": [
+    { "slug": "syntax-cheatsheet", "title": "Python syntax cheatsheet", "keywords": ["cheatsheet", "syntax", "reference", "quick reference", "operators"] },
+    { "slug": "variables-and-types", "title": "Variables and types", "keywords": ["variables", "types", "int", "float", "str", "bool", "None", "conversion"] },
+    { "slug": "strings", "title": "Strings", "keywords": ["strings", "text", "f-strings", "slicing", "methods", "formatting"] },
+    { "slug": "numbers-and-math", "title": "Numbers and math", "keywords": ["numbers", "math", "int", "float", "arithmetic", "modulo", "rounding"] },
+    { "slug": "lists", "title": "Lists", "keywords": ["lists", "arrays", "append", "indexing", "slicing", "sorting"] },
+    { "slug": "dicts", "title": "Dicts", "keywords": ["dictionaries", "dicts", "keys", "values", "mapping", "get", "counting"] },
+    { "slug": "tuples-and-sets", "title": "Tuples and sets", "keywords": ["tuples", "sets", "immutable", "unique", "unpacking", "union", "intersection"] },
+    { "slug": "conditionals", "title": "Conditionals", "keywords": ["if", "elif", "else", "conditions", "boolean", "comparison", "branching"] },
+    { "slug": "loops", "title": "Loops", "keywords": ["for", "while", "range", "break", "continue", "enumerate", "iteration"] },
+    { "slug": "functions", "title": "Functions", "keywords": ["functions", "def", "return", "parameters", "arguments", "docstrings"] },
+    { "slug": "modules-and-imports", "title": "Modules and imports", "keywords": ["modules", "import", "from", "standard library", "__main__"] },
+    { "slug": "files", "title": "Files", "keywords": ["files", "open", "read", "write", "with", "pathlib", "encoding"] },
+    { "slug": "errors-and-exceptions", "title": "Errors and exceptions", "keywords": ["exceptions", "try", "except", "raise", "finally", "ValueError", "error handling"] },
+    { "slug": "classes", "title": "Classes", "keywords": ["classes", "objects", "self", "__init__", "methods", "attributes", "OOP"] },
+    { "slug": "comprehensions", "title": "Comprehensions", "keywords": ["comprehensions", "list comprehension", "dict comprehension", "filter", "transform"] },
+    { "slug": "stdlib-tour", "title": "Standard library tour", "keywords": ["standard library", "random", "datetime", "json", "pathlib", "csv", "collections"] },
+    { "slug": "venv-and-pip", "title": "Virtual environments and pip", "keywords": ["venv", "pip", "packages", "install", "requirements.txt", "virtual environment"] },
+    { "slug": "debugging", "title": "Debugging Python", "keywords": ["debugging", "traceback", "print", "breakpoint", "pdb", "bugs"] }
+  ]
+}

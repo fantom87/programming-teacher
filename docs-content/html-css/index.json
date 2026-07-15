@@ -1,0 +1,18 @@
+{
+  "pages": [
+    { "slug": "document-structure", "title": "Document structure", "keywords": ["html", "doctype", "head", "body", "meta", "title", "tag", "attribute", "nesting"] },
+    { "slug": "common-elements", "title": "Common elements", "keywords": ["heading", "h1", "p", "paragraph", "div", "span", "strong", "em", "button", "blockquote", "code"] },
+    { "slug": "links-and-images", "title": "Links and images", "keywords": ["a", "href", "link", "anchor", "img", "src", "alt", "target", "mailto"] },
+    { "slug": "lists-and-tables", "title": "Lists and tables", "keywords": ["ul", "ol", "li", "list", "table", "tr", "td", "th", "thead", "tbody", "caption"] },
+    { "slug": "forms", "title": "Forms", "keywords": ["form", "input", "label", "textarea", "select", "checkbox", "radio", "submit", "required", "placeholder"] },
+    { "slug": "semantic-html", "title": "Semantic HTML", "keywords": ["semantic", "header", "footer", "main", "nav", "article", "section", "aside", "figure", "landmark"] },
+    { "slug": "accessibility-basics", "title": "Accessibility basics", "keywords": ["accessibility", "a11y", "alt text", "screen reader", "keyboard", "focus", "contrast", "aria", "label"] },
+    { "slug": "selectors", "title": "Selectors", "keywords": ["selector", "class", "id", "descendant", "pseudo-class", "hover", "focus", "nth-child", "specificity", "attribute selector"] },
+    { "slug": "box-model", "title": "The box model", "keywords": ["box model", "margin", "padding", "border", "content", "box-sizing", "border-box", "block", "inline"] },
+    { "slug": "colors-and-typography", "title": "Colors and typography", "keywords": ["color", "hex", "rgb", "hsl", "font", "font-family", "font-size", "rem", "line-height", "contrast", "typography"] },
+    { "slug": "flexbox", "title": "Flexbox", "keywords": ["flexbox", "display flex", "justify-content", "align-items", "flex-direction", "gap", "flex-wrap", "flex grow", "centering"] },
+    { "slug": "grid", "title": "Grid", "keywords": ["grid", "grid-template-columns", "fr", "repeat", "auto-fit", "minmax", "grid-area", "gap", "layout"] },
+    { "slug": "responsive-design", "title": "Responsive design", "keywords": ["responsive", "media query", "min-width", "mobile-first", "viewport", "breakpoint", "max-width"] },
+    { "slug": "transitions-and-animation", "title": "Transitions and animation", "keywords": ["transition", "animation", "keyframes", "transform", "hover", "easing", "opacity", "prefers-reduced-motion"] }
+  ]
+}

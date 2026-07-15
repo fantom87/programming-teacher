@@ -33,7 +33,7 @@ export function spawnCapture(spec: SpawnSpec): Promise<RunResult> {
     // Lesson programs must produce plain output: the dev environment sets
     // FORCE_COLOR (concurrently), which would make Node colorize console.log
     // with ANSI codes and break output checks.
-    const env = { ...process.env, ...spec.env, NO_COLOR: "1" };
+    const env: Record<string, string | undefined> = { ...process.env, ...spec.env, NO_COLOR: "1" };
     delete env.FORCE_COLOR;
 
     const child = spawn(spec.command, spec.args, {

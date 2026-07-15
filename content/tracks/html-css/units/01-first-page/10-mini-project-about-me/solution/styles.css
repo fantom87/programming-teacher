@@ -1,0 +1,35 @@
+body {
+  font-family: sans-serif;
+  color: #222222;
+}
+
+main {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+header {
+  background-color: darkblue;
+  color: white;
+  text-align: center;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.tagline {
+  font-style: italic;
+}
+
+h2 {
+  color: darkblue;
+}
+
+img {
+  max-width: 100%;
+}
+
+footer {
+  text-align: center;
+  color: gray;
+  margin-top: 32px;
+}

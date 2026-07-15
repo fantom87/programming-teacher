@@ -9,12 +9,13 @@
       "title": "Your First Page",
       "tier": "foundations",
       "summary": "From your first tag to a styled personal page.",
-      "lessons": ["01-your-first-page", "06-first-css"],
-      "plannedLessons": [
+      "lessons": [
+        "01-your-first-page",
         "02-tags-and-nesting",
         "03-headings-and-text",
         "04-links-and-images",
         "05-page-anatomy",
+        "06-first-css",
         "07-classes-and-selectors",
         "08-boxes-and-spacing",
         "09-a-touch-of-layout",

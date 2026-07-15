@@ -1,0 +1,20 @@
+{
+  "pages": [
+    { "slug": "syntax-cheatsheet", "title": "Syntax cheatsheet", "keywords": ["syntax", "reference", "quick", "cheatsheet", "overview"] },
+    { "slug": "variables-and-types", "title": "Variables and types", "keywords": ["let", "const", "var", "typeof", "string", "number", "boolean", "null", "undefined"] },
+    { "slug": "strings", "title": "Strings", "keywords": ["string", "template literal", "backtick", "slice", "split", "includes", "toUpperCase", "trim"] },
+    { "slug": "numbers", "title": "Numbers", "keywords": ["number", "math", "arithmetic", "NaN", "parseInt", "parseFloat", "toFixed", "Math.random", "modulo"] },
+    { "slug": "arrays", "title": "Arrays", "keywords": ["array", "list", "push", "pop", "map", "filter", "find", "slice", "spread", "length"] },
+    { "slug": "objects", "title": "Objects", "keywords": ["object", "property", "key", "value", "destructuring", "optional chaining", "Object.keys", "Object.entries", "spread"] },
+    { "slug": "conditionals", "title": "Conditionals", "keywords": ["if", "else", "ternary", "comparison", "===", "&&", "||", "truthy", "falsy"] },
+    { "slug": "loops", "title": "Loops", "keywords": ["for", "while", "for of", "break", "continue", "forEach", "iteration"] },
+    { "slug": "functions-and-closures", "title": "Functions and closures", "keywords": ["function", "arrow function", "return", "parameter", "argument", "closure", "default parameter", "scope"] },
+    { "slug": "dom-basics", "title": "DOM basics", "keywords": ["DOM", "document", "querySelector", "textContent", "innerHTML", "classList", "createElement", "append"] },
+    { "slug": "events", "title": "Events", "keywords": ["event", "addEventListener", "click", "submit", "input", "keydown", "preventDefault", "bubbling", "delegation"] },
+    { "slug": "async-and-promises", "title": "Async and promises", "keywords": ["async", "await", "promise", "fetch", "then", "catch", "try catch", "Promise.all", "setTimeout"] },
+    { "slug": "modules", "title": "Modules", "keywords": ["module", "import", "export", "default export", "named export", "type=module", "ESM"] },
+    { "slug": "npm-basics", "title": "npm basics", "keywords": ["npm", "package", "package.json", "node_modules", "install", "scripts", "dependencies", "node"] },
+    { "slug": "typescript-basics", "title": "TypeScript basics", "keywords": ["typescript", "types", "interface", "union type", "annotation", "inference", "tsc", "tsconfig"] },
+    { "slug": "debugging-devtools", "title": "Debugging with DevTools", "keywords": ["debugging", "devtools", "console", "console.log", "breakpoint", "error", "sources", "network", "inspect"] }
+  ]
+}

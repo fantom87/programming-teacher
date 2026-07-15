@@ -8,6 +8,7 @@ import { draftRoutes } from "./routes/drafts.js";
 import { settingsRoutes } from "./routes/settings.js";
 import { runRoutes } from "./routes/run.js";
 import { tutorRoutes } from "./routes/tutor.js";
+import { docsRoutes } from "./routes/docs.js";
 import { getCurriculum } from "./curriculum/loader.js";
 import { detectRuntimes } from "./preflight.js";
 import { setJudge } from "./checks/run.js";
@@ -46,6 +47,7 @@ app.use(draftRoutes(DATA_DIR));
 app.use(settingsRoutes(DATA_DIR));
 app.use(runRoutes(CONTENT_DIR, DATA_DIR));
 app.use(tutorRoutes(CONTENT_DIR, DATA_DIR));
+app.use(docsRoutes(path.join(ROOT, "docs-content")));
 
 // The ai-judge check type is powered by the tutor's one-shot grader.
 setJudge((lesson, rubric, files, run) =>
@@ -61,7 +63,7 @@ setJudge((lesson, rubric, files, run) =>
 if (isProd) {
   const dist = path.join(ROOT, "web", "dist");
   app.use(express.static(dist));
-  app.get("*", (_req, res) => res.sendFile(path.join(dist, "index.html")));
+  app.get("/*splat", (_req, res) => res.sendFile(path.join(dist, "index.html")));
 }
 
 app.listen(PORT, async () => {

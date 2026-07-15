@@ -18,9 +18,10 @@ interface Props {
   theme: "dark" | "light";
   navigate: (r: Route) => void;
   onProgressChange: () => void;
+  onOpenDoc: (slug: string) => void;
 }
 
-export default function LessonView({ lessonKey, theme, navigate, onProgressChange }: Props) {
+export default function LessonView({ lessonKey, theme, navigate, onProgressChange, onOpenDoc }: Props) {
   const [lesson, setLesson] = useState<Lesson | null>(null);
   const [files, setFiles] = useState<Record<string, string>>({});
   const [activeFile, setActiveFile] = useState("");
@@ -170,9 +171,11 @@ export default function LessonView({ lessonKey, theme, navigate, onProgressChang
         onProgressChange();
       } else if (e.type === "hint") {
         setRevealedHints((prev) => (prev.includes(e.index) ? prev : [...prev, e.index].sort()));
+      } else if (e.type === "doc") {
+        onOpenDoc(e.slug);
       }
     },
-    [onProgressChange],
+    [onProgressChange, onOpenDoc],
   );
 
   function revealNextHint() {
@@ -200,6 +203,15 @@ export default function LessonView({ lessonKey, theme, navigate, onProgressChang
           <div className="label">Goal</div>
           {lesson.goal}
         </div>
+        {(lesson.docs?.length ?? 0) > 0 && (
+          <div className="doc-chips">
+            {lesson.docs!.map((slug) => (
+              <button key={slug} className="doc-chip" onClick={() => onOpenDoc(slug)}>
+                📖 {slug.split("/").pop()?.replaceAll("-", " ")}
+              </button>
+            ))}
+          </div>
+        )}
         <GoalChecklist checks={lesson.checks} results={checkResults} checking={checking} onCheck={handleCheck} />
         {revealedHints.length > 0 && (
           <div className="hints-box">

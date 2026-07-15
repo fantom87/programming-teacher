@@ -21,10 +21,11 @@ export function runRoutes(contentDir: string, dataDir: string): Router {
   const r = Router();
 
   // Local-runner execution of the user's editor files (no goal checking).
+  // Accepts real lesson keys and playground pseudo-lessons.
   r.post("/api/run", async (req, res) => {
     const { lessonId, files } = req.body ?? {};
-    const cur = await getCurriculum(contentDir);
-    const lesson = cur.lessons.get(String(lessonId));
+    const { resolveLesson } = await import("./tutor.js");
+    const lesson = (await resolveLesson(contentDir, String(lessonId)))?.lesson;
     if (!lesson || typeof files !== "object") {
       res.status(400).json({ error: "lessonId and files required" });
       return;

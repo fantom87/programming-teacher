@@ -9,8 +9,10 @@
       "title": "JavaScript First Steps",
       "tier": "foundations",
       "summary": "Standalone basics: values, branching, loops, functions, arrays, objects.",
-      "lessons": ["01-hello-javascript", "02-values-and-variables", "03-numbers-and-strings"],
-      "plannedLessons": [
+      "lessons": [
+        "01-hello-javascript",
+        "02-values-and-variables",
+        "03-numbers-and-strings",
         "04-booleans-and-comparisons",
         "05-branching",
         "06-loops",

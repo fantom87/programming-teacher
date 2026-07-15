@@ -1,0 +1,10 @@
+{
+  "pages": [
+    { "slug": "what-is-a-program", "title": "What is a program?", "keywords": ["program", "instructions", "code", "basics"] },
+    { "slug": "how-code-runs", "title": "How code runs", "keywords": ["interpreter", "compiler", "execution", "machine code", "memory"] },
+    { "slug": "thinking-in-steps", "title": "Thinking in steps", "keywords": ["algorithm", "decomposition", "problem solving", "planning"] },
+    { "slug": "naming-things", "title": "Naming things", "keywords": ["variables", "naming", "readability", "snake_case", "style"] },
+    { "slug": "reading-error-messages", "title": "Reading error messages", "keywords": ["errors", "traceback", "exceptions", "SyntaxError", "TypeError"] },
+    { "slug": "debugging-mindset", "title": "Debugging mindset", "keywords": ["debugging", "bugs", "print", "troubleshooting", "hypothesis"] }
+  ]
+}

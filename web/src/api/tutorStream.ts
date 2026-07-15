@@ -8,6 +8,7 @@ export type TutorEvent =
   | { type: "doc"; slug: string }
   | { type: "complete" }
   | { type: "turn-end" }
+  | { type: "recommendation"; unitId: string; assistanceLevel: number; reasoning: string }
   | { type: "error"; message: string };
 
 export function openTutorStream(lessonKey: string, onEvent: (e: TutorEvent) => void): () => void {

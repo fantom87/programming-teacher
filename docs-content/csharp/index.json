@@ -1,0 +1,16 @@
+{
+  "pages": [
+    { "slug": "program-structure", "title": "Program structure", "keywords": ["top-level statements", "Main", "Program.cs", "csproj", "Console.WriteLine", "namespace", "using", "dotnet new"] },
+    { "slug": "types-and-variables", "title": "Types and variables", "keywords": ["int", "string", "double", "decimal", "bool", "var", "const", "nullable", "cast", "TryParse", "static typing"] },
+    { "slug": "control-flow", "title": "Control flow", "keywords": ["if", "else", "switch", "switch expression", "for", "foreach", "while", "do-while", "break", "continue"] },
+    { "slug": "methods", "title": "Methods", "keywords": ["method", "function", "return", "parameter", "void", "overloading", "optional argument", "named argument", "tuple", "expression-bodied"] },
+    { "slug": "classes-and-objects", "title": "Classes and objects", "keywords": ["class", "object", "instance", "constructor", "property", "get", "set", "record", "static", "encapsulation", "new"] },
+    { "slug": "interfaces", "title": "Interfaces", "keywords": ["interface", "contract", "implement", "IEnumerable", "IDisposable", "polymorphism", "abstraction"] },
+    { "slug": "collections", "title": "Collections", "keywords": ["array", "List", "Dictionary", "HashSet", "Add", "Count", "TryGetValue", "generic", "foreach"] },
+    { "slug": "linq-basics", "title": "LINQ basics", "keywords": ["LINQ", "Where", "Select", "OrderBy", "lambda", "First", "Any", "Sum", "Count", "ToList", "query", "deferred execution"] },
+    { "slug": "exceptions", "title": "Exceptions", "keywords": ["exception", "try", "catch", "finally", "throw", "using", "NullReferenceException", "FormatException", "error handling"] },
+    { "slug": "async-await", "title": "Async and await", "keywords": ["async", "await", "Task", "HttpClient", "Task.WhenAll", "Task.Delay", "asynchronous", "concurrency"] },
+    { "slug": "dotnet-cli", "title": "The dotnet CLI", "keywords": ["dotnet", "CLI", "dotnet new", "dotnet run", "dotnet build", "dotnet test", "dotnet watch", "solution", "publish", "template"] },
+    { "slug": "nuget-basics", "title": "NuGet basics", "keywords": ["NuGet", "package", "dotnet add package", "PackageReference", "csproj", "restore", "nuget.org", "version", "dependencies"] }
+  ]
+}
