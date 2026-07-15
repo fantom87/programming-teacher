@@ -25,7 +25,10 @@ export function describeAssertion(a: DomAssertion): string {
 }
 
 function normalizeNewlines(s: string): string {
-  return s.replace(/\r\n/g, "\n");
+  // Also strip ANSI escape sequences defensively — colored output should
+  // never fail an otherwise-correct answer.
+  // eslint-disable-next-line no-control-regex
+  return s.replace(/\r\n/g, "\n").replace(/\[[0-9;]*m/g, "");
 }
 
 export function evaluateStdoutCheck(

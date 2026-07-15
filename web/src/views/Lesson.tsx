@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { marked } from "marked";
-import type { CheckResult, Lesson, RunResult } from "@teacher/shared";
+import type { AssistanceLevel, CheckResult, Lesson, RunResult } from "@teacher/shared";
 import EditorPane from "../components/EditorPane";
 import OutputPane from "../components/OutputPane";
 import GoalChecklist from "../components/GoalChecklist";
 import HistoryMenu from "../components/HistoryMenu";
+import TutorChat from "../components/TutorChat";
+import type { TutorEvent } from "../api/tutorStream";
 import { runJs } from "../runners/jsWorkerRunner";
 import { runPython, warmPyodide, onPyodideStatus, isPyodideWarm } from "../runners/pyodideRunner";
 import { buildSrcdoc } from "../runners/htmlPreview";
@@ -30,9 +32,14 @@ export default function LessonView({ lessonKey, theme, navigate, onProgressChang
   const [completed, setCompleted] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [level, setLevel] = useState<AssistanceLevel>(3);
+  const [revealedHints, setRevealedHints] = useState<number[]>([]);
+  const [pendingTutorMsg, setPendingTutorMsg] = useState<string | null>(null);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const filesRef = useRef(files);
   filesRef.current = files;
+  const resultRef = useRef(result);
+  resultRef.current = result;
 
   useEffect(() => {
     let cancelled = false;
@@ -40,6 +47,7 @@ export default function LessonView({ lessonKey, theme, navigate, onProgressChang
     setResult(null);
     setPreview(null);
     setCheckResults(null);
+    setRevealedHints([]);
     (async () => {
       try {
         const l = await api.lesson(lessonKey);
@@ -54,8 +62,14 @@ export default function LessonView({ lessonKey, theme, navigate, onProgressChang
           warmPyodide();
           if (!isPyodideWarm()) setNotice("Loading Python (one-time, ~13 MB)…");
         }
-        const progress = await api.progress();
-        if (!cancelled) setCompleted(Boolean(progress.lessons[lessonKey]?.completedAt));
+        const [progress, settings] = await Promise.all([
+          api.progress(),
+          fetch("/api/settings").then((r) => r.json()),
+        ]);
+        if (!cancelled) {
+          setCompleted(Boolean(progress.lessons[lessonKey]?.completedAt));
+          setLevel((settings.assistanceDefault ?? 3) as AssistanceLevel);
+        }
         localStorage.setItem("lastLessonKey", lessonKey);
         localStorage.setItem("lastLessonTitle", l.title);
       } catch (err) {
@@ -110,7 +124,6 @@ export default function LessonView({ lessonKey, theme, navigate, onProgressChang
           body: JSON.stringify({ lessonId: lessonKey, files: filesRef.current, trigger: "run" }),
         });
       } else {
-        // html-css: refresh the preview (it also live-updates as you type)
         setPreview(buildSrcdoc(filesRef.current));
       }
     } finally {
@@ -140,13 +153,39 @@ export default function LessonView({ lessonKey, theme, navigate, onProgressChang
     setFiles(restored);
     if (lesson?.language === "html-css") setPreview(buildSrcdoc(restored));
     scheduleSave();
-    // Force the editor to pick up the restored doc.
     setActiveFile("");
     setTimeout(() => setActiveFile(lesson?.files[0]?.path ?? ""), 0);
   }
 
+  const handleTutorEvent = useCallback(
+    (e: TutorEvent) => {
+      if (e.type === "check-results") {
+        setCheckResults(e.checks);
+        if (e.completed) {
+          setCompleted(true);
+          onProgressChange();
+        }
+      } else if (e.type === "complete") {
+        setCompleted(true);
+        onProgressChange();
+      } else if (e.type === "hint") {
+        setRevealedHints((prev) => (prev.includes(e.index) ? prev : [...prev, e.index].sort()));
+      }
+    },
+    [onProgressChange],
+  );
+
+  function revealNextHint() {
+    if (!lesson?.hints) return;
+    const next = lesson.hints.findIndex((_, i) => !revealedHints.includes(i));
+    if (next >= 0) setRevealedHints((prev) => [...prev, next].sort());
+  }
+
   if (error) return <div className="view-pad">Failed to load lesson: {error}</div>;
   if (!lesson) return <div className="view-pad">Loading…</div>;
+
+  const hintsAvailable = (lesson.hints?.length ?? 0) > 0 && level >= 2;
+  const hintsLeft = (lesson.hints?.length ?? 0) - revealedHints.length;
 
   return (
     <div className="lesson-layout">
@@ -162,6 +201,21 @@ export default function LessonView({ lessonKey, theme, navigate, onProgressChang
           {lesson.goal}
         </div>
         <GoalChecklist checks={lesson.checks} results={checkResults} checking={checking} onCheck={handleCheck} />
+        {revealedHints.length > 0 && (
+          <div className="hints-box">
+            <div className="label">Hints</div>
+            <ol>
+              {revealedHints.map((i) => (
+                <li key={i}>{lesson.hints?.[i]}</li>
+              ))}
+            </ol>
+          </div>
+        )}
+        {hintsAvailable && hintsLeft > 0 && (
+          <button className="hint-btn" onClick={revealNextHint}>
+            💡 Show a hint ({hintsLeft} left)
+          </button>
+        )}
         <div className="lesson-md" dangerouslySetInnerHTML={{ __html: marked.parse(lesson.body) as string }} />
       </section>
 
@@ -199,14 +253,26 @@ export default function LessonView({ lessonKey, theme, navigate, onProgressChang
             }
           />
         )}
-        <OutputPane result={result} preview={lesson.language === "html-css" ? preview : null} notice={notice} />
+        <OutputPane
+          result={result}
+          preview={lesson.language === "html-css" ? preview : null}
+          notice={notice}
+          onExplainError={() =>
+            setPendingTutorMsg("Please explain this error to me in plain language — what it means and where to look. Don't solve the rest of the lesson for me.")
+          }
+        />
       </section>
 
       <section className="pane pane-tutor" aria-label="Tutor">
-        <div className="tutor-placeholder">
-          <strong>AI Tutor</strong>
-          <p>The tutor moves in at milestone M3 — for now, "Check my work" grades your code.</p>
-        </div>
+        <TutorChat
+          lessonKey={lessonKey}
+          level={level}
+          onLevelChange={setLevel}
+          getContext={() => ({ files: filesRef.current, lastRun: resultRef.current })}
+          onEvent={handleTutorEvent}
+          pendingMessage={pendingTutorMsg}
+          onPendingConsumed={() => setPendingTutorMsg(null)}
+        />
       </section>
     </div>
   );

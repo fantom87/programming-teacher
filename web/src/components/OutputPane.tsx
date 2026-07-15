@@ -5,9 +5,11 @@ interface Props {
   /** When set (HTML/CSS lessons), the pane shows a live page preview instead of a console. */
   preview?: string | null;
   notice?: string | null;
+  onExplainError?: () => void;
 }
 
-export default function OutputPane({ result, preview, notice }: Props) {
+export default function OutputPane({ result, preview, notice, onExplainError }: Props) {
+  const failed = result && (!result.ok || result.stderr);
   return (
     <div className="output-pane">
       <div className="output-header">{preview != null ? "Preview" : "Output"}</div>
@@ -31,6 +33,11 @@ export default function OutputPane({ result, preview, notice }: Props) {
             : result.ok
               ? `✓ finished in ${result.durationMs} ms`
               : `✗ exited with code ${result.exitCode ?? "?"} in ${result.durationMs} ms`}
+          {failed && onExplainError && (
+            <button className="explain-error-btn" onClick={onExplainError}>
+              Explain this error
+            </button>
+          )}
         </div>
       )}
     </div>

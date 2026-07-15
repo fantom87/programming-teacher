@@ -7,8 +7,14 @@ import { progressRoutes } from "./routes/progress.js";
 import { draftRoutes } from "./routes/drafts.js";
 import { settingsRoutes } from "./routes/settings.js";
 import { runRoutes } from "./routes/run.js";
+import { tutorRoutes } from "./routes/tutor.js";
 import { getCurriculum } from "./curriculum/loader.js";
 import { detectRuntimes } from "./preflight.js";
+import { setJudge } from "./checks/run.js";
+import { judgeCheck } from "./tutor/judge.js";
+import { getAuthStatus, selfTestAuth } from "./tutor/service.js";
+import { readJson } from "./store/jsonStore.js";
+import { DEFAULT_SETTINGS, type Settings } from "@teacher/shared";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export const ROOT = path.resolve(__dirname, "..", "..");
@@ -24,11 +30,13 @@ const app = express();
 app.use(express.json({ limit: "2mb" }));
 
 app.get("/api/health", async (_req, res) => {
+  const auth = getAuthStatus();
   res.json({
     ok: true,
     version: "0.1.0",
     runtimes: await detectRuntimes(),
-    sdkAuth: "unknown", // filled in by tutor service in M3
+    sdkAuth: auth.status,
+    sdkAuthDetail: auth.detail,
   });
 });
 
@@ -37,6 +45,18 @@ app.use(progressRoutes(DATA_DIR));
 app.use(draftRoutes(DATA_DIR));
 app.use(settingsRoutes(DATA_DIR));
 app.use(runRoutes(CONTENT_DIR, DATA_DIR));
+app.use(tutorRoutes(CONTENT_DIR, DATA_DIR));
+
+// The ai-judge check type is powered by the tutor's one-shot grader.
+setJudge((lesson, rubric, files, run) =>
+  judgeCheck(
+    async () => (await readJson<Settings>(path.join(DATA_DIR, "settings.json"), DEFAULT_SETTINGS)).tutorModel,
+    lesson,
+    rubric,
+    files,
+    run,
+  ),
+);
 
 if (isProd) {
   const dist = path.join(ROOT, "web", "dist");
@@ -53,4 +73,5 @@ app.listen(PORT, async () => {
   } else {
     console.log(`[content] ${cur.tracks.length} tracks, ${cur.lessons.size} lessons loaded`);
   }
+  void selfTestAuth();
 });

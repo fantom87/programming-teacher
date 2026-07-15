@@ -77,7 +77,7 @@ export function runRoutes(contentDir: string, dataDir: string): Router {
     await recordChecks(dataDir, pass.checks.filter((c) => c.passed).length, pass.checks.filter((c) => !c.passed).length);
 
     let completed = false;
-    if (pass.passedRequired) {
+    if (pass.checks.every((c) => c.passed)) {
       await completeLesson(dataDir, String(lessonId));
       completed = true;
     }

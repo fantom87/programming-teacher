@@ -84,7 +84,7 @@ describe("curriculum loader", () => {
     // Solutions are loaded for the tutor but never included in Lesson objects.
     for (const lesson of cur.lessons.values()) {
       expect(Object.keys(lesson.starterFiles).length).toBeGreaterThan(0);
-      expect((lesson as Record<string, unknown>).solutionFiles).toBeUndefined();
+      expect((lesson as unknown as Record<string, unknown>).solutionFiles).toBeUndefined();
     }
   });
 
