@@ -1,0 +1,18 @@
+{
+  "name": "@teacher/server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "tsx src/index.ts --prod"
+  },
+  "dependencies": {
+    "@teacher/shared": "^0.1.0",
+    "express": "^5.2.1"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^26.1.1"
+  }
+}
