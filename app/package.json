@@ -1,0 +1,39 @@
+{
+  "name": "programming-teacher-app",
+  "productName": "Programming Teacher",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Learn programming with an AI tutor",
+  "author": "Bradley",
+  "main": "main.cjs",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win"
+  },
+  "build": {
+    "appId": "local.bradley.programmingteacher",
+    "productName": "Programming Teacher",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "main.cjs"
+    ],
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
+  },
+  "devDependencies": {
+    "electron": "^43.1.1",
+    "electron-builder": "^26.15.3"
+  }
+}

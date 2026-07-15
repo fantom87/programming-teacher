@@ -135,7 +135,7 @@ export interface Settings {
 export const DEFAULT_SETTINGS: Settings = {
   theme: "dark",
   assistanceDefault: 3,
-  tutorModel: "claude-sonnet-5",
+  tutorModel: "claude-fable-5",
   editor: { fontSize: 14, autocomplete: true },
   onboarded: false,
 };
