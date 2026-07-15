@@ -10,10 +10,12 @@
   "dependencies": {
     "@teacher/shared": "^0.1.0",
     "express": "^5.2.1",
-    "gray-matter": "^4.0.3"
+    "gray-matter": "^4.0.3",
+    "jsdom": "^29.1.1"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",
+    "@types/jsdom": "^28.0.3",
     "@types/node": "^26.1.1"
   }
 }

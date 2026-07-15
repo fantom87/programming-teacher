@@ -9,11 +9,9 @@
       "title": "First Steps",
       "tier": "foundations",
       "summary": "What a program is: output, variables, decisions, loops.",
-      "lessons": [],
+      "lessons": ["01-hello-world", "03-variables"],
       "plannedLessons": [
-        "01-hello-world",
         "02-printing-and-strings",
-        "03-variables",
         "04-numbers-and-math",
         "05-strings-and-f-strings",
         "06-true-or-false",

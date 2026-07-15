@@ -49,6 +49,19 @@ async function send(method: string, url: string, body?: unknown): Promise<Respon
   return res;
 }
 
+export interface SnapshotMeta {
+  id: string;
+  lessonId: string;
+  takenAt: string;
+  trigger: "run" | "check";
+}
+
+export interface CheckResponse {
+  run: import("@teacher/shared").RunResult | null;
+  checks: import("@teacher/shared").CheckResult[];
+  completed: boolean;
+}
+
 export const api = {
   curriculum: () => get<CurriculumResponse>("/api/curriculum"),
   lesson: (key: string) => get<Lesson>(`/api/curriculum/lesson?id=${encodeURIComponent(key)}`),
@@ -61,4 +74,17 @@ export const api = {
     get<{ files: Record<string, string> | null }>(`/api/drafts?id=${encodeURIComponent(id)}`),
   saveDraft: (id: string, files: Record<string, string>) =>
     send("PUT", `/api/drafts?id=${encodeURIComponent(id)}`, { files }).then(() => undefined),
+  run: async (lessonId: string, files: Record<string, string>) => {
+    const res = await send("POST", "/api/run", { lessonId, files });
+    return res.json() as Promise<import("@teacher/shared").RunResult>;
+  },
+  check: async (lessonId: string, files: Record<string, string>) => {
+    const res = await send("POST", "/api/check", { lessonId, files });
+    return res.json() as Promise<CheckResponse>;
+  },
+  snapshots: (id: string) => get<SnapshotMeta[]>(`/api/snapshots?id=${encodeURIComponent(id)}`),
+  snapshot: (id: string, snap: string) =>
+    get<{ files: Record<string, string> }>(
+      `/api/snapshots/one?id=${encodeURIComponent(id)}&snap=${encodeURIComponent(snap)}`,
+    ),
 };

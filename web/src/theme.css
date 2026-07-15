@@ -481,6 +481,90 @@ button.lesson-row:hover {
   font-weight: 600;
 }
 
+/* ---------- Checks, history, preview ---------- */
+
+.goal-checklist ul {
+  list-style: none;
+  margin: 8px 0;
+  padding: 0;
+}
+
+.goal-item {
+  display: flex;
+  gap: 8px;
+  padding: 4px 0;
+  font-size: 14px;
+}
+
+.goal-item.pass .check-icon {
+  color: var(--success);
+  font-weight: 700;
+}
+
+.goal-item.fail .check-icon {
+  color: var(--error);
+  font-weight: 700;
+}
+
+.goal-item .check-icon {
+  color: var(--text-dim);
+}
+
+.check-message {
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.history-menu {
+  position: relative;
+}
+
+.history-dropdown {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  z-index: 20;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 6px 20px var(--shadow);
+  min-width: 220px;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.history-item {
+  text-align: left;
+  border: none;
+  background: none;
+  padding: 6px 8px;
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.history-item:hover {
+  background: var(--bg-panel);
+}
+
+.history-empty {
+  padding: 6px 8px;
+}
+
+.preview-frame {
+  flex: 1;
+  border: none;
+  background: #fff;
+}
+
+.output-notice {
+  padding: 6px 12px;
+  font-size: 13px;
+  color: var(--warn);
+  border-bottom: 1px solid var(--border);
+}
+
 /* ---------- Tutor placeholder ---------- */
 
 .tutor-placeholder {

@@ -6,7 +6,9 @@ import { curriculumRoutes } from "./routes/curriculum.js";
 import { progressRoutes } from "./routes/progress.js";
 import { draftRoutes } from "./routes/drafts.js";
 import { settingsRoutes } from "./routes/settings.js";
+import { runRoutes } from "./routes/run.js";
 import { getCurriculum } from "./curriculum/loader.js";
+import { detectRuntimes } from "./preflight.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export const ROOT = path.resolve(__dirname, "..", "..");
@@ -21,11 +23,11 @@ fs.mkdirSync(DATA_DIR, { recursive: true });
 const app = express();
 app.use(express.json({ limit: "2mb" }));
 
-app.get("/api/health", (_req, res) => {
+app.get("/api/health", async (_req, res) => {
   res.json({
     ok: true,
     version: "0.1.0",
-    runtimes: {}, // filled in by preflight in M2
+    runtimes: await detectRuntimes(),
     sdkAuth: "unknown", // filled in by tutor service in M3
   });
 });
@@ -34,6 +36,7 @@ app.use(curriculumRoutes(CONTENT_DIR, DATA_DIR));
 app.use(progressRoutes(DATA_DIR));
 app.use(draftRoutes(DATA_DIR));
 app.use(settingsRoutes(DATA_DIR));
+app.use(runRoutes(CONTENT_DIR, DATA_DIR));
 
 if (isProd) {
   const dist = path.join(ROOT, "web", "dist");

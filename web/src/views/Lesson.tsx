@@ -1,9 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { marked } from "marked";
-import type { Lesson, RunResult } from "@teacher/shared";
+import type { CheckResult, Lesson, RunResult } from "@teacher/shared";
 import EditorPane from "../components/EditorPane";
 import OutputPane from "../components/OutputPane";
+import GoalChecklist from "../components/GoalChecklist";
+import HistoryMenu from "../components/HistoryMenu";
 import { runJs } from "../runners/jsWorkerRunner";
+import { runPython, warmPyodide, onPyodideStatus, isPyodideWarm } from "../runners/pyodideRunner";
+import { buildSrcdoc } from "../runners/htmlPreview";
 import { api } from "../api/client";
 import type { Route } from "../App";
 
@@ -19,8 +23,12 @@ export default function LessonView({ lessonKey, theme, navigate, onProgressChang
   const [files, setFiles] = useState<Record<string, string>>({});
   const [activeFile, setActiveFile] = useState("");
   const [result, setResult] = useState<RunResult | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
   const [running, setRunning] = useState(false);
+  const [checking, setChecking] = useState(false);
+  const [checkResults, setCheckResults] = useState<CheckResult[] | null>(null);
   const [completed, setCompleted] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const filesRef = useRef(files);
@@ -30,14 +38,22 @@ export default function LessonView({ lessonKey, theme, navigate, onProgressChang
     let cancelled = false;
     setLesson(null);
     setResult(null);
+    setPreview(null);
+    setCheckResults(null);
     (async () => {
       try {
         const l = await api.lesson(lessonKey);
         const draft = await api.draft(lessonKey).catch(() => ({ files: null }));
         if (cancelled) return;
         setLesson(l);
-        setFiles(draft.files ?? l.starterFiles);
+        const initial = draft.files ?? l.starterFiles;
+        setFiles(initial);
         setActiveFile(l.files[0]?.path ?? "");
+        if (l.language === "html-css") setPreview(buildSrcdoc(initial));
+        if (l.language === "python" && l.runner === "browser") {
+          warmPyodide();
+          if (!isPyodideWarm()) setNotice("Loading Python (one-time, ~13 MB)…");
+        }
         const progress = await api.progress();
         if (!cancelled) setCompleted(Boolean(progress.lessons[lessonKey]?.completedAt));
         localStorage.setItem("lastLessonKey", lessonKey);
@@ -46,8 +62,12 @@ export default function LessonView({ lessonKey, theme, navigate, onProgressChang
         if (!cancelled) setError(String(err));
       }
     })();
+    const offStatus = onPyodideStatus((phase) => {
+      if (!cancelled && phase === "ready") setNotice(null);
+    });
     return () => {
       cancelled = true;
+      offStatus();
       if (saveTimer.current) clearTimeout(saveTimer.current);
     };
   }, [lessonKey]);
@@ -60,41 +80,69 @@ export default function LessonView({ lessonKey, theme, navigate, onProgressChang
   }, [lessonKey]);
 
   function handleChange(code: string) {
-    setFiles((f) => ({ ...f, [activeFile]: code }));
+    setFiles((f) => {
+      const next = { ...f, [activeFile]: code };
+      if (lesson?.language === "html-css") setPreview(buildSrcdoc(next));
+      return next;
+    });
     scheduleSave();
   }
 
   async function handleRun() {
-    if (!lesson) return;
-    if (lesson.runner !== "browser" || lesson.language !== "javascript") {
-      setResult({
-        ok: false,
-        exitCode: null,
-        stdout: "",
-        stderr: "This lesson's runner arrives in milestone M2.",
-        durationMs: 0,
-        timedOut: false,
-      });
-      return;
-    }
+    if (!lesson || running) return;
+    const entry = lesson.files[0].path;
     setRunning(true);
     try {
-      setResult(await runJs(files[lesson.files[0].path] ?? ""));
+      if (lesson.runner === "local") {
+        setResult(await api.run(lessonKey, filesRef.current));
+      } else if (lesson.language === "javascript") {
+        setResult(await runJs(filesRef.current[entry] ?? ""));
+        void fetch("/api/snapshots", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ lessonId: lessonKey, files: filesRef.current, trigger: "run" }),
+        });
+      } else if (lesson.language === "python") {
+        setResult(await runPython(filesRef.current[entry] ?? ""));
+        void fetch("/api/snapshots", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ lessonId: lessonKey, files: filesRef.current, trigger: "run" }),
+        });
+      } else {
+        // html-css: refresh the preview (it also live-updates as you type)
+        setPreview(buildSrcdoc(filesRef.current));
+      }
     } finally {
       setRunning(false);
     }
   }
 
-  async function handleComplete() {
-    await api.completeLesson(lessonKey);
-    setCompleted(true);
-    onProgressChange();
+  async function handleCheck() {
+    if (!lesson || checking) return;
+    setChecking(true);
+    try {
+      const res = await api.check(lessonKey, filesRef.current);
+      setCheckResults(res.checks);
+      if (res.run && lesson.language !== "html-css") setResult(res.run);
+      if (res.completed && !completed) {
+        setCompleted(true);
+        onProgressChange();
+      }
+    } catch (err) {
+      setNotice(String(err));
+    } finally {
+      setChecking(false);
+    }
   }
 
-  function handleReset() {
-    if (!lesson) return;
-    setFiles(lesson.starterFiles);
+  function handleRestore(restored: Record<string, string>) {
+    setFiles(restored);
+    if (lesson?.language === "html-css") setPreview(buildSrcdoc(restored));
     scheduleSave();
+    // Force the editor to pick up the restored doc.
+    setActiveFile("");
+    setTimeout(() => setActiveFile(lesson?.files[0]?.path ?? ""), 0);
   }
 
   if (error) return <div className="view-pad">Failed to load lesson: {error}</div>;
@@ -113,6 +161,7 @@ export default function LessonView({ lessonKey, theme, navigate, onProgressChang
           <div className="label">Goal</div>
           {lesson.goal}
         </div>
+        <GoalChecklist checks={lesson.checks} results={checkResults} checking={checking} onCheck={handleCheck} />
         <div className="lesson-md" dangerouslySetInnerHTML={{ __html: marked.parse(lesson.body) as string }} />
       </section>
 
@@ -132,30 +181,31 @@ export default function LessonView({ lessonKey, theme, navigate, onProgressChang
             ))}
           </div>
         )}
-        <EditorPane
-          key={`${lessonKey}:${activeFile}`}
-          code={files[activeFile] ?? ""}
-          filename={activeFile}
-          language={lesson.language}
-          dark={theme === "dark"}
-          running={running}
-          onChange={handleChange}
-          onRun={handleRun}
-        />
-        <OutputPane result={result} />
+        {activeFile && (
+          <EditorPane
+            key={`${lessonKey}:${activeFile}`}
+            code={files[activeFile] ?? ""}
+            filename={activeFile}
+            language={lesson.language}
+            dark={theme === "dark"}
+            running={running}
+            onChange={handleChange}
+            onRun={handleRun}
+            toolbarExtra={
+              <>
+                <HistoryMenu lessonKey={lessonKey} onRestore={handleRestore} />
+                <button onClick={() => handleRestore(lesson.starterFiles)}>Reset</button>
+              </>
+            }
+          />
+        )}
+        <OutputPane result={result} preview={lesson.language === "html-css" ? preview : null} notice={notice} />
       </section>
 
       <section className="pane pane-tutor" aria-label="Tutor">
         <div className="tutor-placeholder">
           <strong>AI Tutor</strong>
-          <p>The tutor moves in at milestone M3.</p>
-          <hr />
-          <button onClick={handleReset}>Reset to starter code</button>
-          {!completed && (
-            <button className="primary" style={{ marginTop: 8 }} onClick={handleComplete}>
-              Mark complete (dev)
-            </button>
-          )}
+          <p>The tutor moves in at milestone M3 — for now, "Check my work" grades your code.</p>
         </div>
       </section>
     </div>

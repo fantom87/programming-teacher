@@ -88,6 +88,7 @@ export interface Lesson extends LessonMeta {
   unitId: string;
   body: string; // markdown below the frontmatter
   starterFiles: Record<string, string>; // path -> contents (sent to frontend)
+  testFiles: Record<string, string>; // testFile path -> contents (used by both runners)
 }
 
 export interface Unit {

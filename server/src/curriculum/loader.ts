@@ -120,11 +120,12 @@ export async function loadCurriculum(contentDir: string): Promise<Curriculum> {
           }
         }
 
-        // Check assets must exist.
+        // Check assets must exist (and are loaded for both runners).
+        const testFiles: Record<string, string> = {};
         for (const check of meta.checks) {
           if (check.type === "tests") {
             try {
-              await fs.access(path.join(lessonDir, check.testFile));
+              testFiles[check.testFile] = await fs.readFile(path.join(lessonDir, check.testFile), "utf8");
             } catch {
               errors.push({ file: lessonFile, message: `check "${check.id}": test file "${check.testFile}" not found` });
             }
@@ -138,6 +139,7 @@ export async function loadCurriculum(contentDir: string): Promise<Curriculum> {
           unitId: unit.id,
           body: body.trim(),
           starterFiles,
+          testFiles,
         });
         const sol = await readDirFiles(path.join(lessonDir, "solution"));
         if (Object.keys(sol).length > 0) solutions.set(key, sol);

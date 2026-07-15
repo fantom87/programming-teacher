@@ -9,9 +9,8 @@
       "title": "C# Fast Foundations",
       "tier": "foundations",
       "summary": "Compressed basics; assumes any prior track's Foundations but stands alone.",
-      "lessons": [],
+      "lessons": ["01-hello-dotnet"],
       "plannedLessons": [
-        "01-hello-dotnet",
         "02-static-types",
         "03-strings-and-interpolation",
         "04-control-flow",

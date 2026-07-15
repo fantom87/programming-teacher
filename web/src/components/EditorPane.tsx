@@ -11,9 +11,10 @@ interface Props {
   running: boolean;
   onChange: (code: string) => void;
   onRun: () => void;
+  toolbarExtra?: React.ReactNode;
 }
 
-export default function EditorPane({ code, filename, language, dark, running, onChange, onRun }: Props) {
+export default function EditorPane({ code, filename, language, dark, running, onChange, onRun, toolbarExtra }: Props) {
   const hostRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
   // Keep latest callbacks without recreating the editor.
@@ -48,6 +49,7 @@ export default function EditorPane({ code, filename, language, dark, running, on
       <div className="editor-toolbar">
         <span className="filename mono">{filename}</span>
         <span className="spacer" style={{ flex: 1 }} />
+        {toolbarExtra}
         <button className="primary" onClick={onRun} disabled={running}>
           {running ? "Running…" : "▶ Run (Ctrl+Enter)"}
         </button>
