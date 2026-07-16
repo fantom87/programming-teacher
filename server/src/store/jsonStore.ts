@@ -6,7 +6,10 @@ import path from "node:path";
 
 export async function readJson<T>(file: string, fallback: T): Promise<T> {
   try {
-    return JSON.parse(await fs.readFile(file, "utf8")) as T;
+    // Strip a UTF-8 BOM if present — files edited by hand (or PowerShell)
+    // often carry one, and JSON.parse rejects it.
+    const text = (await fs.readFile(file, "utf8")).replace(/^﻿/, "");
+    return JSON.parse(text) as T;
   } catch (err: unknown) {
     if ((err as NodeJS.ErrnoException).code === "ENOENT") return fallback;
     throw err;

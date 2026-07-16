@@ -63,8 +63,22 @@ setJudge((lesson, rubric, files, run) =>
 if (isProd) {
   const dist = path.join(ROOT, "web", "dist");
   app.use(express.static(dist));
-  app.get("/*splat", (_req, res) => res.sendFile(path.join(dist, "index.html")));
+  // SPA fallback — but never for API paths: those should 404 as JSON.
+  app.get("/*splat", (req, res) => {
+    if (req.path.startsWith("/api/")) {
+      res.status(404).json({ error: `no such endpoint: ${req.path}` });
+      return;
+    }
+    res.sendFile(path.join(dist, "index.html"));
+  });
 }
+
+// API errors must come back as JSON, never as Express's HTML error page —
+// the frontend (and the tutor's tools) always parse responses as JSON.
+app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  console.error("[server] unhandled error:", err);
+  if (!res.headersSent) res.status(500).json({ error: err.message ?? "internal error" });
+});
 
 app.listen(PORT, async () => {
   console.log(`[server] listening on http://localhost:${PORT}${isProd ? " (production)" : ""}`);
