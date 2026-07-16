@@ -1,6 +1,7 @@
 import express from "express";
 import path from "node:path";
 import fs from "node:fs";
+import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { curriculumRoutes } from "./routes/curriculum.js";
 import { progressRoutes } from "./routes/progress.js";
@@ -60,8 +61,39 @@ setJudge((lesson, rubric, files, run) =>
   ),
 );
 
+// In prod, never serve a stale frontend: if any source file is newer than the
+// built bundle, rebuild before serving. Keeps the desktop app honest after
+// code changes — a restart is all it takes.
+function newestMtime(dir: string): number {
+  let newest = 0;
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(entry.parentPath ?? dir, entry.name);
+    newest = Math.max(newest, entry.isDirectory() ? newestMtime(full) : fs.statSync(full).mtimeMs);
+  }
+  return newest;
+}
+
+function ensureFreshDist(dist: string): void {
+  const indexHtml = path.join(dist, "index.html");
+  const built = fs.existsSync(indexHtml) ? fs.statSync(indexHtml).mtimeMs : 0;
+  const sources = Math.max(
+    newestMtime(path.join(ROOT, "web", "src")),
+    newestMtime(path.join(ROOT, "shared", "src")),
+    fs.statSync(path.join(ROOT, "web", "index.html")).mtimeMs,
+  );
+  if (sources <= built) return;
+  console.log("[server] frontend changed since last build — rebuilding…");
+  const result = spawnSync("node", [path.join(ROOT, "node_modules", "vite", "bin", "vite.js"), "build"], {
+    cwd: path.join(ROOT, "web"),
+    stdio: "inherit",
+    windowsHide: true,
+  });
+  if (result.status !== 0) console.warn("[server] frontend rebuild failed — serving the previous build");
+}
+
 if (isProd) {
   const dist = path.join(ROOT, "web", "dist");
+  ensureFreshDist(dist);
   app.use(express.static(dist));
   // SPA fallback — but never for API paths: those should 404 as JSON.
   app.get("/*splat", (req, res) => {
