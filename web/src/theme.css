@@ -689,6 +689,14 @@ button.lesson-row:hover {
   font-size: 13px;
 }
 
+.next-lesson-btn {
+  display: block;
+  width: 100%;
+  margin: 10px 0;
+  padding: 10px;
+  font-size: 15px;
+}
+
 .explain-error-btn {
   margin-left: auto;
   font-size: 12px;

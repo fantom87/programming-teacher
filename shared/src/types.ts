@@ -89,6 +89,8 @@ export interface Lesson extends LessonMeta {
   body: string; // markdown below the frontmatter
   starterFiles: Record<string, string>; // path -> contents (sent to frontend)
   testFiles: Record<string, string>; // testFile path -> contents (used by both runners)
+  /** key of the lesson that follows this one (API-populated; null at the end of authored content) */
+  nextLessonKey?: string | null;
 }
 
 export interface Unit {

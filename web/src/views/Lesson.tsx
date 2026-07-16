@@ -213,6 +213,19 @@ export default function LessonView({ lessonKey, theme, navigate, onProgressChang
           </div>
         )}
         <GoalChecklist checks={lesson.checks} results={checkResults} checking={checking} onCheck={handleCheck} />
+        {completed &&
+          (lesson.nextLessonKey ? (
+            <button
+              className="primary next-lesson-btn"
+              onClick={() => navigate({ view: "lesson", key: lesson.nextLessonKey! })}
+            >
+              Next lesson →
+            </button>
+          ) : (
+            <button className="next-lesson-btn" onClick={() => navigate({ view: "track", trackId: lesson.trackId })}>
+              🎉 You've finished every lesson here so far — back to the track
+            </button>
+          ))}
         {revealedHints.length > 0 && (
           <div className="hints-box">
             <div className="label">Hints</div>
