@@ -1,0 +1,9 @@
+# Normalize line endings so Windows checkouts stop warning on every commit
+# and so diffs are clean for anyone on macOS/Linux.
+* text=auto eol=lf
+
+# Binary assets — never touch these
+*.ico binary
+*.png binary
+*.wasm binary
+*.exe binary

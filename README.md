@@ -1,0 +1,121 @@
+# Programming Teacher
+
+A local app that teaches programming, with an AI tutor whose helpfulness you control.
+
+Eight language tracks, 357 lessons, a five-level assistance slider that takes the
+tutor from "type exactly this" to "here's the goal, I'll only check your work" —
+and, importantly, **completion you can trust**: a lesson is done when its checks
+actually pass, verified server-side, not when the model says so.
+
+Built for one learner on one machine. Not a product, not hosted anywhere.
+
+---
+
+## What makes it different
+
+**Every lesson is proven solvable.** `npm run lint-content` walks all 357
+lessons, executes each one's reference solution, and grades it with that
+lesson's own checks. Content ships only when the gate is green. It's the same
+machinery that grades the learner — so "verified" means *executed*, not
+*reviewed*.
+
+**The tutor can't fake progress.** It has tools to run code, check goals, and
+mark a lesson complete — but `mark_complete` re-runs the checks server-side and
+refuses if they don't pass. No amount of "please just mark it done" works.
+
+**Assistance is a policy, not a prompt tweak.** Five levels, switchable
+mid-conversation. Level 1 reports pass/fail and nothing else; level 5 dictates
+every keystroke and explains each token. The reference solution enters the
+tutor's context only at level 3+, and crossing that line rebuilds the session.
+
+**Four ways to check work, chosen per lesson:** program output (byte-exact),
+assertion tests (a nonce-protected harness learner code can't forge), DOM
+assertions for HTML/CSS (jsdom, cascade-correct), and AI-judged rubrics for
+things like "did you use a loop rather than copy-pasting". An AI check that
+can't be reached — offline, auth down — never blocks completion.
+
+**Code runs two ways.** In-browser for instant feedback (JavaScript in a
+worker, Python via Pyodide, SQL via sql.js, HTML in a live iframe) and on real
+local toolchains when a lesson needs them (Python, Node, .NET, Go, Rust,
+PowerShell, Bash). The SQL result formatter is shared between browser and
+server so expected output is byte-identical either way.
+
+## Tracks
+
+| Track | Lessons | Status |
+|---|---|---|
+| Python | 77 | complete (Foundations → Advanced + Refresher) |
+| JavaScript / TypeScript | 69 | complete |
+| HTML / CSS | 62 | complete |
+| C# | 63 | complete |
+| SQL | 86 | complete |
+| Shell (PowerShell + Bash) | — | syllabus + docs only |
+| Go | — | syllabus + docs only |
+| Rust | — | syllabus + docs only |
+
+Plus 127 reference doc pages, and a generator that writes a **custom lesson**
+from a plain-English request ("I want to practice reversing strings") —
+schema-validated and solution-executed before it's offered.
+
+## Running it
+
+Prerequisites: **Node 22+**, and a **Claude Code** login for the tutor
+(everything except the tutor and AI-judged checks works without it). Python,
+.NET, Go, Rust, and Git Bash are optional — only lessons that need them will
+ask, and the app tells you the install command.
+
+```bash
+npm install
+npm run dev
+```
+
+Then open http://localhost:5173. For the desktop build:
+
+```bash
+npm run app:dist
+```
+
+...which produces an installer and a shortcut. The desktop shell just starts
+the local server and hosts the app in its own window.
+
+The server binds to **127.0.0.1 only** and rejects requests whose Host header
+isn't localhost. That's deliberate and load-bearing: `/api/run` executes
+arbitrary code by design, so this must never be exposed to a network. **Don't
+host this.**
+
+## Repo layout
+
+```
+content/      lesson.md + starter/ + solution/ (+ tests/) per lesson, per track
+docs-content/ the reference library, markdown + per-section index.json
+shared/       types, zod schemas, the check engine (imported by server AND web)
+server/       Express API, runners, curriculum loader, tutor service
+web/          React SPA: lesson workspace, docs, playground, stats
+app/          Electron shell
+scripts/      content lint, asset copying, icon and shortcut generation
+```
+
+## Checks
+
+```bash
+npm test            # unit + integration (81)
+npm run lint-content # execute every lesson solution against its own checks
+npm run typecheck -w web
+```
+
+## If you're here to critique it
+
+Most useful places to look:
+
+- `shared/src/checkEngine.ts` — how work is graded; the harness hardening.
+- `server/src/tutor/service.ts` + `prompts.ts` — session lifecycle, the five
+  assistance policies, the tool guards.
+- `server/src/runner/localRunner.ts` — process isolation, timeouts, Windows
+  tree-kill, output caps.
+- `content/tracks/python/units/01-first-steps/` — whether the teaching is any
+  good, which is the part software can't verify.
+- `docs/KNOWN-LIMITATIONS.md` — what's knowingly unfinished.
+
+Honest caveats: it's Windows-first (paths, `taskkill`, PowerShell probes);
+the lesson content has been verified mechanically but not yet reviewed for
+teaching quality; and the three empty tracks are syllabus-only.
