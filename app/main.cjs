@@ -1,17 +1,24 @@
-// Programming Teacher desktop shell: starts the local server (if it isn't
-// already running) and hosts the app in its own window. The repo — server
-// code, curriculum, and your data — stays where it lives; this exe is just
-// the front door.
+// Programming Teacher desktop shell.
+//
+// Packaged, this exe is the whole app: the bundled API server, the curriculum,
+// the docs library and the built frontend all ship as resources, and the
+// server runs on ELECTRON'S OWN Node (ELECTRON_RUN_AS_NODE=1) — nothing needs
+// to be installed on the machine, not even Node.
+//
+// Run from source (npm run app), the same code points at the repo instead, so
+// development is unchanged.
 const { app, BrowserWindow, dialog, shell } = require("electron");
 const { spawn, execFile } = require("node:child_process");
 const http = require("node:http");
 const path = require("node:path");
 const fs = require("node:fs");
 
-const APP_URL = "http://localhost:4517";
+const PORT = 4517; // hard-coded in the server too
+const APP_URL = `http://localhost:${PORT}`;
 const DEV_UI_URL = "http://localhost:5173"; // Vite, when a dev session is running
-const DEFAULT_REPO = "B:\\Claude\\Programming Teacher";
 const KEEP_LOGS = 5;
+const CUSTOM_UNIT_ID = "90-custom"; // must match server/src/tutor/author.ts
+const CONTENT_STAMP = ".packaged-content-version";
 
 // Where the window actually points — APP_URL normally, the Vite dev UI when a
 // development server owns the API port.
@@ -20,31 +27,125 @@ let appUrl = APP_URL;
 let serverProc = null;
 let serverLog = null;
 let win = null;
+let PATHS = null;
 
-function configFile() {
-  return path.join(app.getPath("userData"), "config.json");
+// Packaged: extraResources sit beside app.asar under process.resourcesPath.
+// From source: main.cjs lives in app/, so the repo is one level up.
+const PACKAGED = app.isPackaged;
+const RES = PACKAGED ? process.resourcesPath : path.join(__dirname, "..");
+
+/**
+ * Every location the shell and the server need. The packaged layout shares
+ * nothing with the repo layout, which is exactly why the server reads all of
+ * them from PT_* env vars instead of deriving them (server/src/paths.ts).
+ */
+function resolveLayout() {
+  if (!PACKAGED) {
+    return {
+      serverEntry: path.join(RES, "build", "server.cjs"),
+      repoFallback: path.join(RES, "server", "src", "index.ts"),
+      contentDir: path.join(RES, "content"),
+      docsDir: path.join(RES, "docs-content"),
+      webDist: path.join(RES, "web", "dist"),
+      dataDir: path.join(RES, "data"),
+    };
+  }
+  const userData = app.getPath("userData");
+  return {
+    serverEntry: path.join(RES, "server", "server.cjs"),
+    repoFallback: null,
+    // Resources are read-only in principle (and wiped on every launch in the
+    // portable build, which unpacks to TEMP). The curriculum is the one tree
+    // the app writes into — accepting a custom lesson adds a lesson folder and
+    // edits track.json — so it gets copied into user-data once and used from
+    // there. syncContent() picks the final value.
+    contentDir: path.join(userData, "content"),
+    shippedContent: path.join(RES, "content"),
+    docsDir: path.join(RES, "docs-content"),
+    webDist: path.join(RES, "web-dist"),
+    dataDir: userData,
+  };
 }
 
-function repoPath() {
+/**
+ * Copy the shipped curriculum into the writable user-data copy, once per app
+ * version. Custom lessons the learner accepted live in `units/90-custom` and
+ * are registered in each track.json — cpSync only adds and overwrites, so the
+ * lesson folders survive a re-sync, but track.json would be replaced by the
+ * shipped one and lose the registration. So it is captured and re-merged.
+ *
+ * Returns the directory to actually use: the writable copy, or (if the copy
+ * failed) the read-only shipped one, so a failure here degrades to "custom
+ * lessons can't be saved" instead of "the app won't start".
+ */
+function syncContent(shipped, writable, version) {
+  const stamp = path.join(writable, CONTENT_STAMP);
   try {
-    const cfg = JSON.parse(fs.readFileSync(configFile(), "utf8"));
-    if (cfg.repoPath) return cfg.repoPath;
+    if (fs.readFileSync(stamp, "utf8").trim() === version) return writable;
   } catch {
+    // no stamp yet, or unreadable — (re)sync below
+  }
+  try {
+    const custom = readCustomUnits(writable);
+    logLine(`syncing curriculum into ${writable} (version ${version})`);
+    fs.mkdirSync(writable, { recursive: true });
+    fs.cpSync(shipped, writable, { recursive: true, force: true });
+    restoreCustomUnits(writable, custom);
+    fs.writeFileSync(stamp, `${version}\n`);
+    return writable;
+  } catch (err) {
+    logLine(`curriculum sync failed (${err.message}) — using the read-only copy; custom lessons can't be saved.`);
+    return shipped;
+  }
+}
+
+/** track id -> the "90-custom" unit object from that track's track.json. */
+function readCustomUnits(contentRoot) {
+  const units = new Map();
+  const tracksDir = path.join(contentRoot, "tracks");
+  let entries;
+  try {
+    entries = fs.readdirSync(tracksDir, { withFileTypes: true });
+  } catch {
+    return units; // nothing there yet — first run
+  }
+  for (const entry of entries) {
+    if (!entry.isDirectory()) continue;
     try {
-      fs.mkdirSync(path.dirname(configFile()), { recursive: true });
-      fs.writeFileSync(configFile(), JSON.stringify({ repoPath: DEFAULT_REPO }, null, 2));
+      const json = JSON.parse(
+        fs.readFileSync(path.join(tracksDir, entry.name, "track.json"), "utf8").replace(/^﻿/, ""),
+      );
+      const unit = json.units?.find((u) => u.id === CUSTOM_UNIT_ID);
+      if (unit) units.set(entry.name, unit);
     } catch {
-      // best effort
+      // unreadable/absent track.json — nothing to preserve
     }
   }
-  return DEFAULT_REPO;
+  return units;
+}
+
+function restoreCustomUnits(contentRoot, units) {
+  for (const [trackId, unit] of units) {
+    const file = path.join(contentRoot, "tracks", trackId, "track.json");
+    try {
+      const json = JSON.parse(fs.readFileSync(file, "utf8").replace(/^﻿/, ""));
+      json.units ??= [];
+      if (!json.units.some((u) => u.id === CUSTOM_UNIT_ID)) {
+        json.units.push(unit);
+        fs.writeFileSync(file, `${JSON.stringify(json, null, 2)}\n`);
+        logLine(`restored ${unit.lessons?.length ?? 0} custom lesson(s) in track ${trackId}`);
+      }
+    } catch (err) {
+      logLine(`could not restore custom lessons for track ${trackId}: ${err.message}`);
+    }
+  }
 }
 
 function logDir() {
-  return path.join(repoPath(), "data", "logs");
+  return path.join(PATHS.dataDir, "logs");
 }
 
-// Everything the server prints lands in data/logs/server-<date>.log — in exe
+// Everything the server prints lands in <data>/logs/server-<date>.log — in exe
 // mode there is no terminal, and a crash without a log is undiagnosable.
 // Keeps the newest KEEP_LOGS files.
 function openServerLog() {
@@ -73,14 +174,18 @@ function logLine(text) {
   serverLog?.write(`[shell ${new Date().toISOString()}] ${text}\n`);
 }
 
-function ping() {
+/**
+ * @param timeoutMs generous while waiting for a cold start: /api/health probes
+ * the local toolchains, and on a first run that can take seconds.
+ */
+function ping(timeoutMs = 1500) {
   return new Promise((resolve) => {
     const req = http.get(`${APP_URL}/api/health`, (res) => {
       res.resume();
       resolve(res.statusCode === 200);
     });
     req.on("error", () => resolve(false));
-    req.setTimeout(1500, () => {
+    req.setTimeout(timeoutMs, () => {
       req.destroy();
       resolve(false);
     });
@@ -117,7 +222,7 @@ function healthJson() {
       });
     });
     req.on("error", () => resolve(null));
-    req.setTimeout(1500, () => {
+    req.setTimeout(5000, () => {
       req.destroy();
       resolve(null);
     });
@@ -125,7 +230,9 @@ function healthJson() {
 }
 
 async function ensureServer() {
+  PATHS = resolveLayout();
   serverLog = openServerLog();
+  if (PACKAGED) PATHS.contentDir = syncContent(PATHS.shippedContent, PATHS.contentDir, app.getVersion());
 
   if (await ping()) {
     // Something already owns the port. Only a PRODUCTION server serves the
@@ -155,47 +262,97 @@ async function ensureServer() {
     return true;
   }
 
-  const repo = repoPath();
-  if (!fs.existsSync(path.join(repo, "server", "src", "index.ts"))) {
-    dialog.showErrorBox(
-      "Programming Teacher",
-      `Can't find the app files at:\n${repo}\n\nEdit repoPath in:\n${configFile()}`,
-    );
+  if (!startServer()) return false;
+
+  // Cold start: unpacking, first curriculum load and the toolchain probes all
+  // land here, so the window is patient.
+  for (let i = 0; i < 120; i++) {
+    if (await ping(8000)) return true;
+    if (serverProc === null) break; // spawn failed or the process died
+    await new Promise((r) => setTimeout(r, 500));
+  }
+  dialog.showErrorBox(
+    "Programming Teacher",
+    `The local server didn't start.\n\nDetails are in:\n${logDir()}`,
+  );
+  return false;
+}
+
+/** Spawns the bundled server. Returns false only if there is nothing to spawn. */
+function startServer() {
+  const env = {
+    ...process.env,
+    // Run the bundle on Electron's own Node. This is what makes the app
+    // self-contained: `node` need not exist on the machine.
+    ELECTRON_RUN_AS_NODE: "1",
+    PT_CONTENT_DIR: PATHS.contentDir,
+    PT_DOCS_DIR: PATHS.docsDir,
+    PT_WEB_DIST: PATHS.webDist,
+    PT_DATA_DIR: PATHS.dataDir,
+    // No vite, no frontend sources, read-only resources: the staleness check
+    // has nothing to do but fail.
+    PT_NO_REBUILD: "1",
+  };
+
+  let command;
+  let args;
+  if (fs.existsSync(PATHS.serverEntry)) {
+    command = process.execPath;
+    args = [PATHS.serverEntry, "--prod"];
+  } else if (PATHS.repoFallback && fs.existsSync(PATHS.repoFallback)) {
+    // Running from source without a bundle: keep the old dev path working so
+    // `npm run app` doesn't require `npm run bundle:server` first.
+    logLine(`no bundle at ${PATHS.serverEntry} — falling back to tsx sources (development only).`);
+    command = "node";
+    args = ["--import", "tsx", PATHS.repoFallback, "--prod"];
+    delete env.ELECTRON_RUN_AS_NODE;
+  } else {
+    dialog.showErrorBox("Programming Teacher", `The app files are missing:\n${PATHS.serverEntry}`);
     return false;
   }
 
-  logLine("starting server: node --import tsx server/src/index.ts --prod");
-  serverProc = spawn("node", ["--import", "tsx", "server/src/index.ts", "--prod"], {
-    cwd: repo,
+  logLine(`starting server: ${command} ${args.join(" ")}`);
+  logLine(`  content=${PATHS.contentDir}`);
+  logLine(`  docs=${PATHS.docsDir}`);
+  logLine(`  web=${PATHS.webDist}`);
+  logLine(`  data=${PATHS.dataDir}`);
+  serverProc = spawn(command, args, {
+    cwd: path.dirname(PATHS.serverEntry),
+    env,
     shell: false,
     windowsHide: true,
     stdio: ["ignore", "pipe", "pipe"],
   });
   serverProc.stdout.on("data", (chunk) => serverLog?.write(chunk));
   serverProc.stderr.on("data", (chunk) => serverLog?.write(chunk));
-  serverProc.on("exit", (code) => logLine(`server exited with code ${code}`));
+  serverProc.on("exit", (code) => {
+    logLine(`server exited with code ${code}`);
+    serverProc = null;
+  });
   serverProc.on("error", (err) => {
     logLine(`failed to spawn server: ${err.message}`);
     serverProc = null;
   });
-
-  for (let i = 0; i < 60; i++) {
-    if (await ping()) return true;
-    await new Promise((r) => setTimeout(r, 500));
-  }
-  dialog.showErrorBox(
-    "Programming Teacher",
-    "The local server didn't start. Make sure Node.js is installed, then try again.\n\n" +
-      `Details are in:\n${logDir()}\n\n(You can also run 'npm run start' in the project folder to see the error.)`,
-  );
-  return false;
+  return true;
 }
 
 function stopServer() {
   if (serverProc?.pid) {
     // Kill the whole tree — the server spawns runners of its own.
-    execFile("taskkill", ["/pid", String(serverProc.pid), "/T", "/F"], () => {});
+    const pid = serverProc.pid;
     serverProc = null;
+    if (process.platform === "win32") execFile("taskkill", ["/pid", String(pid), "/T", "/F"], () => {});
+    else {
+      try {
+        process.kill(-pid, "SIGKILL");
+      } catch {
+        try {
+          process.kill(pid, "SIGKILL");
+        } catch {
+          // already gone
+        }
+      }
+    }
   }
   serverLog?.end();
   serverLog = null;

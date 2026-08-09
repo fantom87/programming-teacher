@@ -39,6 +39,20 @@ let probing: Promise<RuntimeStatus> | null = null;
 export async function detectRuntimes(force = false): Promise<RuntimeStatus> {
   if (!force && cached && Date.now() - cached.at < TTL_MS) return cached.status;
   probing ??= (async () => {
+    // Preflight is called from /api/health, which the desktop shell polls to
+    // decide whether the app started at all. It must therefore never reject:
+    // a probe that blows up (a wedged binary, a permissions error) has to look
+    // exactly like a runtime that isn't installed.
+    const nothing: RuntimeStatus = {
+      python: null,
+      node: null,
+      dotnet: null,
+      go: null,
+      rust: null,
+      powershell: null,
+      bash: null,
+      sql: "sql.js (bundled)",
+    };
     try {
       // Every probe goes through the same resolver the runner spawns with, so
       // preflight can never disagree with what Run does: off-PATH user-scope
@@ -61,6 +75,9 @@ export async function detectRuntimes(force = false): Promise<RuntimeStatus> {
         status: { python, node, dotnet, go, rust, powershell, bash, sql: "sql.js (bundled)" },
       };
       return cached.status;
+    } catch (err) {
+      console.warn("[preflight] runtime detection failed — reporting nothing installed:", err);
+      return nothing;
     } finally {
       probing = null;
     }

@@ -17,6 +17,7 @@ import { runCheckPass } from "../checks/run.js";
 import { readJson, withFileLock, writeTextInLock } from "../store/jsonStore.js";
 import { getProfile } from "../store/profile.js";
 import { allDocSlugs } from "../routes/docs.js";
+import { resolvePaths } from "../paths.js";
 import { detectRuntimes } from "../preflight.js";
 import { missingRuntimeHint } from "../runtimeHints.js";
 import { getAuthStatus } from "./service.js";
@@ -458,7 +459,7 @@ export async function generateCustomLesson(
 
   const [profile, docSlugs, settings] = await Promise.all([
     getProfile(dataDir),
-    allDocSlugs(path.join(contentDir, "..", "docs-content")),
+    allDocSlugs(resolvePaths().docsDir),
     readJson<Settings>(path.join(dataDir, "settings.json"), DEFAULT_SETTINGS),
   ]);
   const exemplars = pickExemplars(cur, track.language);

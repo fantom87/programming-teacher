@@ -12,14 +12,19 @@
     "dev:server": "npm run dev -w server",
     "dev:web": "npm run dev -w web",
     "build": "npm run build -w web",
+    "bundle:server": "node scripts/bundle-server.mjs",
     "start": "npm run start -w server",
     "test": "vitest run",
     "lint-content": "tsx scripts/lint-content.ts",
-    "app:dist": "npm run build && node scripts/make-icon.mjs && npm run dist --prefix app && node scripts/make-shortcut.mjs",
+    "app:pack": "npm run build && npm run bundle:server && node scripts/stage-server-deps.mjs && node scripts/make-icon.mjs",
+    "app": "npm run start --prefix app",
+    "app:dist": "npm run app:pack && npm run dist --prefix app && node scripts/make-shortcut.mjs",
+    "app:portable": "npm run app:pack && npm run portable --prefix app",
     "app:shortcut": "node scripts/make-shortcut.mjs"
   },
   "devDependencies": {
     "concurrently": "^10.0.3",
+    "esbuild": "^0.28.1",
     "tsx": "^4.23.1",
     "typescript": "^7.0.2",
     "vitest": "^4.1.10"

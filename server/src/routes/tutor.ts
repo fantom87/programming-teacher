@@ -5,6 +5,7 @@ import { DEFAULT_SETTINGS } from "@teacher/shared";
 import { getCurriculum } from "../curriculum/loader.js";
 import { readJson } from "../store/jsonStore.js";
 import { getJournal, getProfile, setProfile } from "../store/profile.js";
+import { resolvePaths } from "../paths.js";
 import { allDocSlugs } from "./docs.js";
 import { setSolutionProvider } from "../tutor/judge.js";
 import {
@@ -97,7 +98,7 @@ export async function resolveLesson(
 
 export function tutorRoutes(contentDir: string, dataDir: string): Router {
   const r = Router();
-  const docsDir = path.join(contentDir, "..", "docs-content");
+  const docsDir = resolvePaths().docsDir;
 
   const deps: TutorDeps = {
     dataDir,

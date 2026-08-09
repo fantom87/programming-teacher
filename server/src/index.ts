@@ -2,7 +2,6 @@ import express from "express";
 import path from "node:path";
 import fs from "node:fs";
 import { spawn, spawnSync } from "node:child_process";
-import { fileURLToPath } from "node:url";
 import { curriculumRoutes } from "./routes/curriculum.js";
 import { progressRoutes } from "./routes/progress.js";
 import { draftRoutes } from "./routes/drafts.js";
@@ -18,12 +17,13 @@ import { setJudge } from "./checks/run.js";
 import { judgeCheck } from "./tutor/judge.js";
 import { getAuthStatus, selfTestAuth } from "./tutor/service.js";
 import { readJson } from "./store/jsonStore.js";
+import { resolvePaths } from "./paths.js";
 import { DEFAULT_SETTINGS, type Settings } from "@teacher/shared";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-export const ROOT = path.resolve(__dirname, "..", "..");
-export const DATA_DIR = path.join(ROOT, "data");
-export const CONTENT_DIR = path.join(ROOT, "content");
+const PATHS = resolvePaths();
+export const ROOT = PATHS.root;
+export const DATA_DIR = PATHS.dataDir;
+export const CONTENT_DIR = PATHS.contentDir;
 
 const isProd = process.argv.includes("--prod");
 const PORT = 4517;
@@ -69,7 +69,7 @@ app.use(settingsRoutes(DATA_DIR));
 app.use(runRoutes(CONTENT_DIR, DATA_DIR));
 app.use(tutorRoutes(CONTENT_DIR, DATA_DIR));
 app.use(customLessonRoutes(CONTENT_DIR, DATA_DIR));
-app.use(docsRoutes(path.join(ROOT, "docs-content")));
+app.use(docsRoutes(PATHS.docsDir));
 app.use(exportRoutes(DATA_DIR));
 
 // The ai-judge check type is powered by the tutor's one-shot grader.
@@ -146,8 +146,10 @@ function ensureFreshDist(dist: string): void {
 }
 
 if (isProd) {
-  const dist = path.join(ROOT, "web", "dist");
-  ensureFreshDist(dist);
+  const dist = PATHS.webDist;
+  // A packaged app ships dist as a read-only resource with no sources and no
+  // vite to rebuild from — the freshness check has nothing to do but fail.
+  if (!PATHS.noRebuild) ensureFreshDist(dist);
   app.use(express.static(dist));
   // SPA fallback (API paths were already handled — and 404ed — above).
   app.get("/*splat", (_req, res) => {
@@ -175,12 +177,20 @@ app.use(
 
 const server = app.listen(PORT, "127.0.0.1", async () => {
   console.log(`[server] listening on http://localhost:${PORT}${isProd ? " (production)" : ""}`);
-  const cur = await getCurriculum(CONTENT_DIR);
-  if (cur.errors.length > 0) {
-    console.warn(`[content] ${cur.errors.length} validation error(s):`);
-    for (const e of cur.errors) console.warn(`  ${e.file}: ${e.message}`);
-  } else {
-    console.log(`[content] ${cur.tracks.length} tracks, ${cur.lessons.size} lessons loaded`);
+  // Everything below is startup reporting, not startup work. It runs inside an
+  // async listen callback, so an unhandled rejection here would kill a server
+  // that is already accepting requests — the desktop app would show a window
+  // that dies a second later. Report and carry on instead.
+  try {
+    const cur = await getCurriculum(CONTENT_DIR);
+    if (cur.errors.length > 0) {
+      console.warn(`[content] ${cur.errors.length} validation error(s):`);
+      for (const e of cur.errors) console.warn(`  ${e.file}: ${e.message}`);
+    } else {
+      console.log(`[content] ${cur.tracks.length} tracks, ${cur.lessons.size} lessons loaded`);
+    }
+  } catch (err) {
+    console.error(`[content] failed to load the curriculum from ${CONTENT_DIR}:`, err);
   }
   void selfTestAuth();
   // Terminal `npm run start` opens the browser; the Electron shell (which

@@ -1,6 +1,10 @@
 node_modules/
 dist/
 
+# Bundled server (npm run bundle:server). A build artifact, regenerated on
+# demand. Anchored: app/build holds committed icon resources.
+/build/
+
 # The learner's own state — progress, journal, profile, drafts, snapshots,
 # run workspaces, logs. Leading slash matters: a bare "data/" would also
 # ignore source directories like web/src/data.

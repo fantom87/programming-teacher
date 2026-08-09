@@ -8,7 +8,8 @@
   "main": "main.cjs",
   "scripts": {
     "start": "electron .",
-    "dist": "electron-builder --win"
+    "dist": "electron-builder --win",
+    "portable": "electron-builder --win portable"
   },
   "build": {
     "appId": "local.bradley.programmingteacher",
@@ -20,9 +21,25 @@
     "files": [
       "main.cjs"
     ],
+    "afterPack": "./afterPack.cjs",
+    "extraResources": [
+      {
+        "from": "../content",
+        "to": "content"
+      },
+      {
+        "from": "../docs-content",
+        "to": "docs-content"
+      },
+      {
+        "from": "../web/dist",
+        "to": "web-dist"
+      }
+    ],
     "win": {
       "target": [
-        "nsis"
+        "nsis",
+        "portable"
       ],
       "icon": "build/icon.ico"
     },
@@ -30,6 +47,10 @@
       "oneClick": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true
+    },
+    "portable": {
+      "artifactName": "${productName} ${version}.exe",
+      "unpackDirName": "ProgrammingTeacher-1.0.0"
     }
   },
   "devDependencies": {
