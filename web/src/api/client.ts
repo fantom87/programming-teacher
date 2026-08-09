@@ -1,4 +1,4 @@
-import type { Lesson, Progress, Settings, Tier, Language, RunnerKind, JournalEntry } from "@teacher/shared";
+import type { CheckResult, CheckSpec, Lesson, Progress, Settings, Tier, Language, RunnerKind, JournalEntry } from "@teacher/shared";
 
 export interface LessonRow {
   id: string;
@@ -132,6 +132,30 @@ export interface DocsSection {
   pages: DocsPage[];
 }
 
+export type CustomLessonDifficulty = "beginner" | "intermediate" | "advanced";
+
+export interface CustomLessonPreview {
+  id: string;
+  title: string;
+  estMinutes: number;
+  language: Language;
+  runner: RunnerKind;
+  goal: string;
+  docs: string[];
+  checks: CheckSpec[];
+  hints: string[];
+  body: string;
+  files: string[];
+}
+
+export interface CustomLessonStatus {
+  state: "generating" | "ready" | "failed";
+  lesson?: CustomLessonPreview;
+  checks?: CheckResult[];
+  warnings?: string[];
+  error?: string;
+}
+
 export const api = {
   curriculum: () => get<CurriculumResponse>("/api/curriculum"),
   lesson: (key: string) => get<Lesson>(`/api/curriculum/lesson?id=${encodeURIComponent(key)}`),
@@ -160,6 +184,18 @@ export const api = {
     const res = await send("POST", "/api/check", { lessonId, files });
     return res.json() as Promise<CheckResponse>;
   },
+  createCustomLesson: async (trackId: string, prompt: string, difficulty: CustomLessonDifficulty) => {
+    const res = await send("POST", "/api/custom-lesson", { trackId, prompt, difficulty });
+    return res.json() as Promise<{ jobId: string }>;
+  },
+  customLessonStatus: (jobId: string) =>
+    get<CustomLessonStatus>(`/api/custom-lesson/${encodeURIComponent(jobId)}`),
+  acceptCustomLesson: async (jobId: string) => {
+    const res = await send("POST", `/api/custom-lesson/${encodeURIComponent(jobId)}/accept`);
+    return res.json() as Promise<{ key: string }>;
+  },
+  discardCustomLesson: (jobId: string) =>
+    send("POST", `/api/custom-lesson/${encodeURIComponent(jobId)}/discard`).then(() => undefined),
   snapshots: (id: string) => get<SnapshotMeta[]>(`/api/snapshots?id=${encodeURIComponent(id)}`),
   snapshot: (id: string, snap: string) =>
     get<{ files: Record<string, string> }>(
