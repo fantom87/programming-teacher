@@ -6,6 +6,13 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+// .lnk files (and the desktop shell they point at) are a Windows-only thing;
+// on Linux/macOS this is a no-op so `npm run app:dist` doesn't hard-fail.
+if (process.platform !== "win32") {
+  console.log("[shortcut] skipped — .lnk shortcuts only exist on Windows.");
+  process.exit(0);
+}
+
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const target = path.join(ROOT, "app", "dist", "win-unpacked", "Programming Teacher.exe");
 const icon = path.join(ROOT, "app", "build", "icon.ico");

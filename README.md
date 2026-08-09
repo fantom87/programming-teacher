@@ -11,6 +11,50 @@ Built for one learner on one machine. Not a product, not hosted anywhere.
 
 ---
 
+## Take a look in your browser
+
+Nothing to install, nothing to uninstall afterwards:
+
+1. **Code → Codespaces → Create codespace on master**, at the top of this repo.
+2. Wait. First boot takes a few minutes — it builds a container with Node,
+   Python, .NET and Go, then runs `npm install`.
+3. A browser tab opens on the running app. If it opened before the server was
+   ready, refresh it; if it never opened, use the **Ports** panel and click the
+   globe beside **Programming Teacher (5173)**.
+
+**What works immediately, with no account and no setup:** 250 of the 357
+lessons run entirely inside your browser — SQL (86), Python via Pyodide (60),
+HTML/CSS (62) and JavaScript (42). So do their checks, the progress tracking,
+the 127-page docs library and the playground. The remaining 107 lessons (C# 63,
+plus the Node and CPython lessons in the JavaScript and Python tracks) shell out
+to real toolchains, which the container installs for you.
+
+**What needs your own Claude Code login:** the AI tutor and the AI-judged
+checks, and only those. Everything else — running code, the three non-AI check
+types, marking lessons complete — is untouched by it. To switch the tutor on,
+in the Codespace terminal:
+
+```bash
+npm install -g @anthropic-ai/claude-code
+claude setup-token          # follow the link it prints
+bash .devcontainer/start-dev.sh restart
+```
+
+Setting `ANTHROPIC_API_KEY` in the Codespace's secrets works too. Settings will
+then report `using your Claude Code login`.
+
+**Caveats.** Rust isn't installed in the container — it would add about a
+gigabyte to the boot, and the Rust track has no lessons yet, so only the
+playground's Rust tab is affected. The container is Linux while the app is
+developed on Windows, so the local-toolchain lessons are the likeliest place to
+find rough edges. And a codespace is a disposable machine: `data/` holds your
+progress, and it goes away when you delete the codespace.
+
+Details of how the container is wired, and the one security default it
+deliberately relaxes, are in [`.devcontainer/README.md`](.devcontainer/README.md).
+
+---
+
 ## What makes it different
 
 **Every lesson is proven solvable.** `npm run lint-content` walks all 357

@@ -1,5 +1,13 @@
 import { execFile } from "node:child_process";
-import { bashCandidates, goCandidates, resolveBinary, rustcCandidates } from "./runner/localRunner.js";
+import {
+  bashCandidates,
+  dotnetCandidates,
+  goCandidates,
+  powershellCandidates,
+  pythonCandidates,
+  resolveBinary,
+  rustcCandidates,
+} from "./runner/localRunner.js";
 
 export interface RuntimeStatus {
   python: string | null;
@@ -32,17 +40,20 @@ export async function detectRuntimes(force = false): Promise<RuntimeStatus> {
   if (!force && cached && Date.now() - cached.at < TTL_MS) return cached.status;
   probing ??= (async () => {
     try {
+      // Every probe goes through the same resolver the runner spawns with, so
+      // preflight can never disagree with what Run does: off-PATH user-scope
+      // installs, python3-vs-python, powershell.exe-vs-pwsh, Git Bash vs the
+      // system bash. A missing runtime resolves to its bare name, the version
+      // probe fails, and the field comes back null.
       const [python, node, dotnet, go, rust, powershell, bash] = await Promise.all([
-        version("python", ["--version"]),
+        resolveBinary(pythonCandidates()).then((bin) => version(bin, ["--version"])),
         version("node", ["--version"]),
-        version("dotnet", ["--version"]),
-        // Go/Rust/bash may live off-PATH (user-scope installs, WSL's bash
-        // shim) — probe through the same resolver the runner spawns with.
+        resolveBinary(dotnetCandidates()).then((bin) => version(bin, ["--version"])),
         resolveBinary(goCandidates()).then((bin) => version(bin, ["version"])),
         resolveBinary(rustcCandidates()).then((bin) => version(bin, ["--version"])),
-        version("powershell.exe", ["-NoProfile", "-Command", "$PSVersionTable.PSVersion.ToString()"]).then((v) =>
-          v ? `PowerShell ${v}` : null,
-        ),
+        resolveBinary(powershellCandidates())
+          .then((bin) => version(bin, ["-NoProfile", "-Command", "$PSVersionTable.PSVersion.ToString()"]))
+          .then((v) => (v ? `PowerShell ${v}` : null)),
         resolveBinary(bashCandidates()).then((bin) => version(bin, ["--version"])),
       ]);
       cached = {

@@ -18,6 +18,7 @@ import { readJson, withFileLock, writeTextInLock } from "../store/jsonStore.js";
 import { getProfile } from "../store/profile.js";
 import { allDocSlugs } from "../routes/docs.js";
 import { detectRuntimes } from "../preflight.js";
+import { missingRuntimeHint } from "../runtimeHints.js";
 import { getAuthStatus } from "./service.js";
 import { oneShot } from "./judge.js";
 
@@ -97,8 +98,8 @@ const LANGUAGE_NOTES: Record<Language, string> = {
   "html-css": `HTML/CSS lessons have no program output — verification is DOM assertions (plus at most one ai-judge rubric). Reference stylesheets with <link rel="stylesheet" href="styles.css">. The checker (jsdom) does no layout, so never assert layout properties.`,
   csharp: `C# lessons run via 'dotnet run' (net8.0, ImplicitUsings enabled). One Program.cs with top-level statements is the norm. Console.WriteLine(bool) prints True/False capitalized; invariant culture is forced (9.75 prints "9.75"). Include "timeoutMs": 90000 — the first build is slow.`,
   sql: `SQL lessons run on SQLite (sql.js). The entry .sql file holds the learner's queries; OTHER .sql files in files[] are seed scripts that execute first (CREATE TABLE / INSERT). Each SELECT's result set prints as an ASCII table — prefer stdout checks with match "contains" on distinctive cell values rather than exact table art.`,
-  powershell: `PowerShell lessons run via powershell.exe -NoProfile on Windows. Keep output deterministic: Write-Output of plain strings/numbers, no timestamps, no filesystem or network side effects.`,
-  bash: `Bash lessons run under Git Bash on Windows. Portable POSIX constructs only, deterministic echo/printf output, no filesystem or network side effects.`,
+  powershell: `PowerShell lessons run in a non-interactive host — powershell.exe -NoProfile on Windows, pwsh -NoProfile on Linux/macOS — so stick to cross-edition cmdlets (no Windows-only modules, no COM, no registry). Keep output deterministic: Write-Output of plain strings/numbers, no timestamps, no filesystem or network side effects.`,
+  bash: `Bash lessons run under bash — Git Bash on Windows, the system bash on Linux/macOS. Portable POSIX constructs only, deterministic echo/printf output, no filesystem or network side effects.`,
   go: `Go lessons run via 'go run' — package main with func main(). Standard library only. Include "timeoutMs": 30000 (the first compile is slower).`,
   rust: `Rust lessons compile with rustc (edition 2021) and then run — fn main(), standard library only. Compiler warnings surface to the learner, so keep both starter intent and solution warning-free.`,
 };
@@ -431,21 +432,9 @@ async function validateAndExecute(
 // ---------- runtime preflight ----------
 
 async function missingRuntime(language: Language): Promise<string | null> {
-  const rt = await detectRuntimes();
-  const need: Partial<Record<Language, [string | null, string]>> = {
-    python: [rt.python, "Python isn't installed (winget install Python.Python.3.12)"],
-    javascript: [rt.node, "Node.js isn't installed (winget install OpenJS.NodeJS.LTS)"],
-    csharp: [rt.dotnet, "the .NET SDK isn't installed (winget install Microsoft.DotNet.SDK.8)"],
-    go: [rt.go, "Go isn't installed (https://go.dev/dl)"],
-    rust: [rt.rust, "Rust isn't installed (https://rustup.rs)"],
-    bash: [rt.bash, "Git Bash isn't installed (winget install Git.Git)"],
-    powershell: [rt.powershell, "PowerShell couldn't be found"],
-  };
-  const entry = need[language];
-  if (entry && !entry[0]) {
-    return `Can't verify a ${language} lesson on this machine: ${entry[1]}.`;
-  }
-  return null;
+  // Same platform-appropriate hints /api/run and the tutor's tools give.
+  const hint = missingRuntimeHint(language, await detectRuntimes());
+  return hint ? `Can't verify a ${language} lesson on this machine — ${hint}` : null;
 }
 
 // ---------- generation ----------

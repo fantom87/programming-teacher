@@ -1,0 +1,43 @@
+{
+  "name": "Programming Teacher",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:22",
+  "features": {
+    "ghcr.io/devcontainers/features/python:1": {
+      "version": "3.12",
+      "installTools": false
+    },
+    "ghcr.io/devcontainers/features/dotnet:2": {
+      "version": "8.0"
+    },
+    "ghcr.io/devcontainers/features/go:1": {
+      "version": "latest"
+    }
+  },
+  "containerEnv": {
+    "PT_ALLOW_REMOTE_HOST": "1",
+    "DOTNET_CLI_TELEMETRY_OPTOUT": "1",
+    "DOTNET_NOLOGO": "1"
+  },
+  "forwardPorts": [5173, 4517],
+  "portsAttributes": {
+    "5173": {
+      "label": "Programming Teacher",
+      "onAutoForward": "openBrowser"
+    },
+    "4517": {
+      "label": "API",
+      "onAutoForward": "silent"
+    }
+  },
+  "postCreateCommand": "npm install",
+  "postAttachCommand": "bash .devcontainer/start-dev.sh",
+  "waitFor": "postCreateCommand",
+  "customizations": {
+    "codespaces": {
+      "openFiles": ["README.md"]
+    },
+    "vscode": {
+      "extensions": []
+    }
+  }
+}

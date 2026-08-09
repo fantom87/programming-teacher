@@ -185,8 +185,17 @@ const server = app.listen(PORT, "127.0.0.1", async () => {
   void selfTestAuth();
   // Terminal `npm run start` opens the browser; the Electron shell (which
   // spawns us with piped/ignored stdio, so no TTY) opens its own window.
+  // Each OS has its own opener — in a container there may be none at all, and
+  // the error handler makes that a no-op rather than a crash.
   if (isProd && process.stdout.isTTY) {
-    spawn("cmd", ["/c", "start", "", `http://localhost:${PORT}`], { windowsHide: true }).on("error", () => {});
+    const url = `http://localhost:${PORT}`;
+    const opener: [string, string[]] =
+      process.platform === "win32"
+        ? ["cmd", ["/c", "start", "", url]]
+        : process.platform === "darwin"
+          ? ["open", [url]]
+          : ["xdg-open", [url]];
+    spawn(opener[0], opener[1], { windowsHide: true, stdio: "ignore" }).on("error", () => {});
   }
 });
 

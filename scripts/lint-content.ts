@@ -9,6 +9,7 @@ import { loadCurriculum } from "../server/src/curriculum/loader.js";
 import { runLocal } from "../server/src/runner/localRunner.js";
 import { evaluateDomAssertions } from "../server/src/runner/domCheck.js";
 import { detectRuntimes } from "../server/src/preflight.js";
+import { missingRuntimeHint } from "../server/src/runtimeHints.js";
 import {
   buildJsTestProgram,
   buildPyTestProgram,
@@ -143,7 +144,10 @@ for (const [key, lesson] of cur.lessons) {
 }
 
 const runtimes = await detectRuntimes();
-const runtimeless = new Set<string>();
+// Lessons whose runtime this machine doesn't have get structural checks only.
+// Which runtimes are missing differs by OS (no pwsh on a bare Ubuntu box, no
+// dotnet on a fresh Windows one), so the skip is driven by preflight.
+const runtimeless = new Map<string, string>();
 for (const [key, lesson] of cur.lessons) {
   const solution = cur.solutions.get(key);
   if (!solution) {
@@ -151,8 +155,9 @@ for (const [key, lesson] of cur.lessons) {
     failures++;
     continue;
   }
-  if (lesson.language === "csharp" && !runtimes.dotnet) {
-    runtimeless.add(key); // no .NET SDK on this machine — structural checks only
+  const missing = missingRuntimeHint(lesson.language, runtimes);
+  if (missing) {
+    runtimeless.set(key, missing);
     continue;
   }
   const results = await checkLesson(key, lesson, solution);
@@ -167,7 +172,8 @@ for (const [key, lesson] of cur.lessons) {
 }
 
 if (runtimeless.size > 0) {
-  console.log(`… skipped runtime checks for ${runtimeless.size} C# lesson(s) — install the .NET SDK to verify them (winget install Microsoft.DotNet.SDK.8)`);
+  console.log(`… skipped runtime checks for ${runtimeless.size} lesson(s) — a runtime is missing on this machine:`);
+  for (const hint of new Set(runtimeless.values())) console.log(`    ${hint}`);
 }
 
 console.log(failures === 0 ? `\nAll content checks passed (${cur.lessons.size} lessons).` : `\n${failures} failure(s).`);

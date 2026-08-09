@@ -13,27 +13,12 @@ import { readJson, withFileLock, writeJsonInLock } from "../store/jsonStore.js";
 import { updateChecks } from "../tutor/service.js";
 import { takeSnapshot, listSnapshots, getSnapshot } from "../store/snapshots.js";
 import { detectRuntimes, type RuntimeStatus } from "../preflight.js";
+import { missingRuntimeHint } from "../runtimeHints.js";
 
-function missingRuntimeError(language: string, runtimes: RuntimeStatus) {
-  if (language === "python" && !runtimes.python) {
-    return "Python isn't installed (or not on PATH). Install it with: winget install Python.Python.3.12";
-  }
-  if (language === "javascript" && !runtimes.node) {
-    return "Node.js isn't installed (or not on PATH). Install it with: winget install OpenJS.NodeJS.LTS";
-  }
-  if (language === "csharp" && !runtimes.dotnet) {
-    return "The .NET SDK isn't installed. Install it with: winget install Microsoft.DotNet.SDK.8";
-  }
-  if (language === "go" && !runtimes.go) {
-    return "Go isn't installed. Download the Windows zip from https://go.dev/dl and extract it to %LOCALAPPDATA%\\Programs\\go (so go.exe ends up in %LOCALAPPDATA%\\Programs\\go\\bin).";
-  }
-  if (language === "rust" && !runtimes.rust) {
-    return "Rust isn't installed. Install it from https://rustup.rs (the default options are fine).";
-  }
-  if (language === "bash" && !runtimes.bash) {
-    return "Bash couldn't be found. It comes with Git for Windows — install it with: winget install Git.Git";
-  }
-  return null;
+/** "That runtime isn't installed" with an install command for THIS OS, or
+ *  null when the language can run here. */
+function missingRuntimeError(language: string, runtimes: RuntimeStatus): string | null {
+  return missingRuntimeHint(language, runtimes);
 }
 
 /** Flip `passed: true` on the snapshot just taken for a passing check — it

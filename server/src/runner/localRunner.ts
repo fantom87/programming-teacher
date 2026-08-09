@@ -1,6 +1,8 @@
 import { spawn, execFile } from "node:child_process";
 import { StringDecoder } from "node:string_decoder";
 import fs from "node:fs/promises";
+import { constants as fsConstants } from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import crypto from "node:crypto";
 import initSqlJs from "sql.js";
@@ -12,10 +14,40 @@ import { extractTestEvents, formatSqlResults, runSqlProgram } from "@teacher/sha
 const RAW_CAP = 256 * 1024;
 const OUTPUT_CAP = 64 * 1024;
 
+const IS_WINDOWS = process.platform === "win32";
+
+// POSIX children are spawned detached (see spawnCapture), which means they
+// survive this process. Track the live groups so a server shutdown can't
+// strand a learner's runaway program.
+const liveGroups = new Set<number>();
+if (!IS_WINDOWS) {
+  process.on("exit", () => {
+    for (const pid of liveGroups) {
+      try {
+        process.kill(-pid, "SIGKILL");
+      } catch {
+        // already gone
+      }
+    }
+  });
+}
+
 function killTree(pid: number): void {
-  // child.kill() does not kill process trees on Windows, and dotnet/python
-  // spawn children — taskkill /T /F is the reliable way.
-  execFile("taskkill", ["/pid", String(pid), "/T", "/F"], () => {});
+  if (IS_WINDOWS) {
+    // child.kill() does not kill process trees on Windows, and dotnet/python
+    // spawn children — taskkill /T /F is the reliable way.
+    execFile("taskkill", ["/pid", String(pid), "/T", "/F"], () => {});
+    return;
+  }
+  // POSIX: the child leads its own process group (detached: true), so one
+  // signal to the negative pid fells the interpreter AND everything it
+  // spawned — the equivalent of taskkill /T. The group may already be gone
+  // (the child exited between the timeout firing and this call), which throws.
+  try {
+    process.kill(-pid, "SIGKILL");
+  } catch {
+    // nothing left to kill
+  }
 }
 
 /** Trim display output to OUTPUT_CAP, never splitting a surrogate pair. */
@@ -61,13 +93,23 @@ export function spawnCapture(spec: SpawnSpec): Promise<RunResult> {
       env,
       shell: false,
       windowsHide: true,
+      // POSIX: make the child a process-group leader so a timeout can kill
+      // the whole tree with one signal (killTree). Windows keeps the default
+      // — detached there would pop a console window; taskkill /T handles it.
+      detached: !IS_WINDOWS,
     });
+    if (!IS_WINDOWS && child.pid) liveGroups.add(child.pid);
+    const untrack = (): void => {
+      if (child.pid) liveGroups.delete(child.pid);
+    };
+    child.on("close", untrack);
+    child.on("error", untrack);
 
     let forceTimer: NodeJS.Timeout | undefined;
     const timer = setTimeout(() => {
       timedOut = true;
       if (child.pid) killTree(child.pid);
-      // If taskkill can't fell the tree (wedged/AV-locked process), 'close'
+      // If the kill can't fell the tree (wedged/AV-locked process), 'close'
       // may never fire — force-finish so the request can't hang forever.
       forceTimer = setTimeout(() => finish(null), 5_000);
       forceTimer.unref();
@@ -116,17 +158,35 @@ export function spawnCapture(spec: SpawnSpec): Promise<RunResult> {
   });
 }
 
+/**
+ * Resolve a content/tutor-provided file name inside its workspace, refusing
+ * escapes. A backslash separates path segments on Windows but is a perfectly
+ * legal filename character on Linux, so "..\\..\\evil.py" would escape on one
+ * platform and quietly create a bizarre file on the other — reject it outright
+ * and the rule reads the same on both. Lesson paths always use "/".
+ */
+export function workspaceFile(dir: string, name: string): string {
+  const full = path.resolve(dir, name);
+  const rel = path.relative(dir, full);
+  if (name.includes("\\") || rel === "" || rel.startsWith("..") || path.isAbsolute(rel)) {
+    throw new Error(`illegal file path: ${name}`);
+  }
+  return full;
+}
+
+async function writeWorkspaceFiles(dir: string, files: Record<string, string>): Promise<void> {
+  for (const [name, contents] of Object.entries(files)) {
+    const full = workspaceFile(dir, name);
+    await fs.mkdir(path.dirname(full), { recursive: true });
+    await fs.writeFile(full, contents, "utf8");
+  }
+}
+
 // Reuse one parent dir for workspaces so Windows Defender warms up on it.
 export async function makeWorkspace(dataDir: string, files: Record<string, string>): Promise<string> {
   const dir = path.join(dataDir, "run-workspaces", crypto.randomUUID());
   await fs.mkdir(dir, { recursive: true });
-  for (const [name, contents] of Object.entries(files)) {
-    const full = path.join(dir, name);
-    // Refuse path escapes from content/tutor-provided filenames.
-    if (!full.startsWith(dir)) throw new Error(`illegal file path: ${name}`);
-    await fs.mkdir(path.dirname(full), { recursive: true });
-    await fs.writeFile(full, contents, "utf8");
-  }
+  await writeWorkspaceFiles(dir, files);
   return dir;
 }
 
@@ -159,23 +219,37 @@ export async function sweepStaleWorkspaces(dataDir: string, maxAgeMs = 60 * 60 *
 }
 
 // ---------- binary resolution ----------
-// Go and Rust install per-user and are often missing from the PATH this
+// Go, Rust and .NET install per-user and are often missing from the PATH this
 // server inherited (installed after launch, or via a user-scope installer the
-// parent shell never saw). Resolve at spawn time: bare names via `where`,
-// absolute candidates via the filesystem — cached briefly so "install it,
-// then hit Run again" works without a restart. Preflight shares these.
+// parent shell never saw). Resolve at spawn time: bare names via the OS
+// lookup, absolute candidates via the filesystem — cached briefly so "install
+// it, then hit Run again" works without a restart. Preflight shares these.
 
 const RESOLVE_TTL_MS = 60_000;
 const resolveCache = new Map<string, { at: number; bin: string }>();
 
-function whereFinds(name: string): Promise<boolean> {
-  return new Promise((resolve) => {
-    const child = execFile("where.exe", [name], { timeout: 5_000, windowsHide: true }, (err) => resolve(!err));
-    child.on("error", () => resolve(false));
-  });
+/** Is a bare command name resolvable? Windows asks where.exe; POSIX walks
+ *  PATH itself, which beats shelling out to `which` (absent from slim
+ *  containers) and costs no process. */
+async function foundOnPath(name: string): Promise<boolean> {
+  if (IS_WINDOWS) {
+    return new Promise<boolean>((resolve) => {
+      const child = execFile("where.exe", [name], { timeout: 5_000, windowsHide: true }, (err) => resolve(!err));
+      child.on("error", () => resolve(false));
+    });
+  }
+  for (const entry of (process.env.PATH ?? "").split(path.delimiter)) {
+    if (!entry) continue; // an empty PATH entry means cwd — never trust it here
+    const ok = await fs.access(path.join(entry, name), fsConstants.X_OK).then(
+      () => true,
+      () => false,
+    );
+    if (ok) return true;
+  }
+  return false;
 }
 
-/** First candidate that exists: bare names checked via `where`, absolute
+/** First candidate that exists: bare names checked against PATH, absolute
  *  paths via the filesystem. Falls back to the first bare name (letting the
  *  spawn fail with a real ENOENT) when nothing is found. */
 export async function resolveBinary(candidates: string[]): Promise<string> {
@@ -185,7 +259,7 @@ export async function resolveBinary(candidates: string[]): Promise<string> {
   for (const c of candidates) {
     const found = path.isAbsolute(c)
       ? await fs.access(c).then(() => true, () => false)
-      : await whereFinds(c);
+      : await foundOnPath(c);
     if (found) {
       resolveCache.set(key, { at: Date.now(), bin: c });
       return c;
@@ -194,18 +268,72 @@ export async function resolveBinary(candidates: string[]): Promise<string> {
   return candidates.find((c) => !path.isAbsolute(c)) ?? candidates[0];
 }
 
-export function goCandidates(): string[] {
-  return ["go", path.join(process.env.LOCALAPPDATA ?? "C:\\", "Programs", "go", "bin", "go.exe")];
+// Candidate lists take the platform so tests can inspect both branches from
+// either OS; the Windows paths are built with path.win32 for the same reason.
+// Order matters: the first candidate that exists wins.
+
+function inHome(...parts: string[]): string {
+  // POSIX-shaped home path, stable even when this runs on Windows (tests).
+  return path.posix.join(os.homedir().replaceAll("\\", "/"), ...parts);
 }
 
-export function rustcCandidates(): string[] {
-  return ["rustc", path.join(process.env.USERPROFILE ?? "C:\\", ".cargo", "bin", "rustc.exe")];
+export function goCandidates(platform: NodeJS.Platform = process.platform): string[] {
+  if (platform === "win32") {
+    return ["go", path.win32.join(process.env.LOCALAPPDATA ?? "C:\\", "Programs", "go", "bin", "go.exe")];
+  }
+  // The official Linux/macOS tarball extracts to /usr/local/go.
+  return ["go", "/usr/local/go/bin/go"];
 }
 
-export function bashCandidates(): string[] {
-  // Git Bash first — plain `bash` on PATH is usually the WSL shim in
-  // System32, which needs a Linux distro and can't run workspace scripts.
-  return [path.join(process.env.ProgramFiles ?? "C:\\Program Files", "Git", "bin", "bash.exe"), "bash"];
+export function rustcCandidates(platform: NodeJS.Platform = process.platform): string[] {
+  if (platform === "win32") {
+    return ["rustc", path.win32.join(process.env.USERPROFILE ?? "C:\\", ".cargo", "bin", "rustc.exe")];
+  }
+  return ["rustc", inHome(".cargo", "bin", "rustc")];
+}
+
+export function dotnetCandidates(platform: NodeJS.Platform = process.platform): string[] {
+  if (platform === "win32") {
+    return ["dotnet", path.win32.join(process.env.ProgramFiles ?? "C:\\Program Files", "dotnet", "dotnet.exe")];
+  }
+  // dotnet-install.sh defaults to ~/.dotnet; the packaged SDK lands in /usr/share.
+  return ["dotnet", inHome(".dotnet", "dotnet"), "/usr/share/dotnet/dotnet"];
+}
+
+export function bashCandidates(platform: NodeJS.Platform = process.platform): string[] {
+  if (platform === "win32") {
+    // Git Bash first — plain `bash` on PATH is usually the WSL shim in
+    // System32, which needs a Linux distro and can't run workspace scripts.
+    return [path.win32.join(process.env.ProgramFiles ?? "C:\\Program Files", "Git", "bin", "bash.exe"), "bash"];
+  }
+  return ["bash", "/bin/bash"];
+}
+
+export function powershellCandidates(platform: NodeJS.Platform = process.platform): string[] {
+  // Windows PowerShell 5.1 ships with Windows. Elsewhere PowerShell 7 (pwsh)
+  // is an optional install — missing pwsh is reported, never crashed on.
+  if (platform === "win32") return ["powershell.exe"];
+  return ["pwsh", "/opt/microsoft/powershell/7/pwsh"];
+}
+
+export function pythonCandidates(platform: NodeJS.Platform = process.platform): string[] {
+  // Ubuntu (and most distros) ship python3 with no bare `python` unless
+  // python-is-python3 is installed.
+  if (platform === "win32") return ["python"];
+  return ["python3", "python"];
+}
+
+/** Script-host arguments for a PowerShell run. -ExecutionPolicy is a
+ *  Windows-only switch: pwsh on Linux rejects it. */
+export function powershellArgs(entry: string, platform: NodeJS.Platform = process.platform): string[] {
+  return platform === "win32"
+    ? ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", entry]
+    : ["-NoProfile", "-File", entry];
+}
+
+/** Name rustc compiles to — Windows needs the .exe suffix to be runnable. */
+export function rustBinaryName(platform: NodeJS.Platform = process.platform): string {
+  return platform === "win32" ? "main.exe" : "main";
 }
 
 export interface LocalRunOptions {
@@ -230,7 +358,7 @@ export async function runLocal(dataDir: string, opts: LocalRunOptions): Promise<
     switch (opts.language) {
       case "python":
         return await spawnCapture({
-          command: "python",
+          command: await resolveBinary(pythonCandidates()),
           args: ["-X", "utf8", opts.entry],
           cwd: dir,
           env: { PYTHONIOENCODING: "utf-8" },
@@ -249,8 +377,8 @@ export async function runLocal(dataDir: string, opts: LocalRunOptions): Promise<
         });
       case "powershell":
         return await spawnCapture({
-          command: "powershell.exe",
-          args: ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", opts.entry],
+          command: await resolveBinary(powershellCandidates()),
+          args: powershellArgs(opts.entry),
           cwd: dir,
           stdin: opts.stdin,
           timeoutMs,
@@ -315,20 +443,14 @@ async function csWorkspace(dataDir: string, opts: LocalRunOptions): Promise<stri
       await fs.rm(path.join(dir, existing), { force: true });
     }
   }
-  for (const [name, contents] of Object.entries(opts.files)) {
-    const full = path.join(dir, name);
-    // Refuse path escapes from content/tutor-provided filenames.
-    if (!full.startsWith(dir)) throw new Error(`illegal file path: ${name}`);
-    await fs.mkdir(path.dirname(full), { recursive: true });
-    await fs.writeFile(full, contents, "utf8");
-  }
+  await writeWorkspaceFiles(dir, opts.files);
   return dir;
 }
 
 async function runCsharp(dataDir: string, opts: LocalRunOptions, timeoutMs: number): Promise<RunResult> {
   const dir = await csWorkspace(dataDir, opts);
   return spawnCapture({
-    command: "dotnet",
+    command: await resolveBinary(dotnetCandidates()),
     args: ["run", "--project", ".", "-v", "q", "--nologo"],
     cwd: dir,
     env: {
@@ -345,9 +467,10 @@ async function runCsharp(dataDir: string, opts: LocalRunOptions, timeoutMs: numb
 }
 
 // Rust: rustc in a persistent per-lesson workspace under data/rs-workspaces
-// (same shape as C#) — the compiled main.exe and rustc's incremental state
-// stay put between runs. Compile errors come back as the run's stderr with
-// ok:false: they ARE the learning content, not an internal failure.
+// (same shape as C#) — the compiled binary (main.exe / main) and rustc's
+// incremental state stay put between runs. Compile errors come back as the
+// run's stderr with ok:false: they ARE the learning content, not an internal
+// failure.
 
 async function rustWorkspace(dataDir: string, opts: LocalRunOptions): Promise<string> {
   const wsKey = opts.lessonKey ?? `adhoc/${opts.entry}`;
@@ -360,28 +483,23 @@ async function rustWorkspace(dataDir: string, opts: LocalRunOptions): Promise<st
       await fs.rm(path.join(dir, existing), { force: true });
     }
   }
-  for (const [name, contents] of Object.entries(opts.files)) {
-    const full = path.join(dir, name);
-    // Refuse path escapes from content/tutor-provided filenames.
-    if (!full.startsWith(dir)) throw new Error(`illegal file path: ${name}`);
-    await fs.mkdir(path.dirname(full), { recursive: true });
-    await fs.writeFile(full, contents, "utf8");
-  }
+  await writeWorkspaceFiles(dir, opts.files);
   return dir;
 }
 
 async function runRust(dataDir: string, opts: LocalRunOptions, timeoutMs: number): Promise<RunResult> {
   const dir = await rustWorkspace(dataDir, opts);
   const rustc = await resolveBinary(rustcCandidates());
+  const binary = rustBinaryName();
   const compile = await spawnCapture({
     command: rustc,
-    args: [opts.entry, "-o", "main.exe", "--edition", "2021"],
+    args: [opts.entry, "-o", binary, "--edition", "2021"],
     cwd: dir,
     timeoutMs: Math.max(timeoutMs, 60_000),
   });
   if (!compile.ok) return compile; // rustc diagnostics are already in stderr
   const run = await spawnCapture({
-    command: path.join(dir, "main.exe"),
+    command: path.join(dir, binary),
     args: [],
     cwd: dir,
     stdin: opts.stdin,

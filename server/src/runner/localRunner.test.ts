@@ -2,11 +2,44 @@ import { afterAll, describe, expect, it } from "vitest";
 import fs from "node:fs/promises";
 import path from "node:path";
 import os from "node:os";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
 import { buildJsTestProgram } from "@teacher/shared";
 import { runLocal, sweepStaleWorkspaces } from "./localRunner.js";
 import { loadCurriculum } from "../curriculum/loader.js";
 
 const tmpData = path.join(os.tmpdir(), "teacher-runner-tests");
+const execFileAsync = promisify(execFile);
+
+/** Is this pid still a running process? tasklist is authoritative on Windows
+ *  (a signal-0 probe can still see a just-terminated process object); POSIX
+ *  uses signal 0, where EPERM means "alive, just not ours to signal". */
+async function isAlive(pid: number): Promise<boolean> {
+  if (process.platform === "win32") {
+    const { stdout } = await execFileAsync("tasklist", ["/FI", `PID eq ${pid}`, "/NH"], {
+      windowsHide: true,
+    }).catch(() => ({ stdout: "" }));
+    return new RegExp(`\\b${pid}\\b`).test(stdout);
+  }
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (err) {
+    return (err as NodeJS.ErrnoException).code === "EPERM";
+  }
+}
+
+/** Poll until every pid is gone, or the deadline passes — the kill is
+ *  asynchronous on both platforms (taskkill /T, or SIGKILL to the group). */
+async function waitForExit(pids: number[], timeoutMs = 15_000): Promise<number[]> {
+  const deadline = Date.now() + timeoutMs;
+  for (;;) {
+    const alive: number[] = [];
+    for (const pid of pids) if (await isAlive(pid)) alive.push(pid);
+    if (alive.length === 0 || Date.now() > deadline) return alive;
+    await new Promise((resolve) => setTimeout(resolve, 250));
+  }
+}
 
 afterAll(async () => {
   await fs.rm(tmpData, { recursive: true, force: true }).catch(() => {});
@@ -53,6 +86,32 @@ describe("localRunner (python)", () => {
     expect(r.timedOut).toBe(true);
     expect(r.ok).toBe(false);
   }, 15_000);
+
+  it("leaves no orphaned grandchild processes after a timeout kill", async () => {
+    // The runaway program spawns a child of its own — exactly what dotnet,
+    // go run and a shell pipeline do. Killing only the direct child would
+    // strand the grandchild: Windows needs taskkill /T, POSIX needs the
+    // process-group signal that `detached: true` makes possible.
+    const program = [
+      "import os, subprocess, sys",
+      // The grandchild self-terminates eventually, so a failed kill can't
+      // leave a process running on this machine forever.
+      "child = subprocess.Popen([sys.executable, '-c', 'import time; time.sleep(120)'])",
+      "print(os.getpid(), child.pid, flush=True)",
+      "while True:",
+      "    pass",
+    ].join("\n");
+    const r = await runLocal(tmpData, {
+      language: "python",
+      entry: "main.py",
+      files: { "main.py": program },
+      timeoutMs: 6000,
+    });
+    expect(r.timedOut).toBe(true);
+    const pids = (r.stdout.match(/\d+/g) ?? []).map(Number);
+    expect(pids).toHaveLength(2); // the interpreter, and the child it spawned
+    expect(await waitForExit(pids)).toEqual([]);
+  }, 60_000);
 
   it("feeds stdin", async () => {
     const r = await runLocal(tmpData, {
