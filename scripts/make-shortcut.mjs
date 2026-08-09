@@ -1,4 +1,4 @@
-// Drops a "Programming Teacher.lnk" in the project root pointing at the built
+// Drops a "Rubberduck.lnk" in the project root pointing at the built
 // desktop app, so launching never means digging through app/dist/win-unpacked.
 // Runs as part of `npm run app:dist`; harmless to run on its own.
 import { execFileSync } from "node:child_process";
@@ -14,9 +14,9 @@ if (process.platform !== "win32") {
 }
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const target = path.join(ROOT, "app", "dist", "win-unpacked", "Programming Teacher.exe");
+const target = path.join(ROOT, "app", "dist", "win-unpacked", "Rubberduck.exe");
 const icon = path.join(ROOT, "app", "build", "icon.ico");
-const link = path.join(ROOT, "Programming Teacher.lnk");
+const link = path.join(ROOT, "Rubberduck.lnk");
 
 if (!fs.existsSync(target)) {
   console.warn(`[shortcut] skipped — no built app at ${target} (run npm run app:dist first)`);

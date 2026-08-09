@@ -13,8 +13,8 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const IMAGE = "programming-teacher-linux-test";
-const CONTAINER = "programming-teacher-linux-run";
+const IMAGE = "rubberduck-linux-test";
+const CONTAINER = "rubberduck-linux-run";
 const DIST = path.join(ROOT, "app", "dist");
 
 const appImage = fs.existsSync(DIST) ? fs.readdirSync(DIST).find((f) => f.endsWith(".AppImage")) : null;

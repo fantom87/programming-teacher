@@ -1,4 +1,6 @@
-# Programming Teacher
+# Rubberduck
+
+Rubber duck debugging, except the duck answers — and you decide how much.
 
 A local app that teaches programming, with an AI tutor whose helpfulness you control.
 
@@ -17,9 +19,9 @@ From the [Releases](../../releases/latest) page:
 
 | | Download | |
 |---|---|---|
-| **Windows** | `Programming.Teacher.1.0.0.zip` (135 MB) | Extract, run **Programming Teacher.exe** inside |
-| | `Programming.Teacher.1.0.0.exe` (98 MB) | Installer, if you want Start Menu and desktop shortcuts |
-| **Linux** | `Programming-Teacher-1.0.0-x86_64.AppImage` (122 MB) | `chmod +x` it and run it |
+| **Windows** | `Rubberduck.1.0.0.zip` (135 MB) | Extract, run **Rubberduck.exe** inside |
+| | `Rubberduck.1.0.0.exe` (98 MB) | Installer, if you want Start Menu and desktop shortcuts |
+| **Linux** | `Rubberduck-1.0.0-x86_64.AppImage` (122 MB) | `chmod +x` it and run it |
 
 Ready in about five seconds. There is nothing to install — not even Node. The
 app carries its own runtime, its own server, all 357 lessons and the whole docs
@@ -154,13 +156,13 @@ npm run app:dist
 Builds the frontend, bundles the server to a single file, stages its dependency
 closure, then produces three things in `app/dist`:
 
-- **`Programming Teacher 1.0.0.zip`** — the shareable one folder, exe inside.
-- **`Programming Teacher 1.0.0.exe`** — a one-click installer with Start Menu
+- **`Rubberduck 1.0.0.zip`** — the shareable one folder, exe inside.
+- **`Rubberduck 1.0.0.exe`** — a one-click installer with Start Menu
   and desktop shortcuts, for a machine you actually use it on. It keeps your
   progress in the usual per-user location rather than beside the exe, because
   uninstalling (and upgrading, which uninstalls first) deletes the install
   folder. The app detects which of the two it is by looking for an uninstaller.
-- **`Programming Teacher.lnk`** in the repo root, pointing at the unpacked build.
+- **`Rubberduck.lnk`** in the repo root, pointing at the unpacked build.
 
 `npm run app:zip` re-zips an existing build without rebuilding it.
 

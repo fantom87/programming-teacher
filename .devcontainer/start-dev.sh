@@ -42,7 +42,7 @@ start() {
     node scripts/copy-pyodide.mjs || true
   fi
 
-  echo "Starting Programming Teacher (log: $LOG) ..."
+  echo "Starting Rubberduck (log: $LOG) ..."
   # setsid detaches from the attach session's process group so the dev server
   # outlives this command; nohup alone is the fallback if setsid is missing.
   if command -v setsid >/dev/null 2>&1; then
@@ -60,7 +60,7 @@ start() {
 case "$ACTION" in
   stop)
     stop
-    echo "Programming Teacher stopped."
+    echo "Rubberduck stopped."
     exit 0
     ;;
   restart)
@@ -69,7 +69,7 @@ case "$ACTION" in
     ;;
   *)
     if up; then
-      echo "Programming Teacher is already running."
+      echo "Rubberduck is already running."
     else
       start
     fi
@@ -80,9 +80,9 @@ if up; then
   cat <<'BANNER'
 
 ------------------------------------------------------------------
-  Programming Teacher is running.
+  Rubberduck is running.
 
-  Open port 5173 ("Programming Teacher") — Codespaces should have
+  Open port 5173 ("Rubberduck") — Codespaces should have
   opened a browser tab already; otherwise use the Ports panel.
 
   Log      tail -f /tmp/pt-dev.log
@@ -95,6 +95,6 @@ if up; then
 
 BANNER
 else
-  echo "Programming Teacher did not answer on $URL within 90s."
+  echo "Rubberduck did not answer on $URL within 90s."
   echo "Look at $LOG (tail -50 $LOG) — the dev server may still be starting."
 fi

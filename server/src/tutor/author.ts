@@ -82,7 +82,7 @@ export interface CustomLessonRequest {
 
 // ---------- prompt ----------
 
-const AUTHOR_SYSTEM = `You are the lesson author inside "Programming Teacher", a local programming-learning app. You write complete, self-contained practice lessons whose reference solutions provably pass their own goal checks. Respond with ONLY one JSON object — no markdown fences, no commentary before or after it.`;
+const AUTHOR_SYSTEM = `You are the lesson author inside "Rubberduck", a local programming-learning app. You write complete, self-contained practice lessons whose reference solutions provably pass their own goal checks. Respond with ONLY one JSON object — no markdown fences, no commentary before or after it.`;
 
 const DIFFICULTY_GUIDE: Record<Difficulty, string> = {
   beginner:

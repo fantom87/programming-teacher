@@ -277,7 +277,7 @@ export default function App() {
         </a>
         <header className="topbar">
           <button className="title-btn" onClick={() => setRoute({ view: "home" })}>
-            <span className="title">Programming Teacher</span>
+            <span className="title">Rubberduck</span>
           </button>
           {navBtn({ view: "playground" }, "Playground")}
           {navBtn({ view: "docs" }, "Docs")}

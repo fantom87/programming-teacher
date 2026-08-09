@@ -43,7 +43,7 @@ app.use((req, res, next) => {
     next();
     return;
   }
-  res.status(403).json({ error: "Programming Teacher only accepts local requests" });
+  res.status(403).json({ error: "Rubberduck only accepts local requests" });
 });
 
 app.use(express.json({ limit: "2mb" }));
@@ -226,7 +226,7 @@ const server = app.listen(PORT, "127.0.0.1", async () => {
 
 server.on("error", (err: NodeJS.ErrnoException) => {
   if (err.code === "EADDRINUSE") {
-    console.error(`[server] port ${PORT} is already in use — is Programming Teacher already running?`);
+    console.error(`[server] port ${PORT} is already in use — is Rubberduck already running?`);
   } else {
     console.error("[server] failed to start:", err);
   }

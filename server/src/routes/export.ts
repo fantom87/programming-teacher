@@ -33,7 +33,7 @@ export function exportRoutes(dataDir: string): Router {
       journalEntries,
     };
     const date = new Date().toISOString().slice(0, 10);
-    res.setHeader("Content-Disposition", `attachment; filename="programming-teacher-backup-${date}.json"`);
+    res.setHeader("Content-Disposition", `attachment; filename="rubberduck-backup-${date}.json"`);
     res.json(payload);
   });
 

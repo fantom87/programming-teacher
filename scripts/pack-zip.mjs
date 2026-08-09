@@ -2,7 +2,7 @@
 //
 // electron-builder's own `zip` target archives the *contents* of win-unpacked,
 // so "Extract Here" splatters 20 loose files into whatever folder you're in.
-// This packs `win-unpacked` as `Programming Teacher/` instead — one folder,
+// This packs `win-unpacked` as `Rubberduck/` instead — one folder,
 // exe inside, data written beside it, delete-the-folder to uninstall.
 //
 // The inner folder deliberately carries no version number: extracting a newer

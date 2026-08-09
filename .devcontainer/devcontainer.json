@@ -1,5 +1,5 @@
 {
-  "name": "Programming Teacher",
+  "name": "Rubberduck",
   "image": "mcr.microsoft.com/devcontainers/typescript-node:22",
   "features": {
     "ghcr.io/devcontainers/features/python:1": {
@@ -24,7 +24,7 @@
   "forwardPorts": [5173, 4517],
   "portsAttributes": {
     "5173": {
-      "label": "Programming Teacher",
+      "label": "Rubberduck",
       "onAutoForward": "openBrowser"
     },
     "4517": {

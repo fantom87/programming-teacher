@@ -12,8 +12,8 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const IMAGE = "programming-teacher-linux";
-const CONTAINER = "programming-teacher-linux-extract";
+const IMAGE = "rubberduck-linux";
+const CONTAINER = "rubberduck-linux-extract";
 const OUT = path.join(ROOT, "app", "dist");
 
 const docker = (args, opts = {}) =>

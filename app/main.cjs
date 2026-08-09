@@ -1,4 +1,4 @@
-// Programming Teacher desktop shell.
+// Rubberduck desktop shell.
 //
 // Packaged, this exe is the whole app: the bundled API server, the curriculum,
 // the docs library and the built frontend all ship as resources, and the
@@ -301,9 +301,9 @@ async function ensureServer() {
         return true;
       }
       dialog.showErrorBox(
-        "Programming Teacher",
+        "Rubberduck",
         "A development server is already using port 4517, and it doesn't serve the app.\n\n" +
-          "Close it (the terminal running 'npm run dev'), then start Programming Teacher again.",
+          "Close it (the terminal running 'npm run dev'), then start Rubberduck again.",
       );
       return false;
     }
@@ -324,7 +324,7 @@ async function ensureServer() {
     await new Promise((r) => setTimeout(r, 500));
   }
   dialog.showErrorBox(
-    "Programming Teacher",
+    "Rubberduck",
     `The local server didn't start.\n\nDetails are in:\n${logDir()}`,
   );
   return false;
@@ -359,7 +359,7 @@ function startServer() {
     args = ["--import", "tsx", PATHS.repoFallback, "--prod"];
     delete env.ELECTRON_RUN_AS_NODE;
   } else {
-    dialog.showErrorBox("Programming Teacher", `The app files are missing:\n${PATHS.serverEntry}`);
+    dialog.showErrorBox("Rubberduck", `The app files are missing:\n${PATHS.serverEntry}`);
     return false;
   }
 

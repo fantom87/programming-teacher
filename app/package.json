@@ -1,6 +1,6 @@
 {
-  "name": "programming-teacher-app",
-  "productName": "Programming Teacher",
+  "name": "rubberduck-app",
+  "productName": "Rubberduck",
   "version": "1.0.0",
   "private": true,
   "description": "Learn programming with an AI tutor",
@@ -12,8 +12,8 @@
     "dist:linux": "electron-builder --linux"
   },
   "build": {
-    "appId": "local.bradley.programmingteacher",
-    "productName": "Programming Teacher",
+    "appId": "local.bradley.rubberduck",
+    "productName": "Rubberduck",
     "directories": {
       "output": "dist",
       "buildResources": "build"
@@ -54,12 +54,11 @@
       "icon": "build/icon.png",
       "category": "Education",
       "synopsis": "Learn programming with an AI tutor",
-      "executableName": "programming-teacher",
-      "artifactName": "Programming-Teacher-${version}-${arch}.${ext}",
-      "synopsis": "Learn programming with an AI tutor",
+      "executableName": "rubberduck",
+      "artifactName": "Rubberduck-${version}-${arch}.${ext}",
       "desktop": {
         "entry": {
-          "StartupWMClass": "programming-teacher"
+          "StartupWMClass": "rubberduck"
         }
       }
     },

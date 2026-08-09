@@ -62,7 +62,7 @@ export default function Onboarding({ tracks, navigate, onDone }: Props) {
   if (!trackId) {
     return (
       <div className="view-pad onboarding">
-        <h1>Welcome to Programming Teacher</h1>
+        <h1>Welcome to Rubberduck</h1>
         <p>
           Four language tracks, an AI tutor whose help level you control, and lessons with real goals.
           Pick where you'd like to begin — Python is the friendliest first language, but there's no wrong door.

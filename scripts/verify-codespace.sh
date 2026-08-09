@@ -2,7 +2,7 @@
 # Verifies the app inside a codespace the way a reviewer's browser reaches it:
 # every request carries the GitHub proxy hostname, not localhost.
 set -u
-cd /workspaces/programming-teacher
+cd /workspaces/rubberduck
 
 # The codespace env vars are exported to the VS Code session but not to a bare
 # ssh shell, so allow the name to be passed in: verify-codespace.sh <name>
