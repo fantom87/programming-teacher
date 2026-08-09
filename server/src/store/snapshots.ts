@@ -2,6 +2,7 @@ import path from "node:path";
 import fs from "node:fs/promises";
 import crypto from "node:crypto";
 import type { Snapshot } from "@teacher/shared";
+import { languageSchema } from "@teacher/shared";
 import { readJson, writeJson } from "./jsonStore.js";
 import { isKnownLessonKey } from "../curriculum/loader.js";
 
@@ -10,7 +11,9 @@ const KEEP = 10;
 // Lesson keys come in off the wire — never let one become a path escape.
 // Checked BEFORE the "/" → "__" substitution: no dots, colons, or backslashes.
 const KEY_RE = /^[a-z0-9][a-z0-9/_-]*$/i;
-const PLAYGROUND_RE = /^playground\/(python|javascript|html-css|csharp)(\/[a-z0-9_-]+)*$/;
+// Derived from the language enum so a newly supported language can't be
+// forgotten here (which would 400 its playground runs).
+const PLAYGROUND_RE = new RegExp(`^playground/(${languageSchema.options.join("|")})(/[a-z0-9_-]+)*$`);
 
 function badRequest(message: string): Error {
   return Object.assign(new Error(message), { status: 400 });
