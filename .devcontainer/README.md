@@ -90,3 +90,12 @@ devcontainer spec permits JSONC, so that any parser (including `JSON.parse`,
 instead. After changing `devcontainer.json`, an existing codespace needs
 **Codespaces: Rebuild Container**; `containerEnv` in particular is baked in at
 container creation.
+
+Then re-run the smoke test from inside the codespace — it drives the app the
+way a reviewer's browser does, with the GitHub proxy hostname in every Host
+header rather than `localhost`, which is precisely what the server's Host guard
+is picky about:
+
+```bash
+bash scripts/verify-codespace.sh
+```

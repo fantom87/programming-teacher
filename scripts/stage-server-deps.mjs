@@ -57,6 +57,51 @@ function readPackageJson(dir) {
   }
 }
 
+// Files no runtime ever reads: source maps, type declarations, and package
+// documentation. Licences are explicitly NOT in here — MIT and friends require
+// shipping them, and several arrive as LICENSE.md.
+const KEEP_ALWAYS = /^(licen[cs]e|notice|copying|copyright)/i;
+function isDeadWeight(name) {
+  if (KEEP_ALWAYS.test(name)) return false;
+  return /\.(map|d\.ts|d\.mts|d\.cts)$/.test(name) || /\.md$/i.test(name);
+}
+
+/** Keep only `names` inside `dir`; delete the rest. */
+function keepOnly(dir, names) {
+  if (!fs.existsSync(dir)) return;
+  const keep = new Set(names);
+  for (const entry of fs.readdirSync(dir)) {
+    if (!keep.has(entry)) fs.rmSync(path.join(dir, entry), { recursive: true, force: true });
+  }
+}
+
+// Per-package trims that no generic rule would catch.
+const PACKAGE_TRIM = {
+  // sql.js ships every build it knows how to make: asm.js fallbacks, debug
+  // builds, browser builds and web-worker wrappers — 18 MB of dist for the two
+  // files Node actually loads (package.json main is dist/sql-wasm.js, which
+  // finds sql-wasm.wasm beside itself). The browser SQL runner gets its own
+  // copy through Vite, so nothing here needs the browser or worker variants.
+  "sql.js": (dir) => keepOnly(path.join(dir, "dist"), ["sql-wasm.js", "sql-wasm.wasm"]),
+};
+
+/** Strip a freshly copied package down to what actually runs. */
+function slim(name, dir) {
+  PACKAGE_TRIM[name]?.(dir);
+  const walk = (d) => {
+    for (const entry of fs.readdirSync(d, { withFileTypes: true })) {
+      const full = path.join(d, entry.name);
+      if (entry.isDirectory()) {
+        if (entry.name === ".github") fs.rmSync(full, { recursive: true, force: true });
+        else walk(full);
+      } else if (isDeadWeight(entry.name)) {
+        fs.rmSync(full, { force: true });
+      }
+    }
+  };
+  walk(dir);
+}
+
 // The Agent SDK's platform packages (@anthropic-ai/claude-agent-sdk-win32-x64
 // and friends) are a single 241 MB proprietary claude.exe each. The app runs
 // the tutor on the USER'S OWN Claude Code instead (server/src/tutor/
@@ -98,7 +143,18 @@ while (queue.length > 0) {
 
 // Fresh start only for entries we own; a full rmSync of 283 MB on every build
 // costs more than it saves, so unchanged packages are left in place below.
+// The exception is a change to the slimming rules: already-staged packages
+// pass the version check and would keep whatever the old rules left behind, so
+// bumping SLIM_VERSION forces one full re-stage.
+const SLIM_VERSION = "1";
+const slimStamp = path.join(STAGE, ".slim-version");
+const stagedWith = fs.existsSync(slimStamp) ? fs.readFileSync(slimStamp, "utf8").trim() : null;
+if (fs.existsSync(STAGE_MODULES) && stagedWith !== SLIM_VERSION) {
+  console.log("[stage] slimming rules changed — re-staging every package.");
+  fs.rmSync(STAGE_MODULES, { recursive: true, force: true });
+}
 fs.mkdirSync(STAGE_MODULES, { recursive: true });
+fs.writeFileSync(slimStamp, `${SLIM_VERSION}\n`);
 
 let copied = 0;
 let reused = 0;
@@ -136,6 +192,7 @@ for (const [name, src] of [...found].sort()) {
   // dereference: npm may have symlinked a workspace/store entry, and the
   // packaged app must contain real files.
   fs.cpSync(src, dest, { recursive: true, dereference: true });
+  slim(name, dest);
   copied++;
   bytes += dirSize(dest);
 }

@@ -13,7 +13,7 @@ Built for one learner on one machine. Not a product, not hosted anywhere.
 
 ## Try it
 
-Grab **`Programming.Teacher.1.0.0.zip`** (140 MB) from the
+Grab **`Programming.Teacher.1.0.0.zip`** (135 MB) from the
 [Releases](../../releases/latest) page, extract it, and run
 **Programming Teacher.exe** inside. It's ready in about five seconds.
 
@@ -75,7 +75,7 @@ byte-identical either way.
 
 The app ships **no Anthropic binaries**. The tutor runs on the copy of Claude
 Code *you* installed — the server finds it and points the Agent SDK at it — so
-the download carries only the SDK's JavaScript. (That's also why it's 140 MB and
+the download carries only the SDK's JavaScript. (That's also why it's 135 MB and
 starts in five seconds instead of 290 MB and fifty.)
 
 **Without it, everything still works** except three things: the tutor chat, the
