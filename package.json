@@ -18,8 +18,8 @@
     "lint-content": "tsx scripts/lint-content.ts",
     "app:pack": "npm run build && npm run bundle:server && node scripts/stage-server-deps.mjs && node scripts/make-icon.mjs",
     "app": "npm run start --prefix app",
-    "app:dist": "npm run app:pack && npm run dist --prefix app && node scripts/make-shortcut.mjs",
-    "app:portable": "npm run app:pack && npm run portable --prefix app",
+    "app:dist": "npm run app:pack && npm run dist --prefix app && node scripts/pack-zip.mjs && node scripts/make-shortcut.mjs",
+    "app:zip": "node scripts/pack-zip.mjs",
     "app:shortcut": "node scripts/make-shortcut.mjs"
   },
   "devDependencies": {

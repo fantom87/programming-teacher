@@ -52,6 +52,22 @@ function writableDir(dir) {
   }
 }
 
+// Portable by default: everything lives in the app's own folder, so the whole
+// thing is one directory you can copy, move, or delete. If that folder isn't
+// writable (installed under Program Files, run from a read-only share), this is
+// null and the per-user location takes over rather than the app failing.
+const PORTABLE_DATA = (() => {
+  if (!PACKAGED) return null;
+  const beside = path.join(path.dirname(process.execPath), "data");
+  return writableDir(beside) ? beside : null;
+})();
+
+// Chromium keeps its own profile — cache, localStorage, window state — under
+// userData, which defaults to %APPDATA%. Move it inside the app folder too, or
+// "delete the folder to uninstall" would quietly leave ~50 MB behind. This has
+// to run before the app is ready: Chromium creates the profile at startup.
+if (PORTABLE_DATA) app.setPath("userData", path.join(PORTABLE_DATA, "chromium"));
+
 function resolveLayout() {
   if (!PACKAGED) {
     return {
@@ -63,20 +79,15 @@ function resolveLayout() {
       dataDir: path.join(RES, "data"),
     };
   }
-  // Portable by default: everything lives in the app's own folder, so the whole
-  // thing is one directory you can copy, move, or delete. If that folder isn't
-  // writable (installed under Program Files, run from a read-only share), fall
-  // back to the per-user location rather than failing.
-  const beside = path.join(path.dirname(process.execPath), "data");
-  const userData = writableDir(beside) ? beside : app.getPath("userData");
+  const userData = PORTABLE_DATA ?? app.getPath("userData");
   return {
     serverEntry: path.join(RES, "server", "server.cjs"),
     repoFallback: null,
-    // Resources are read-only in principle (and wiped on every launch in the
-    // portable build, which unpacks to TEMP). The curriculum is the one tree
-    // the app writes into — accepting a custom lesson adds a lesson folder and
-    // edits track.json — so it gets copied into user-data once and used from
-    // there. syncContent() picks the final value.
+    // Resources are read-only in principle, and an update overwrites them
+    // wholesale. The curriculum is the one tree the app writes into — accepting
+    // a custom lesson adds a lesson folder and edits track.json — so it gets
+    // copied into the data folder once and used from there, where an update
+    // can't clobber it. syncContent() picks the final value.
     contentDir: path.join(userData, "content"),
     shippedContent: path.join(RES, "content"),
     docsDir: path.join(RES, "docs-content"),

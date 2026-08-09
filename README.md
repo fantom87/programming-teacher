@@ -11,51 +11,30 @@ Built for one learner on one machine. Not a product, not hosted anywhere.
 
 ---
 
-## Take a look in your browser
+## Try it
 
-Nothing to install, nothing to uninstall afterwards:
+Grab **`Programming Teacher 1.0.0.zip`** (~140 MB) from this repo's
+[Releases](../../releases) page, extract it, and run **Programming Teacher.exe**
+inside. It's ready in about five seconds.
 
-1. **Code → Codespaces → Create codespace on master**, at the top of this repo.
-2. Wait. First boot takes a few minutes — it builds a container with Node,
-   Python, .NET and Go, then runs `npm install`.
-3. A browser tab opens on the running app. If it opened before the server was
-   ready, refresh it; if it never opened, use the **Ports** panel and click the
-   globe beside **Programming Teacher (5173)**.
+There is nothing to install — not even Node. The app carries its own runtime,
+its own server, all 357 lessons and the whole docs library. It writes progress,
+snapshots and logs to a `data` folder **beside the exe**, so the app is exactly
+one folder: copy it to a USB stick, move it, or delete it and nothing is left
+behind. Extracting a newer zip over the old folder keeps your progress.
 
-**What works immediately, with no account and no setup:** 250 of the 357
-lessons run entirely inside your browser — SQL (86), Python via Pyodide (60),
-HTML/CSS (62) and JavaScript (42). So do their checks, the progress tracking,
-the 127-page docs library and the playground. The remaining 107 lessons (C# 63,
-plus the Node and CPython lessons in the JavaScript and Python tracks) shell out
-to real toolchains, which the container installs for you.
+**Windows only, for now.** macOS and Linux work fine from source (below); they
+just don't have a packaged build yet.
 
-**What needs your own Claude Code login:** the AI tutor and the AI-judged
-checks, and only those. Everything else — running code, the three non-AI check
-types, marking lessons complete — is untouched by it. To switch the tutor on,
-in the Codespace terminal:
+**What works with nothing else installed:** 250 of the 357 lessons run entirely
+in the app — SQL (86), Python via Pyodide (60), HTML/CSS (62) and JavaScript
+(42) — along with their checks, progress tracking, the 127-page docs library
+and the playground. The other 107 lessons (C# 63, plus the Node and CPython
+lessons) shell out to real toolchains, and the app tells you the install command
+when one is missing.
 
-```bash
-npm install -g @anthropic-ai/claude-code
-claude setup-token          # follow the link it prints
-bash .devcontainer/start-dev.sh restart
-```
-
-Settings will then report `using your own Claude Code`, with the path it found.
-
-**Keep the forwarded port Private.** That's the default, and it matters: port
-5173 proxies to `/api/run`, which executes arbitrary code by design. Setting the
-port's visibility to Public would put that on the open internet for anyone with
-the URL.
-
-**Caveats.** Rust isn't installed in the container — it would add about a
-gigabyte to the boot, and the Rust track has no lessons yet, so only the
-playground's Rust tab is affected. The container is Linux while the app is
-developed on Windows, so the local-toolchain lessons are the likeliest place to
-find rough edges. And a codespace is a disposable machine: `data/` holds your
-progress, and it goes away when you delete the codespace.
-
-Details of how the container is wired, and the one security default it
-deliberately relaxes, are in [`.devcontainer/README.md`](.devcontainer/README.md).
+**What needs your own Claude Code:** the AI tutor and the AI-judged checks, and
+only those. See below — everything else is untouched by it.
 
 ---
 
@@ -82,17 +61,18 @@ assertions for HTML/CSS (jsdom, cascade-correct), and AI-judged rubrics for
 things like "did you use a loop rather than copy-pasting". An AI check that
 can't be reached — offline, auth down — never blocks completion.
 
-**Code runs two ways.** In-browser for instant feedback (JavaScript in a
-worker, Python via Pyodide, SQL via sql.js, HTML in a live iframe) and on real
-local toolchains when a lesson needs them (Python, Node, .NET, Go, Rust,
-PowerShell, Bash). The SQL result formatter is shared between browser and
-server so expected output is byte-identical either way.
+**Code runs two ways.** In-app for instant feedback (JavaScript in a worker,
+Python via Pyodide, SQL via sql.js, HTML in a live iframe) and on real local
+toolchains when a lesson needs them (Python, Node, .NET, Go, Rust, PowerShell,
+Bash). The SQL result formatter is shared between the two so expected output is
+byte-identical either way.
 
 ## The AI tutor is optional
 
 The app ships **no Anthropic binaries**. The tutor runs on the copy of Claude
 Code *you* installed — the server finds it and points the Agent SDK at it — so
-a distributable build carries only the SDK's JavaScript.
+the download carries only the SDK's JavaScript. (That's also why it's 140 MB and
+starts in five seconds instead of 290 MB and fifty.)
 
 **Without it, everything still works** except three things: the tutor chat, the
 AI-judged checks (they report "couldn't reach the tutor" and never block
@@ -132,7 +112,7 @@ Plus 127 reference doc pages, and a generator that writes a **custom lesson**
 from a plain-English request ("I want to practice reversing strings") —
 schema-validated and solution-executed before it's offered.
 
-## Running it
+## Running it from source
 
 Prerequisites: **Node 22+**, and your own **Claude Code** install for the tutor
 (see above — everything else works without it). Python, .NET, Go, Rust, and Git
@@ -144,19 +124,42 @@ npm install
 npm run dev
 ```
 
-Then open http://localhost:5173. For the desktop build:
+Then open http://localhost:5173. `npm run start` instead serves the built
+frontend from the API server on port 4517, which is what the desktop app does.
 
-```bash
-npm run app:dist
-```
-
-...which produces an installer and a shortcut. The desktop shell just starts
-the local server and hosts the app in its own window.
+This is the path for macOS and Linux, and it's the one to use if you want to
+read or change the code — the packaged build is just this server in an Electron
+window.
 
 The server binds to **127.0.0.1 only** and rejects requests whose Host header
 isn't localhost. That's deliberate and load-bearing: `/api/run` executes
 arbitrary code by design, so this must never be exposed to a network. **Don't
 host this.**
+
+## Building the desktop app
+
+```bash
+npm run app:dist
+```
+
+Builds the frontend, bundles the server to a single file, stages its dependency
+closure, then produces three things in `app/dist`:
+
+- **`Programming Teacher 1.0.0.zip`** — the shareable one folder, exe inside.
+- **`Programming Teacher 1.0.0.exe`** — a one-click installer with Start Menu
+  and desktop shortcuts, for a machine you actually use it on.
+- **`Programming Teacher.lnk`** in the repo root, pointing at the unpacked build.
+
+`npm run app:zip` re-zips an existing build without rebuilding it.
+
+## Look at the code in a browser
+
+**Code → Codespaces → Create codespace on master** builds a container with Node,
+Python, .NET and Go and runs the app behind a forwarded port — no local install,
+nothing to clean up afterwards. First boot takes a few minutes. Details, and the
+one security default it deliberately relaxes, are in
+[`.devcontainer/README.md`](.devcontainer/README.md). **Keep the forwarded port
+Private** — port 5173 proxies to `/api/run`, which executes arbitrary code.
 
 ## Repo layout
 
@@ -167,13 +170,13 @@ shared/       types, zod schemas, the check engine (imported by server AND web)
 server/       Express API, runners, curriculum loader, tutor service
 web/          React SPA: lesson workspace, docs, playground, stats
 app/          Electron shell
-scripts/      content lint, asset copying, icon and shortcut generation
+scripts/      content lint, bundling, packaging, icon and shortcut generation
 ```
 
 ## Checks
 
 ```bash
-npm test            # unit + integration (127)
+npm test             # unit + integration (127)
 npm run lint-content # execute every lesson solution against its own checks
 npm run typecheck -w web
 ```
@@ -191,6 +194,8 @@ Most useful places to look:
   good, which is the part software can't verify.
 - `docs/KNOWN-LIMITATIONS.md` — what's knowingly unfinished.
 
-Honest caveats: it's Windows-first (paths, `taskkill`, PowerShell probes);
-the lesson content has been verified mechanically but not yet reviewed for
-teaching quality; and the three empty tracks are syllabus-only.
+Notes go in [`FEEDBACK.md`](FEEDBACK.md) or an issue, whichever is less friction.
+
+Honest caveats: it's Windows-first (paths, `taskkill`, PowerShell probes); the
+lesson content has been verified mechanically but not yet reviewed for teaching
+quality; and the three empty tracks are syllabus-only.
