@@ -131,6 +131,16 @@ export default function LessonView({ lessonKey, theme, navigate, onProgressChang
   const [level, setLevel] = useState<AssistanceLevel>(3);
   const [revealedHints, setRevealedHints] = useState<number[]>([]);
   const [pendingTutorMsg, setPendingTutorMsg] = useState<string | null>(null);
+  // Undefined until /api/health answers — the panes render optimistically and
+  // only switch to their offline forms once we know the tutor is unreachable.
+  const [tutorAvailable, setTutorAvailable] = useState<boolean | undefined>(undefined);
+
+  useEffect(() => {
+    api
+      .health()
+      .then((h) => setTutorAvailable(h.sdkAuth === "ok"))
+      .catch(() => setTutorAvailable(undefined));
+  }, []);
   const [paneSizes, setPaneSizes] = useState<number[]>(
     () => cachedPaneSizes ?? validPaneSizes(settings.layout?.paneSizes) ?? [30, 45, 25],
   );
@@ -505,6 +515,8 @@ export default function LessonView({ lessonKey, theme, navigate, onProgressChang
           result={result}
           preview={lesson.language === "html-css" ? preview : null}
           notice={notice}
+          language={lesson.language}
+          tutorAvailable={tutorAvailable}
           onExplainError={() =>
             setPendingTutorMsg("Please explain this error to me in plain language — what it means and where to look. Don't solve the rest of the lesson for me.")
           }
@@ -522,6 +534,7 @@ export default function LessonView({ lessonKey, theme, navigate, onProgressChang
           onEvent={handleTutorEvent}
           pendingMessage={pendingTutorMsg}
           onPendingConsumed={() => setPendingTutorMsg(null)}
+          tutorAvailable={tutorAvailable}
         />
       </section>
     </div>

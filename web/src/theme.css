@@ -790,6 +790,58 @@ button.lesson-row:hover {
   font-size: 15px;
 }
 
+/* Rule-based error help: instant, offline, no AI. Distinct from tutor replies
+   so nobody mistakes one for the other. */
+.quick-help {
+  border-top: 1px solid var(--border);
+  border-left: 3px solid var(--warn);
+  background: var(--bg-elevated);
+  padding: 8px 14px;
+  font-size: 13px;
+  max-height: 40%;
+  overflow-y: auto;
+}
+
+.quick-help-title {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.quick-help p {
+  margin: 4px 0;
+}
+
+.quick-help-look {
+  color: var(--text-dim);
+}
+
+.tutor-offline {
+  padding: 14px;
+}
+
+.transcript-label {
+  margin: 16px 0 8px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 4px;
+}
+
+.transcript-block {
+  opacity: 0.85;
+  margin-bottom: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.transcript-level {
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
 .explain-error-btn {
   margin-left: auto;
   font-size: 12px;

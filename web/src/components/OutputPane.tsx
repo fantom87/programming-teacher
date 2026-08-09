@@ -1,15 +1,30 @@
-import type { RunResult } from "@teacher/shared";
+import type { Language, RunResult } from "@teacher/shared";
+import { explainError } from "@teacher/shared";
 
 interface Props {
   result: RunResult | null;
   /** When set (HTML/CSS lessons), the pane shows a live page preview instead of a console. */
   preview?: string | null;
   notice?: string | null;
+  language?: Language;
   onExplainError?: () => void;
+  /** false when the tutor can't be reached — hides the AI button rather than
+   *  offering something that will fail. */
+  tutorAvailable?: boolean;
 }
 
-export default function OutputPane({ result, preview, notice, onExplainError }: Props) {
+export default function OutputPane({
+  result,
+  preview,
+  notice,
+  language,
+  onExplainError,
+  tutorAvailable = true,
+}: Props) {
   const failed = result && (!result.ok || result.stderr);
+  // Rule-based, instant, works offline. Never guesses: silent when unmatched.
+  const quickHelp = failed && language ? explainError(result.stderr, language) : null;
+
   return (
     <div className="output-pane">
       <div className="output-header">{preview != null ? "Preview" : "Output"}</div>
@@ -30,6 +45,13 @@ export default function OutputPane({ result, preview, notice, onExplainError }: 
           )}
         </pre>
       )}
+      {quickHelp && (
+        <div className="quick-help" role="note">
+          <div className="quick-help-title">💡 {quickHelp.title}</div>
+          <p>{quickHelp.explanation}</p>
+          <p className="quick-help-look">{quickHelp.lookFor}</p>
+        </div>
+      )}
       {result && preview == null && (
         <div className={`output-status ${result.ok ? "ok" : "fail"}`} role="status">
           {result.timedOut
@@ -37,9 +59,9 @@ export default function OutputPane({ result, preview, notice, onExplainError }: 
             : result.ok
               ? `✓ finished in ${result.durationMs} ms`
               : `✗ exited with code ${result.exitCode ?? "?"} in ${result.durationMs} ms`}
-          {failed && onExplainError && (
+          {failed && onExplainError && tutorAvailable && (
             <button className="explain-error-btn" onClick={onExplainError}>
-              Explain this error
+              Ask the tutor about this
             </button>
           )}
         </div>
