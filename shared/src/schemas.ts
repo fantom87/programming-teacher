@@ -4,7 +4,7 @@ import { z } from "zod";
 // curriculum manifests, lesson frontmatter, and (later) tutor tool inputs.
 // The AI tutor authors content through these same gates in v1.5.
 
-export const tierSchema = z.enum(["foundations", "core", "intermediate", "advanced", "refresher"]);
+export const tierSchema = z.enum(["foundations", "core", "intermediate", "advanced", "refresher", "custom"]);
 export const languageSchema = z.enum([
   "python",
   "javascript",

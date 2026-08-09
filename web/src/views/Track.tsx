@@ -2,18 +2,23 @@ import { useEffect, useState } from "react";
 import type { Tier } from "@teacher/shared";
 import { api, type TrackView } from "../api/client";
 import type { Route } from "../App";
+import CustomLessonModal from "../components/CustomLessonModal";
 
-const TIER_ORDER: Tier[] = ["foundations", "core", "intermediate", "advanced", "refresher"];
+// "custom" renders last — the learner's own generated lessons live below the
+// authored syllabus.
+const TIER_ORDER: Tier[] = ["foundations", "core", "intermediate", "advanced", "refresher", "custom"];
 const TIER_LABEL: Record<Tier, string> = {
   foundations: "Foundations",
   core: "Core",
   intermediate: "Intermediate",
   advanced: "Advanced",
   refresher: "Refresher",
+  custom: "Your custom lessons",
 };
 
 export default function Track({ trackId, navigate }: { trackId: string; navigate: (r: Route) => void }) {
   const [track, setTrack] = useState<TrackView | null>(null);
+  const [customOpen, setCustomOpen] = useState(false);
 
   useEffect(() => {
     api
@@ -26,7 +31,12 @@ export default function Track({ trackId, navigate }: { trackId: string; navigate
 
   return (
     <div className="view-pad track-view">
-      <h1>{track.title}</h1>
+      <div className="track-head">
+        <h1>{track.title}</h1>
+        <button className="custom-lesson-btn" onClick={() => setCustomOpen(true)}>
+          ✨ Custom lesson…
+        </button>
+      </div>
       <p className="dim">{track.philosophy}</p>
       {TIER_ORDER.map((tier) => {
         const units = track.units.filter((u) => u.tier === tier);
@@ -75,6 +85,17 @@ export default function Track({ trackId, navigate }: { trackId: string; navigate
           </section>
         );
       })}
+      {customOpen && (
+        <CustomLessonModal
+          trackId={track.id}
+          trackTitle={track.title}
+          onClose={() => setCustomOpen(false)}
+          onAccepted={(key) => {
+            setCustomOpen(false);
+            navigate({ view: "lesson", key });
+          }}
+        />
+      )}
     </div>
   );
 }

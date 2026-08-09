@@ -9,6 +9,7 @@ import { draftRoutes } from "./routes/drafts.js";
 import { settingsRoutes } from "./routes/settings.js";
 import { runRoutes } from "./routes/run.js";
 import { tutorRoutes } from "./routes/tutor.js";
+import { customLessonRoutes } from "./routes/customLesson.js";
 import { docsRoutes } from "./routes/docs.js";
 import { exportRoutes } from "./routes/export.js";
 import { getCurriculum } from "./curriculum/loader.js";
@@ -63,6 +64,7 @@ app.use(draftRoutes(DATA_DIR));
 app.use(settingsRoutes(DATA_DIR));
 app.use(runRoutes(CONTENT_DIR, DATA_DIR));
 app.use(tutorRoutes(CONTENT_DIR, DATA_DIR));
+app.use(customLessonRoutes(CONTENT_DIR, DATA_DIR));
 app.use(docsRoutes(path.join(ROOT, "docs-content")));
 app.use(exportRoutes(DATA_DIR));
 

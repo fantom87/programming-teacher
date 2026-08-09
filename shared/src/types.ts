@@ -1,6 +1,6 @@
 // The contract everything hangs off. Server, web, and content all import from here.
 
-export type Tier = "foundations" | "core" | "intermediate" | "advanced" | "refresher";
+export type Tier = "foundations" | "core" | "intermediate" | "advanced" | "refresher" | "custom";
 export type Language =
   | "python"
   | "javascript"

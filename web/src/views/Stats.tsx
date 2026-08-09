@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import type { JournalEntry, Progress, Tier } from "@teacher/shared";
 import { api, type TrackView } from "../api/client";
 
-const TIER_ORDER: Tier[] = ["foundations", "core", "intermediate", "advanced", "refresher"];
+const TIER_ORDER: Tier[] = ["foundations", "core", "intermediate", "advanced", "refresher", "custom"];
 
 function tierRollup(track: TrackView): Map<Tier, { done: number; total: number }> {
   const rollup = new Map<Tier, { done: number; total: number }>();

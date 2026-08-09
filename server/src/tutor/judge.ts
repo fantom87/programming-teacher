@@ -31,9 +31,11 @@ async function loadSolution(lesson: Lesson): Promise<Record<string, string> | nu
   return solutionProvider(key).catch(() => null);
 }
 
-type OneShotResult = { ok: true; text: string } | { ok: false; reason: string };
+export type OneShotResult = { ok: true; text: string } | { ok: false; reason: string };
 
-async function oneShot(prompt: string, systemPrompt: string, model: string): Promise<OneShotResult> {
+// Also used by tutor/author.ts (custom lesson generation) — same no-tools,
+// single-turn, subscription-auth query shape.
+export async function oneShot(prompt: string, systemPrompt: string, model: string): Promise<OneShotResult> {
   try {
     for await (const message of query({
       prompt,
