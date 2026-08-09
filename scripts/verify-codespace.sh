@@ -4,8 +4,14 @@
 set -u
 cd /workspaces/programming-teacher
 
-git pull -q origin master || true
-HOST_HDR="${CODESPACE_NAME}-5173.${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN:-app.github.dev}"
+# The codespace env vars are exported to the VS Code session but not to a bare
+# ssh shell, so allow the name to be passed in: verify-codespace.sh <name>
+CS_NAME="${1:-${CODESPACE_NAME:-}}"
+if [ -z "$CS_NAME" ]; then
+  echo "usage: verify-codespace.sh <codespace-name>   (or run inside the VS Code terminal)" >&2
+  exit 2
+fi
+HOST_HDR="${CS_NAME}-5173.${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN:-app.github.dev}"
 echo "proxy host header: $HOST_HDR"
 
 echo "--- app page ---"

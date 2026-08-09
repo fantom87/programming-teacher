@@ -447,23 +447,53 @@ async function csWorkspace(dataDir: string, opts: LocalRunOptions): Promise<stri
   return dir;
 }
 
+const DOTNET_ENV = {
+  DOTNET_CLI_TELEMETRY_OPTOUT: "1",
+  DOTNET_NOLOGO: "1",
+  // Suppress the one-time "Welcome to .NET" banner — on a fresh machine it
+  // lands on the first invocation and would otherwise be read as program output.
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "1",
+  // Culture-proof formatting: "9.75" must never become "9,75" on a
+  // comma-decimal locale, or every exact stdout check would fail.
+  DOTNET_SYSTEM_GLOBALIZATION_INVARIANT: "1",
+};
+
 async function runCsharp(dataDir: string, opts: LocalRunOptions, timeoutMs: number): Promise<RunResult> {
   const dir = await csWorkspace(dataDir, opts);
-  return spawnCapture({
-    command: await resolveBinary(dotnetCandidates()),
-    args: ["run", "--project", ".", "-v", "q", "--nologo"],
+  const dotnet = await resolveBinary(dotnetCandidates());
+
+  // Build and run as SEPARATE steps. `dotnet run` interleaves restore/build
+  // chatter with the program's own output on a cold machine — the first C# run
+  // on a fresh install failed every exact-output check because of it, then
+  // passed forever after. Building first keeps the run's stdout purely the
+  // learner's program.
+  const build = await spawnCapture({
+    command: dotnet,
+    args: ["build", "-v", "q", "--nologo"],
     cwd: dir,
-    env: {
-      DOTNET_CLI_TELEMETRY_OPTOUT: "1",
-      DOTNET_NOLOGO: "1",
-      // Culture-proof formatting: "9.75" must never become "9,75" on a
-      // comma-decimal locale, or every exact stdout check would fail.
-      DOTNET_SYSTEM_GLOBALIZATION_INVARIANT: "1",
-    },
+    env: DOTNET_ENV,
+    timeoutMs: Math.max(timeoutMs, 90_000), // restore + compile, cold
+  });
+  if (!build.ok) {
+    // Compiler errors ARE the lesson content — surface them as the run's
+    // failure, with build output on stderr where the error explainer reads it.
+    return {
+      ...build,
+      stdout: "",
+      stderr: [build.stdout, build.stderr].filter(Boolean).join("\n").trim(),
+    };
+  }
+
+  const run = await spawnCapture({
+    command: dotnet,
+    args: ["run", "--no-build", "--project", ".", "-v", "q", "--nologo"],
+    cwd: dir,
+    env: DOTNET_ENV,
     stdin: opts.stdin,
-    timeoutMs: Math.max(timeoutMs, 60_000), // first build is slow; cap generously
+    timeoutMs: Math.max(timeoutMs, 30_000),
     nonce: opts.nonce,
   });
+  return { ...run, durationMs: build.durationMs + run.durationMs };
 }
 
 // Rust: rustc in a persistent per-lesson workspace under data/rs-workspaces
