@@ -1,0 +1,89 @@
+{
+  "id": "rust",
+  "title": "Rust",
+  "language": "rust",
+  "philosophy": "The compiler as the strictest, fairest teacher you'll ever have — it slows you down early, explains exactly why, and in return hands you speed and safety no scripting language can promise.",
+  "units": [
+    {
+      "id": "01-rust-fast-foundations",
+      "title": "Rust Fast Foundations",
+      "tier": "foundations",
+      "summary": "Compressed basics; assumes any prior track's Foundations but stands alone.",
+      "lessons": [],
+      "planned": true,
+      "topics": ["cargo and rustc: your first build", "let, mut, and shadowing", "scalar types and inference", "functions, statements, and expressions", "control flow: if, loop, while, for", "tuples and arrays", "println! and the macros you use before you write any", "mini-project: guessing game"]
+    },
+    {
+      "id": "02-ownership-and-borrowing",
+      "title": "Ownership and Borrowing",
+      "tier": "core",
+      "summary": "THE unit — the idea every other Rust feature depends on, taken slowly.",
+      "lessons": [],
+      "planned": true,
+      "topics": ["stack, heap, and why Rust cares", "ownership and move semantics", "Copy vs Clone", "functions, arguments, and giving values away", "references: borrowing instead of moving", "mutable references and the aliasing rule", "reading borrow-checker errors like documentation", "slices: borrowed views of data", "String vs &str, first pass", "ownership drills: fix the broken code"]
+    },
+    {
+      "id": "03-structs-enums-matching",
+      "title": "Structs, Enums, Pattern Matching",
+      "tier": "core",
+      "summary": "Modeling data the Rust way: structs, enums that carry data, and exhaustive matching.",
+      "lessons": [],
+      "planned": true,
+      "topics": ["structs and impl blocks", "methods and associated functions", "derive: Debug, Clone, PartialEq", "enums that carry data", "Option<T>: goodbye null", "match and exhaustiveness", "if let and let else", "modeling a domain with enums"]
+    },
+    {
+      "id": "04-collections-strings-slices",
+      "title": "Collections, Strings, Slices",
+      "tier": "core",
+      "summary": "Vec, String, HashMap — and the ownership questions they force; ends with the Core capstone.",
+      "lessons": [],
+      "planned": true,
+      "topics": ["Vec<T>: growable and owned", "indexing, iteration, and borrow rules in loops", "String and &str for real this time", "UTF-8 and why strings can't be indexed", "HashMap<K, V>", "the entry API and counting patterns", "iterating: iter, iter_mut, into_iter", "capstone: text-stats tool"]
+    },
+    {
+      "id": "05-error-handling",
+      "title": "Error Handling",
+      "tier": "intermediate",
+      "summary": "Result, Option, and ? — errors the type system won't let you ignore.",
+      "lessons": [],
+      "planned": true,
+      "topics": ["panic! and unrecoverable errors", "Result<T, E> and matching on it", "the ? operator", "Option and Result combinators", "unwrap, expect, and when they're fine", "custom error types and From conversions", "returning Result from main", "error-handling drills across a small program"]
+    },
+    {
+      "id": "06-traits-and-generics",
+      "title": "Traits and Generics",
+      "tier": "intermediate",
+      "summary": "Shared behavior and code that works for many types — Rust's answer to interfaces.",
+      "lessons": [],
+      "planned": true,
+      "topics": ["traits: defining shared behavior", "implementing Display and friends", "default methods", "generics in functions and structs", "trait bounds and where clauses", "impl Trait", "dyn Trait and dynamic dispatch", "the Iterator trait and adapter chains", "closures and the Fn family", "monomorphization: why generics are free"]
+    },
+    {
+      "id": "07-modules-cargo-testing",
+      "title": "Modules, Cargo, Testing",
+      "tier": "intermediate",
+      "summary": "Real project structure: modules, crates, dependencies, and tests; ends with the Intermediate capstone.",
+      "lessons": [],
+      "planned": true,
+      "topics": ["modules, mod, and use", "pub and visibility", "splitting code across files", "binary vs library crates", "Cargo.toml and crates.io dependencies", "cargo fmt, clippy, and doc", "unit and integration tests", "doc tests and examples", "capstone: library crate with a CLI front-end"]
+    },
+    {
+      "id": "08-smart-pointers-lifetimes",
+      "title": "Smart Pointers and Lifetimes",
+      "tier": "advanced",
+      "summary": "Under the hood: Box, Rc, RefCell, and the lifetime annotations the compiler was writing for you.",
+      "lessons": [],
+      "planned": true,
+      "topics": ["lifetimes: what the compiler was inferring all along", "lifetime annotations in functions", "structs that hold references", "Box<T> and the heap", "Rc<T> and shared ownership", "RefCell<T> and interior mutability", "combining Rc and RefCell", "Deref and Drop", "a taste of Arc and Mutex for threads"]
+    },
+    {
+      "id": "09-capstone-cli",
+      "title": "Capstone: Real CLI Tool",
+      "tier": "advanced",
+      "summary": "Multi-session capstone: a real command-line tool, built the Rust way.",
+      "lessons": [],
+      "planned": true,
+      "topics": ["spec and design", "argument parsing with clap", "core logic with tests", "file I/O and error handling end to end", "polish: clippy-clean and a performance pass", "ship it: release builds and distribution"]
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+capital of France|Paris
+2 + 2|4
+keyword to define a function|def
+exception for a bad value|ValueError
+method that runs when an object is created|__init__

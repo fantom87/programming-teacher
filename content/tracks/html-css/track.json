@@ -27,8 +27,17 @@
       "title": "Styling Fundamentals",
       "tier": "core",
       "summary": "Selectors, cascade, box model, color, typography.",
-      "lessons": [],
-      "planned": true,
+      "lessons": [
+        "01-selector-combinators",
+        "02-specificity-and-cascade",
+        "03-inheritance",
+        "04-box-model-in-depth",
+        "05-display-values",
+        "06-color-systems",
+        "07-units",
+        "08-typography-and-web-fonts",
+        "09-pseudo-classes-and-elements"
+      ],
       "topics": ["selector types and combinators", "specificity and cascade", "inheritance", "box model in depth", "display values", "color systems", "units", "typography and web fonts", "pseudo-classes and pseudo-elements"]
     },
     {
@@ -36,8 +45,17 @@
       "title": "Layout",
       "tier": "core",
       "summary": "Flow, flexbox, grid; ends with the Core capstone.",
-      "lessons": [],
-      "planned": true,
+      "lessons": [
+        "01-normal-flow",
+        "02-position",
+        "03-flexbox-basics",
+        "04-flex-alignment",
+        "05-grid-basics",
+        "06-grid-placement",
+        "07-flex-or-grid",
+        "08-overflow",
+        "09-capstone-landing-page"
+      ],
       "topics": ["normal flow", "position", "flexbox", "grid", "choosing flex vs grid", "navbar, card-grid, sidebar patterns", "overflow", "capstone: styled landing page"]
     },
     {

@@ -1,7 +1,16 @@
 // The contract everything hangs off. Server, web, and content all import from here.
 
 export type Tier = "foundations" | "core" | "intermediate" | "advanced" | "refresher";
-export type Language = "python" | "javascript" | "html-css" | "csharp";
+export type Language =
+  | "python"
+  | "javascript"
+  | "html-css"
+  | "csharp"
+  | "sql"
+  | "powershell"
+  | "bash"
+  | "go"
+  | "rust";
 export type RunnerKind = "browser" | "local";
 export type AssistanceLevel = 1 | 2 | 3 | 4 | 5;
 

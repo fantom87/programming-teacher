@@ -27,8 +27,17 @@
       "title": "Functions, Arrays, Objects",
       "tier": "core",
       "summary": "The three workhorses of JS, plus a first look at closures.",
-      "lessons": [],
-      "planned": true,
+      "lessons": [
+        "01-arrow-functions",
+        "02-callbacks",
+        "03-array-methods-tour",
+        "04-map-and-filter",
+        "05-reduce",
+        "06-object-methods-and-this",
+        "07-nested-data",
+        "08-json",
+        "09-closures-first-look"
+      ],
       "topics": ["arrow functions", "callbacks", "map/filter/reduce", "array methods tour", "object methods and this", "nested data", "closures first look", "JSON"]
     },
     {
@@ -36,8 +45,17 @@
       "title": "The DOM and Events",
       "tier": "core",
       "summary": "Making pages interactive; ends with the Core capstone.",
-      "lessons": [],
-      "planned": true,
+      "lessons": [
+        "01-meet-the-dom",
+        "02-queryselector",
+        "03-creating-and-changing-elements",
+        "04-classlist",
+        "05-event-listeners",
+        "06-forms-and-input-values",
+        "07-event-delegation",
+        "08-rendering-lists-from-data",
+        "09-capstone-todo-widget"
+      ],
       "topics": ["querySelector", "creating and modifying elements", "classList", "event listeners", "forms and input values", "event delegation", "rendering lists from data", "capstone: interactive todo-list widget"]
     },
     {

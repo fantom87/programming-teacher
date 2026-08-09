@@ -5,7 +5,17 @@ import { z } from "zod";
 // The AI tutor authors content through these same gates in v1.5.
 
 export const tierSchema = z.enum(["foundations", "core", "intermediate", "advanced", "refresher"]);
-export const languageSchema = z.enum(["python", "javascript", "html-css", "csharp"]);
+export const languageSchema = z.enum([
+  "python",
+  "javascript",
+  "html-css",
+  "csharp",
+  "sql",
+  "powershell",
+  "bash",
+  "go",
+  "rust",
+]);
 export const runnerSchema = z.enum(["browser", "local"]);
 
 export const domAssertionSchema = z.union([

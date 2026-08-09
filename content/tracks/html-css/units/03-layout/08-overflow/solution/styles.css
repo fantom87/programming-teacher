@@ -1,0 +1,36 @@
+body {
+  font-family: sans-serif;
+  margin: 24px;
+  max-width: 480px;
+}
+
+/* Fixed height — but the messages don't care. Fix that here. */
+.chat-log {
+  height: 240px;
+  background-color: aliceblue;
+  border: 2px solid steelblue;
+  border-radius: 8px;
+  padding: 0 12px;
+  overflow-y: auto;
+}
+
+/* Fixed width — the stickers march right past it. Fix that here. */
+.sticker-strip {
+  width: 360px;
+  background-color: lemonchiffon;
+  border: 2px solid goldenrod;
+  border-radius: 8px;
+  padding: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.sticker {
+  font-size: 28px;
+  padding: 0 4px;
+}
+
+.caption {
+  color: gray;
+  font-size: 14px;
+}

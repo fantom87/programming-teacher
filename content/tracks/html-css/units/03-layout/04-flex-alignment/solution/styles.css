@@ -1,0 +1,39 @@
+body {
+  font-family: sans-serif;
+  margin: 0;
+}
+
+/* Arrange the brand and the nav here. */
+.site-header {
+  background-color: midnightblue;
+  color: white;
+  padding: 12px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.brand {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+/* Arrange the links here. */
+.nav-links {
+  display: flex;
+  gap: 16px;
+}
+
+.nav-links a {
+  color: white;
+  text-decoration: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background-color: royalblue;
+}
+
+main {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 24px;
+}

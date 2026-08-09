@@ -159,7 +159,7 @@ describe("curriculum loader", () => {
     const contentDir = path.resolve(__dirname, "..", "..", "..", "content");
     const cur = await loadCurriculum(contentDir);
     expect(cur.errors).toEqual([]);
-    expect(cur.tracks.length).toBe(4);
+    expect(cur.tracks.length).toBe(8);
     expect(cur.lessons.size).toBeGreaterThanOrEqual(8);
     // Solutions are loaded for the tutor but never included in Lesson objects.
     for (const lesson of cur.lessons.values()) {

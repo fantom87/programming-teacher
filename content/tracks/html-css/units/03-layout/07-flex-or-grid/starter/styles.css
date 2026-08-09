@@ -1,0 +1,39 @@
+body {
+  font-family: sans-serif;
+  margin: 24px;
+}
+
+/* One-direction problem — pick your tool. */
+.tag-row {
+}
+
+.tag {
+  background-color: lavender;
+  border: 1px solid mediumpurple;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 14px;
+}
+
+/* Two-direction problem — pick your tool. */
+.shelf {
+}
+
+.cover {
+  min-height: 140px;
+  padding: 10px;
+  border-radius: 6px;
+  color: white;
+  font-weight: bold;
+  display: flex;
+  align-items: flex-end;
+}
+
+.teal  { background-color: teal; }
+.plum  { background-color: purple; }
+.rust  { background-color: sienna; }
+.navy  { background-color: navy; }
+.moss  { background-color: darkolivegreen; }
+.gold  { background-color: darkgoldenrod; }
+.wine  { background-color: maroon; }
+.slate { background-color: darkslategray; }

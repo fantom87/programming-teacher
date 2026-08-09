@@ -26,8 +26,17 @@
       "title": "Types and Object-Oriented C#",
       "tier": "core",
       "summary": "Classes, structs, interfaces, inheritance — the typed way.",
-      "lessons": [],
-      "planned": true,
+      "lessons": [
+        "01-value-vs-reference",
+        "02-properties",
+        "03-constructors-and-initialization",
+        "04-access-modifiers",
+        "05-inheritance-and-virtual",
+        "06-abstract-classes",
+        "07-interfaces",
+        "08-enums",
+        "09-structs"
+      ],
       "topics": ["value vs reference types", "properties", "constructors and initialization", "inheritance and virtual/override", "abstract classes", "interfaces", "enums", "structs", "access modifiers"]
     },
     {
@@ -35,8 +44,17 @@
       "title": "Collections, Generics, LINQ",
       "tier": "core",
       "summary": "Data manipulation idioms; ends with the Core capstone.",
-      "lessons": [],
-      "planned": true,
+      "lessons": [
+        "01-list-power-tools",
+        "02-dictionaries",
+        "03-hashsets",
+        "04-generic-methods",
+        "05-generic-classes-and-constraints",
+        "06-linq-where-and-select",
+        "07-linq-aggregation-and-grouping",
+        "08-query-syntax-and-deferred-execution",
+        "09-capstone-game-shelf-report"
+      ],
       "topics": ["List, Dictionary, HashSet", "generic methods and classes", "constraints", "LINQ query and method syntax", "projection, filtering, grouping, aggregation", "deferred execution", "capstone: data-driven console app"]
     },
     {

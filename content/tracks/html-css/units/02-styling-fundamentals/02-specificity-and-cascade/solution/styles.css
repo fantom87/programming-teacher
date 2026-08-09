@@ -1,0 +1,12 @@
+h1 {
+  color: teal;
+}
+
+/* Class beats tag, so this wins even though the p rule comes later. */
+.alert {
+  color: crimson;
+}
+
+p {
+  color: dimgray;
+}

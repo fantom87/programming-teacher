@@ -1,0 +1,184 @@
+{
+  "id": "sql",
+  "title": "SQL",
+  "language": "sql",
+  "philosophy": "Data questions answered directly — every lesson runs a real query against real tables in an in-browser database, so the output is always actual rows, not toy printouts.",
+  "units": [
+    {
+      "id": "01-first-queries",
+      "title": "First Queries",
+      "tier": "foundations",
+      "summary": "Tables, SELECT, expressions, aliases, DISTINCT, LIMIT.",
+      "lessons": [],
+      "planned": true,
+      "topics": [
+        "tables, rows, columns, and types: reading a schema before querying",
+        "SELECT and FROM: your first result set",
+        "choosing columns and controlling column order",
+        "SELECT * and when not to use it",
+        "expressions and arithmetic in the SELECT list",
+        "column aliases with AS",
+        "string functions: UPPER, LOWER, LENGTH, and concatenation",
+        "DISTINCT: collapsing duplicate rows",
+        "LIMIT: previewing big tables safely",
+        "mini-project: profile an unfamiliar dataset with a series of first-look queries"
+      ]
+    },
+    {
+      "id": "02-filtering-and-sorting",
+      "title": "Filtering and Sorting",
+      "tier": "foundations",
+      "summary": "WHERE, pattern matching, NULL, ORDER BY, top-N results.",
+      "lessons": [],
+      "planned": true,
+      "topics": [
+        "WHERE with comparison operators",
+        "combining conditions: AND, OR, NOT, and parentheses",
+        "IN and BETWEEN for sets and ranges",
+        "LIKE and wildcard patterns",
+        "NULL, IS NULL, and three-valued logic surprises",
+        "ORDER BY: single columns, multiple columns, ASC and DESC",
+        "sorting by expressions and aliases",
+        "LIMIT with OFFSET: top-N and pagination",
+        "CASE expressions: labeling rows in the result",
+        "mini-project: a filtered, sorted top-N report from a product catalog"
+      ]
+    },
+    {
+      "id": "03-aggregation-and-grouping",
+      "title": "Aggregation and Grouping",
+      "tier": "core",
+      "summary": "COUNT/SUM/AVG, GROUP BY, HAVING, conditional aggregation.",
+      "lessons": [],
+      "planned": true,
+      "topics": [
+        "COUNT(*) vs COUNT(column): counting rows and values",
+        "SUM, AVG, MIN, MAX over a whole table",
+        "how aggregates treat NULL",
+        "GROUP BY a single column: one row per group",
+        "GROUP BY multiple columns",
+        "HAVING vs WHERE: filtering groups vs filtering rows",
+        "COUNT(DISTINCT ...) and rounding aggregate output",
+        "conditional aggregation: CASE inside SUM and COUNT",
+        "logical query order: FROM, WHERE, GROUP BY, HAVING, SELECT, ORDER BY"
+      ]
+    },
+    {
+      "id": "04-joins",
+      "title": "Joins",
+      "tier": "core",
+      "summary": "All the join types, junction tables, self joins; ends with the Core capstone.",
+      "lessons": [],
+      "planned": true,
+      "topics": [
+        "why data lives in multiple tables: primary and foreign keys",
+        "INNER JOIN: matching rows across tables",
+        "table aliases and qualifying column names",
+        "LEFT JOIN: keeping unmatched rows",
+        "finding what's missing: LEFT JOIN with IS NULL",
+        "RIGHT and FULL OUTER JOIN, and emulating them with UNION",
+        "joining three or more tables",
+        "many-to-many relationships and junction tables",
+        "self joins and CROSS JOIN: when a table meets itself, and accidental row explosions",
+        "capstone: multi-table sales report joining customers, orders, products, and categories with aggregation"
+      ]
+    },
+    {
+      "id": "05-subqueries-and-ctes",
+      "title": "Subqueries and CTEs",
+      "tier": "intermediate",
+      "summary": "Scalar and correlated subqueries, EXISTS, CTEs, recursion, set operations.",
+      "lessons": [],
+      "planned": true,
+      "topics": [
+        "scalar subqueries in SELECT and WHERE",
+        "subqueries with IN and NOT IN",
+        "correlated subqueries: the inner query that runs per row",
+        "EXISTS and NOT EXISTS",
+        "derived tables: subqueries in FROM",
+        "WITH: common table expressions for readable queries",
+        "chaining multiple CTEs into a pipeline",
+        "recursive CTEs: number series and hierarchies",
+        "set operations: UNION, UNION ALL, INTERSECT, EXCEPT",
+        "choosing between a join, a subquery, and a CTE"
+      ]
+    },
+    {
+      "id": "06-changing-data",
+      "title": "Changing Data",
+      "tier": "intermediate",
+      "summary": "INSERT, UPDATE, DELETE, upsert, RETURNING; ends with the Intermediate capstone.",
+      "lessons": [],
+      "planned": true,
+      "topics": [
+        "INSERT: single rows and multi-row inserts",
+        "column lists, DEFAULT values, and what happens when you omit columns",
+        "INSERT ... SELECT: copying and transforming data between tables",
+        "UPDATE ... SET with WHERE, and the danger of forgetting the WHERE",
+        "updating one table using values from another",
+        "DELETE with WHERE and clearing tables safely",
+        "upsert: INSERT ... ON CONFLICT",
+        "RETURNING: seeing exactly what a write changed",
+        "multi-statement scripts: make changes, then verify with a final SELECT",
+        "capstone: data-cleanup script that dedupes, normalizes, and backfills a messy imports table"
+      ]
+    },
+    {
+      "id": "07-schema-design-and-integrity",
+      "title": "Schema Design and Integrity",
+      "tier": "advanced",
+      "summary": "DDL, constraints, normalization, indexes, transactions.",
+      "lessons": [],
+      "planned": true,
+      "topics": [
+        "CREATE TABLE and SQLite type affinity",
+        "primary keys, rowid, and AUTOINCREMENT",
+        "NOT NULL, UNIQUE, DEFAULT, and CHECK constraints",
+        "foreign keys and PRAGMA foreign_keys: enforcing relationships",
+        "normalization in practice: from one wide table to 3NF",
+        "ALTER TABLE and simple schema migrations",
+        "views: saved queries that act like tables",
+        "indexes and EXPLAIN QUERY PLAN: making lookups fast",
+        "transactions: BEGIN, COMMIT, ROLLBACK, and atomic multi-statement scripts",
+        "ACID concepts: what transactions guarantee and when they matter"
+      ]
+    },
+    {
+      "id": "08-analytical-sql",
+      "title": "Analytical SQL",
+      "tier": "advanced",
+      "summary": "Window functions, dates, pivots, report queries; ends with the Advanced capstone.",
+      "lessons": [],
+      "planned": true,
+      "topics": [
+        "window functions: OVER and PARTITION BY",
+        "ranking: ROW_NUMBER, RANK, DENSE_RANK",
+        "running totals with window frames (ROWS BETWEEN)",
+        "moving averages and smoothing",
+        "LAG and LEAD: comparing a row to its neighbors",
+        "NTILE, buckets, and percentiles",
+        "date and time functions in SQLite: strftime, date arithmetic, grouping by month",
+        "pivoting with conditional aggregation: rows into columns",
+        "capstone: analytics suite over a sales dataset — monthly trends, top movers, and cohort-style retention in CTE-plus-window queries"
+      ]
+    },
+    {
+      "id": "09-sql-refresher",
+      "title": "SQL Refresher",
+      "tier": "refresher",
+      "summary": "Dense recap for returning developers, with challenging checks.",
+      "lessons": [],
+      "planned": true,
+      "topics": [
+        "query anatomy sprint: SELECT through LIMIT in one pass",
+        "filtering, CASE, and NULL logic recap",
+        "aggregation and grouping recap",
+        "every join in one dataset",
+        "subqueries, CTEs, and set operations recap",
+        "writing data: INSERT, UPDATE, DELETE, upsert",
+        "schema, constraints, indexes, and transactions recap",
+        "window functions and analytical patterns recap"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,84 @@
+body {
+  font-family: sans-serif;
+  margin: 0;
+  color: #223;
+}
+
+/* Navbar — flexbox */
+.site-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: darkslateblue;
+  color: white;
+  padding: 14px 24px;
+}
+
+.brand {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.nav-links {
+  display: flex;
+  gap: 16px;
+}
+
+.nav-links a {
+  color: white;
+  text-decoration: none;
+}
+
+/* Hero — the stage */
+.hero {
+  background-color: lavender;
+  text-align: center;
+  padding: 48px 24px;
+}
+
+.hero h1 {
+  margin: 0 0 12px;
+  color: darkslateblue;
+}
+
+.tagline {
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+/* Features — grid */
+.features {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.features h2 {
+  color: darkslateblue;
+}
+
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.card {
+  background-color: ghostwhite;
+  border: 1px solid lightsteelblue;
+  border-radius: 10px;
+  padding: 16px;
+}
+
+.card h3 {
+  margin-top: 0;
+  color: darkslateblue;
+}
+
+footer {
+  background-color: darkslateblue;
+  color: white;
+  text-align: center;
+  padding: 12px;
+  margin-top: 24px;
+}

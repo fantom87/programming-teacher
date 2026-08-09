@@ -1,0 +1,30 @@
+body {
+  font-family: Georgia, serif;
+  line-height: 1.6;
+  max-width: 60ch;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+li {
+  padding: 8px 12px;
+  list-style: none;
+}
+
+a {
+  color: darkslateblue;
+}
+
+/* Your finishing pass goes below: hover, stripes, drop cap. */
+
+a:hover {
+  color: crimson;
+}
+
+li:nth-child(odd) {
+  background-color: #eef2f7;
+}
+
+.intro::first-letter {
+  font-size: 2.5rem;
+}

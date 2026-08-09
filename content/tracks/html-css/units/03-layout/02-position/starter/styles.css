@@ -1,0 +1,31 @@
+body {
+  font-family: sans-serif;
+  margin: 24px;
+  max-width: 480px;
+}
+
+.card {
+  background-color: cornsilk;
+  border: 2px solid tan;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.card h2 {
+  margin-top: 0;
+}
+
+.price {
+  font-weight: bold;
+  color: sienna;
+}
+
+/* The badge already looks the part — it just isn't positioned yet. */
+.badge {
+  background-color: crimson;
+  color: white;
+  font-size: 14px;
+  font-weight: bold;
+  padding: 4px 10px;
+  border-radius: 999px;
+}

@@ -1,0 +1,13 @@
+body {
+  font-family: Georgia, serif;
+  line-height: 1.6;
+}
+
+h1 {
+  font-size: 2rem;
+}
+
+p {
+  font-size: 1.125rem;
+  max-width: 60ch;
+}

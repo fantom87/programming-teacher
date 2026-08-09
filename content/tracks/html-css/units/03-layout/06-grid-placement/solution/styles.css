@@ -1,0 +1,42 @@
+body {
+  font-family: sans-serif;
+  margin: 16px;
+}
+
+/* The shell — declare the grid here. */
+.page {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 16px;
+}
+
+.top-bar {
+  background-color: darkolivegreen;
+  color: white;
+  font-size: 20px;
+  font-weight: bold;
+  padding: 14px 18px;
+  border-radius: 8px;
+  grid-column: 1 / -1;
+}
+
+.side-nav {
+  background-color: beige;
+  padding: 4px 18px 18px;
+  border-radius: 8px;
+}
+
+.content {
+  background-color: floralwhite;
+  padding: 4px 18px 18px;
+  border-radius: 8px;
+}
+
+.page-footer {
+  background-color: darkolivegreen;
+  color: white;
+  padding: 10px 18px;
+  border-radius: 8px;
+  text-align: center;
+  grid-column: 1 / -1;
+}

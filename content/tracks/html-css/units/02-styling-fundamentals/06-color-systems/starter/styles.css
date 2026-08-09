@@ -1,0 +1,17 @@
+/* Palette: hex for the banner, rgb() for the button, hsl() for the cards. */
+
+.banner {
+  padding: 24px;
+}
+
+.cta {
+  display: inline-block;
+  padding: 12px 20px;
+  border-radius: 6px;
+}
+
+.session {
+  padding: 16px;
+  margin-bottom: 12px;
+  border-radius: 6px;
+}

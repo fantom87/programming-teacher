@@ -1,0 +1,27 @@
+body {
+  font-family: sans-serif;
+  margin: 24px;
+}
+
+/* The container — declare your grid here. */
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.tile {
+  min-height: 110px;
+  padding: 12px;
+  border-radius: 8px;
+  font-weight: bold;
+  display: flex;
+  align-items: flex-end;
+}
+
+.mint  { background-color: mediumaquamarine; }
+.peach { background-color: lightsalmon; }
+.sky   { background-color: skyblue; }
+.rose  { background-color: lightpink; }
+.sand  { background-color: wheat; }
+.lilac { background-color: thistle; }

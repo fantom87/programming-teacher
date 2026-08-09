@@ -1,0 +1,89 @@
+{
+  "id": "go",
+  "title": "Go",
+  "language": "go",
+  "philosophy": "Simplicity as a feature — a small language you can hold in your head, moving fast on concepts you already own while learning the explicit, boring-on-purpose style that powers real servers and tools.",
+  "units": [
+    {
+      "id": "01-go-fast-foundations",
+      "title": "Go Fast Foundations",
+      "tier": "foundations",
+      "summary": "Compressed basics; assumes any prior track's Foundations but stands alone.",
+      "lessons": [],
+      "planned": true,
+      "topics": ["go run and the toolchain", "typed variables and zero values", "for — the only loop", "if and switch, Go style", "functions and multiple returns", "slices", "maps", "structs", "mini-project: word-stats command"]
+    },
+    {
+      "id": "02-methods-and-interfaces",
+      "title": "Methods and Interfaces",
+      "tier": "core",
+      "summary": "How Go does objects: methods on types and small, implicit interfaces.",
+      "lessons": [],
+      "planned": true,
+      "topics": ["methods and receivers", "pointer vs value receivers", "interfaces and implicit satisfaction", "small interfaces: io.Reader and io.Writer", "the empty interface and any", "type assertions and type switches", "composition over inheritance: embedding", "fmt.Stringer and error as interfaces"]
+    },
+    {
+      "id": "03-errors-the-go-way",
+      "title": "Errors the Go Way",
+      "tier": "core",
+      "summary": "Errors as values — the idiom that defines Go code; ends with the Core capstone.",
+      "lessons": [],
+      "planned": true,
+      "topics": ["errors are values: the (T, error) pattern", "creating errors: errors.New and fmt.Errorf", "sentinel errors and errors.Is", "custom error types and errors.As", "wrapping with %w", "defer for cleanup", "panic and recover — and why you rarely use them", "capstone: robust file-parsing CLI"]
+    },
+    {
+      "id": "04-packages-and-modules",
+      "title": "Packages and Modules",
+      "tier": "intermediate",
+      "summary": "Organizing real projects: packages, modules, and dependencies.",
+      "lessons": [],
+      "planned": true,
+      "topics": ["package basics and exported names", "project layout conventions", "go.mod and semantic versioning", "adding and updating dependencies", "internal packages", "init functions and package-level state", "documentation with go doc", "structuring a multi-package program"]
+    },
+    {
+      "id": "05-concurrency",
+      "title": "Concurrency",
+      "tier": "intermediate",
+      "summary": "Goroutines and channels — Go's crown jewel, given the room it deserves.",
+      "lessons": [],
+      "planned": true,
+      "topics": ["goroutines and the scheduler mental model", "channels: send, receive, block", "buffered channels", "select", "sync.WaitGroup and coordination", "worker pools", "pipelines and fan-in/fan-out", "mutexes and when channels aren't the answer", "context and cancellation", "the race detector"]
+    },
+    {
+      "id": "06-stdlib-in-practice",
+      "title": "Standard Library in Practice",
+      "tier": "intermediate",
+      "summary": "The stdlib doing real work — files, JSON, HTTP both ways; ends with the Intermediate capstone.",
+      "lessons": [],
+      "planned": true,
+      "topics": ["files with os, io, and bufio", "encoding/json and struct tags", "time, durations, and tickers", "net/http as a client", "net/http as a server: handlers and ServeMux", "routing and middleware by hand", "flag and os.Args for CLI tools", "capstone: concurrent link checker"]
+    },
+    {
+      "id": "07-testing-and-tooling",
+      "title": "Testing and Tooling",
+      "tier": "advanced",
+      "summary": "The toolchain as a superpower: tests, benchmarks, vet, and profiling.",
+      "lessons": [],
+      "planned": true,
+      "topics": ["go test and table-driven tests", "subtests and t.Run", "testable design: accepting interfaces", "httptest for handlers and clients", "benchmarks", "fuzzing intro", "gofmt, go vet, and staticcheck", "profiling with pprof", "cross-compilation and single-binary deploys"]
+    },
+    {
+      "id": "08-capstone-service",
+      "title": "Capstone: Small Web Service",
+      "tier": "advanced",
+      "summary": "Multi-session capstone: a tested web service (or CLI), built like production.",
+      "lessons": [],
+      "planned": true,
+      "topics": ["spec and API design", "core domain with tests", "storage layer", "HTTP layer and middleware", "concurrency where it earns its keep", "polish: logging, flags, graceful shutdown"]
+    },
+    {
+      "id": "09-go-refresher",
+      "title": "Go Refresher",
+      "tier": "refresher",
+      "summary": "Dense recap for returning gophers.",
+      "lessons": [],
+      "planned": true,
+      "topics": ["syntax and types sprint", "slices and maps drills", "methods and interfaces workout", "error-handling idioms in anger", "concurrency patterns rapid-fire", "stdlib and tooling recap"]
+    }
+  ]
+}

@@ -36,8 +36,17 @@
       "title": "Functions and Program Design",
       "tier": "core",
       "summary": "Functions, scope, decomposition, modules.",
-      "lessons": [],
-      "planned": true,
+      "lessons": [
+        "01-defining-functions",
+        "02-parameters-and-returns",
+        "03-default-and-keyword-args",
+        "04-scope",
+        "05-docstrings",
+        "06-decomposing-problems",
+        "07-modules-and-imports",
+        "08-the-main-guard",
+        "09-mini-project-word-toolkit"
+      ],
       "topics": ["defining functions", "parameters and returns", "default and keyword args", "scope", "decomposing problems", "modules and imports", "docstrings", "__main__ guard"]
     },
     {
@@ -45,8 +54,17 @@
       "title": "Classes, Errors, and Files",
       "tier": "core",
       "summary": "OOP basics, exceptions, file I/O; ends with the Core capstone.",
-      "lessons": [],
-      "planned": true,
+      "lessons": [
+        "01-your-first-class",
+        "02-methods",
+        "03-dunder-methods",
+        "04-inheritance-and-composition",
+        "05-catching-exceptions",
+        "06-raising-exceptions",
+        "07-custom-exceptions",
+        "08-reading-and-writing-files",
+        "09-capstone-flashcard-trainer"
+      ],
       "topics": ["classes and __init__", "methods and dunders", "inheritance vs composition", "raising and handling exceptions", "custom exceptions", "reading and writing files", "pathlib", "capstone: CLI text-adventure or flashcard app"]
     },
     {

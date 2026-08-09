@@ -1,0 +1,12 @@
+h1 {
+  color: teal;
+}
+
+p {
+  color: dimgray;
+}
+
+/* Added "temporarily" months ago. It comes last, so it wins the tie: */
+h1 {
+  color: lightgray;
+}

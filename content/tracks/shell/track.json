@@ -1,0 +1,187 @@
+{
+  "id": "shell",
+  "title": "Shell (PowerShell & Bash)",
+  "language": "powershell",
+  "philosophy": "Automate the computer you already use every day — PowerShell-first on Windows, where every lesson does something real to files, data, or the web, plus enough bash to feel at home on any server or container.",
+  "units": [
+    {
+      "id": "01-meet-the-shell",
+      "title": "Meet the Shell",
+      "tier": "foundations",
+      "summary": "The terminal, cmdlet grammar, navigating and managing files.",
+      "lessons": [],
+      "planned": true,
+      "topics": [
+        "what a shell is: terminal, prompt, and why PowerShell 7 (vs Windows PowerShell)",
+        "the Verb-Noun grammar: guessing commands you've never seen",
+        "discovering commands: Get-Command and Get-Help",
+        "navigating: Get-Location, Set-Location, absolute vs relative paths",
+        "listing files: Get-ChildItem with -Recurse and -Filter",
+        "creating and reading files: New-Item, Set-Content, Add-Content, Get-Content",
+        "copying, moving, renaming, deleting: Copy-Item, Move-Item, Rename-Item, Remove-Item",
+        "aliases (dir, ls, cd) and why full names win in scripts",
+        "wildcards, Test-Path, and Join-Path",
+        "mini-project: tidy a messy downloads folder from the command line"
+      ]
+    },
+    {
+      "id": "02-pipelines-and-objects",
+      "title": "Pipelines and Objects",
+      "tier": "foundations",
+      "summary": "The pipeline of objects: select, filter, sort, group, transform.",
+      "lessons": [],
+      "planned": true,
+      "topics": [
+        "the pipeline: sending output down the line with |",
+        "everything is an object: Get-Member and properties (not text!)",
+        "Select-Object: picking properties, -First and -Last",
+        "Where-Object: filtering with script blocks and $_",
+        "Sort-Object and Measure-Object",
+        "ForEach-Object: transforming each item",
+        "Group-Object: counting and bucketing",
+        "calculated properties: shaping your own columns",
+        "formatting vs data: Format-Table and Format-List belong at the end",
+        "mini-project: biggest-files report — a disk-usage pipeline over your own folders"
+      ]
+    },
+    {
+      "id": "03-variables-operators-and-flow",
+      "title": "Variables, Operators, and Flow",
+      "tier": "core",
+      "summary": "Variables, strings, operators, arrays, hashtables, control flow.",
+      "lessons": [],
+      "planned": true,
+      "topics": [
+        "variables and $-syntax; types and casting with [int] and [string]",
+        "strings: single vs double quotes, interpolation, here-strings",
+        "comparison operators: -eq, -ne, -lt, -gt, -like, -match (and why not ==)",
+        "logical operators: -and, -or, -not",
+        "if / elseif / else and switch",
+        "arrays: creating, indexing, adding, iterating",
+        "hashtables: keys, values, and lookup tables",
+        "foreach, while, and do loops",
+        "loops vs the pipeline: when to use which",
+        "mini-project: console quiz game with a hashtable question bank and a score"
+      ]
+    },
+    {
+      "id": "04-functions-scripts-and-parameters",
+      "title": "Functions, Scripts, and Parameters",
+      "tier": "core",
+      "summary": "Functions, param blocks, .ps1 scripts, error basics; ends with the Core capstone.",
+      "lessons": [],
+      "planned": true,
+      "topics": [
+        "defining functions: inputs, output, and return behavior",
+        "param() blocks with types and default values",
+        "switch parameters and validation attributes",
+        "scope: local, script, and global",
+        "from console to .ps1: writing and running scripts, execution policy",
+        "comment-based help: making your tools self-documenting",
+        "splatting: passing parameter sets cleanly",
+        "error basics: try/catch and -ErrorAction",
+        "building a personal toolkit with $PROFILE",
+        "capstone: a reusable, parameterized file-organizer tool with help and safety checks"
+      ]
+    },
+    {
+      "id": "05-text-processing-and-regex",
+      "title": "Text Processing and Regex",
+      "tier": "intermediate",
+      "summary": "String ops, Select-String, regex, parsing real logs.",
+      "lessons": [],
+      "planned": true,
+      "topics": [
+        "string methods: Split, Replace, Trim, Substring, PadLeft",
+        "the -split and -join operators",
+        "Select-String: grep for PowerShell",
+        "regex fundamentals: literals, character classes, quantifiers",
+        "anchors, alternation, and grouping",
+        "-match and $Matches: pulling data out of strings",
+        "capture groups and named captures",
+        "-replace with regex and substitution patterns",
+        "parsing a log file end-to-end: lines to objects",
+        "mini-project: error-summary report extracted from a raw server log"
+      ]
+    },
+    {
+      "id": "06-data-json-csv-and-apis",
+      "title": "Data: JSON, CSV, and APIs",
+      "tier": "intermediate",
+      "summary": "CSV, JSON, PSCustomObject, REST APIs with Invoke-RestMethod.",
+      "lessons": [],
+      "planned": true,
+      "topics": [
+        "Import-Csv and Export-Csv: files become object pipelines",
+        "PSCustomObject: building your own structured data",
+        "ConvertFrom-Json and ConvertTo-Json: nested data and -Depth",
+        "your first API call: Invoke-RestMethod against a public API",
+        "query strings, headers, and request parameters",
+        "drilling into API responses: nested properties and arrays",
+        "paging through multi-page API results",
+        "Invoke-WebRequest vs Invoke-RestMethod; downloading files",
+        "handling web failures: status codes and try/catch around calls",
+        "mini-project: merge a local CSV with live API data into one report"
+      ]
+    },
+    {
+      "id": "07-bash-for-everywhere",
+      "title": "Bash for Everywhere",
+      "tier": "intermediate",
+      "summary": "Bash and POSIX portability for servers and containers; ends with the Intermediate capstone.",
+      "lessons": [],
+      "planned": true,
+      "topics": [
+        "why bash: servers, containers, CI, macOS and Linux",
+        "the mental model shift: text streams instead of objects",
+        "navigation and files: ls, cd, cp, mv, rm, mkdir, cat",
+        "pipes and redirection: |, >, >>, and 2>&1",
+        "the classic toolkit: grep, cut, sort, uniq, wc, head, tail",
+        "sed and awk one-liners",
+        "variables, quoting rules, and command substitution",
+        "conditionals and loops: [ ], test, if, for, while",
+        "shell scripts: shebang, chmod +x, arguments, exit codes",
+        "capstone: port your PowerShell log-report tool to bash so it runs in a Linux container"
+      ]
+    },
+    {
+      "id": "08-robust-scripts",
+      "title": "Robust Scripts",
+      "tier": "advanced",
+      "summary": "Advanced functions, error handling, WhatIf, modules, Pester.",
+      "lessons": [],
+      "planned": true,
+      "topics": [
+        "advanced functions: [CmdletBinding()] and common parameters for free",
+        "pipeline-aware functions: begin, process, end",
+        "terminating vs non-terminating errors and $ErrorActionPreference",
+        "try/catch/finally and throwing your own errors",
+        "SupportsShouldProcess: giving your tools -WhatIf and -Confirm",
+        "Write-Verbose, Write-Warning, and logging to files",
+        "organizing a module: .psm1, exports, Import-Module",
+        "testing scripts with Pester basics",
+        "cross-platform PowerShell 7: differences from Windows PowerShell that bite"
+      ]
+    },
+    {
+      "id": "09-automation-projects",
+      "title": "Automation Projects",
+      "tier": "advanced",
+      "summary": "Native programs, jobs, scheduled tasks, unattended scripts; ends with the Advanced capstone.",
+      "lessons": [],
+      "planned": true,
+      "topics": [
+        "calling native programs: arguments, exit codes, capturing output",
+        "reading the system: Get-Process, Get-Service, Get-CimInstance",
+        "environment variables and PATH",
+        "background jobs: Start-Job, Receive-Job, and ThreadJob",
+        "scheduled tasks: Register-ScheduledTask and the Task Scheduler",
+        "unattended-script discipline: absolute paths, logging, exit codes",
+        "reacting to changes: FileSystemWatcher and polling patterns",
+        "notifications and reports: making scripts tell you what happened",
+        "the automation checklist: idempotent, safe, observable",
+        "capstone: a fully scheduled backup-and-report automation for your own PC"
+      ]
+    }
+  ]
+}

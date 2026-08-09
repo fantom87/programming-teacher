@@ -1,0 +1,10 @@
+/* Style your landing page here. The load-bearing rules:
+
+   .site-header  { display: flex; justify-content: space-between;
+                   align-items: center; }
+   .nav-links    { display: flex; gap: 16px; }
+   .feature-grid { display: grid;
+                   grid-template-columns: repeat(3, 1fr); gap: 16px; }
+
+   Then make it yours: a font-family on body, a stage for the hero,
+   card styling, one accent color used consistently. */
