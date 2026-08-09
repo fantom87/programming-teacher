@@ -23,7 +23,16 @@ const PLAYGROUND_FILES: Record<Language, string> = {
   javascript: "main.js",
   "html-css": "index.html",
   csharp: "Program.cs",
+  sql: "query.sql",
+  powershell: "script.ps1",
+  bash: "script.sh",
+  go: "main.go",
+  rust: "main.rs",
 };
+
+// Languages whose playground runs go through the server's local runner; the
+// rest (including sql, which runs on sql.js in the browser) run client-side.
+const LOCAL_PLAYGROUND: ReadonlySet<Language> = new Set(["csharp", "powershell", "bash", "go", "rust"]);
 
 // Pseudo-lesson keys: "playground/<lang>/scratch" and "placement/<track>/interview".
 export async function resolveLesson(
@@ -46,7 +55,7 @@ export async function resolveLesson(
         unitId: language,
         title: `${language} playground`,
         language,
-        runner: language === "csharp" ? "local" : "browser",
+        runner: LOCAL_PLAYGROUND.has(language) ? "local" : "browser",
         estMinutes: 0,
         files: [{ path: entry, starter: entry }],
         goal: "(playground — no goal)",

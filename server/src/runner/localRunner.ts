@@ -3,8 +3,9 @@ import { StringDecoder } from "node:string_decoder";
 import fs from "node:fs/promises";
 import path from "node:path";
 import crypto from "node:crypto";
+import initSqlJs from "sql.js";
 import type { Language, RunResult } from "@teacher/shared";
-import { extractTestEvents } from "@teacher/shared";
+import { extractTestEvents, formatSqlResults, runSqlProgram } from "@teacher/shared";
 
 // Raw capture is generous so late __TEST__ events survive a chatty program;
 // the learner-visible output is trimmed to OUTPUT_CAP after event extraction.
@@ -157,6 +158,56 @@ export async function sweepStaleWorkspaces(dataDir: string, maxAgeMs = 60 * 60 *
   }
 }
 
+// ---------- binary resolution ----------
+// Go and Rust install per-user and are often missing from the PATH this
+// server inherited (installed after launch, or via a user-scope installer the
+// parent shell never saw). Resolve at spawn time: bare names via `where`,
+// absolute candidates via the filesystem — cached briefly so "install it,
+// then hit Run again" works without a restart. Preflight shares these.
+
+const RESOLVE_TTL_MS = 60_000;
+const resolveCache = new Map<string, { at: number; bin: string }>();
+
+function whereFinds(name: string): Promise<boolean> {
+  return new Promise((resolve) => {
+    const child = execFile("where.exe", [name], { timeout: 5_000, windowsHide: true }, (err) => resolve(!err));
+    child.on("error", () => resolve(false));
+  });
+}
+
+/** First candidate that exists: bare names checked via `where`, absolute
+ *  paths via the filesystem. Falls back to the first bare name (letting the
+ *  spawn fail with a real ENOENT) when nothing is found. */
+export async function resolveBinary(candidates: string[]): Promise<string> {
+  const key = candidates.join(";");
+  const hit = resolveCache.get(key);
+  if (hit && Date.now() - hit.at < RESOLVE_TTL_MS) return hit.bin;
+  for (const c of candidates) {
+    const found = path.isAbsolute(c)
+      ? await fs.access(c).then(() => true, () => false)
+      : await whereFinds(c);
+    if (found) {
+      resolveCache.set(key, { at: Date.now(), bin: c });
+      return c;
+    }
+  }
+  return candidates.find((c) => !path.isAbsolute(c)) ?? candidates[0];
+}
+
+export function goCandidates(): string[] {
+  return ["go", path.join(process.env.LOCALAPPDATA ?? "C:\\", "Programs", "go", "bin", "go.exe")];
+}
+
+export function rustcCandidates(): string[] {
+  return ["rustc", path.join(process.env.USERPROFILE ?? "C:\\", ".cargo", "bin", "rustc.exe")];
+}
+
+export function bashCandidates(): string[] {
+  // Git Bash first — plain `bash` on PATH is usually the WSL shim in
+  // System32, which needs a Linux distro and can't run workspace scripts.
+  return [path.join(process.env.ProgramFiles ?? "C:\\Program Files", "Git", "bin", "bash.exe"), "bash"];
+}
+
 export interface LocalRunOptions {
   language: Language;
   entry: string;
@@ -172,6 +223,8 @@ export interface LocalRunOptions {
 export async function runLocal(dataDir: string, opts: LocalRunOptions): Promise<RunResult> {
   const timeoutMs = opts.timeoutMs ?? 10_000;
   if (opts.language === "csharp") return runCsharp(dataDir, opts, timeoutMs);
+  if (opts.language === "rust") return runRust(dataDir, opts, timeoutMs);
+  if (opts.language === "sql") return runSqlInProcess(opts, timeoutMs);
   const dir = await makeWorkspace(dataDir, opts.files);
   try {
     switch (opts.language) {
@@ -192,6 +245,36 @@ export async function runLocal(dataDir: string, opts: LocalRunOptions): Promise<
           cwd: dir,
           stdin: opts.stdin,
           timeoutMs,
+          nonce: opts.nonce,
+        });
+      case "powershell":
+        return await spawnCapture({
+          command: "powershell.exe",
+          args: ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", opts.entry],
+          cwd: dir,
+          stdin: opts.stdin,
+          timeoutMs,
+          nonce: opts.nonce,
+        });
+      case "bash":
+        return await spawnCapture({
+          command: await resolveBinary(bashCandidates()),
+          args: [opts.entry],
+          cwd: dir,
+          stdin: opts.stdin,
+          timeoutMs,
+          nonce: opts.nonce,
+        });
+      case "go":
+        return await spawnCapture({
+          command: await resolveBinary(goCandidates()),
+          args: ["run", opts.entry],
+          cwd: dir,
+          // GOCACHE under data/ persists the build cache between runs, so
+          // only the first `go run` pays the full compile.
+          env: { GOFLAGS: "-mod=mod", GOCACHE: path.join(dataDir, "go-cache") },
+          stdin: opts.stdin,
+          timeoutMs: Math.max(timeoutMs, 30_000), // first compile is slow
           nonce: opts.nonce,
         });
       case "html-css":
@@ -259,4 +342,129 @@ async function runCsharp(dataDir: string, opts: LocalRunOptions, timeoutMs: numb
     timeoutMs: Math.max(timeoutMs, 60_000), // first build is slow; cap generously
     nonce: opts.nonce,
   });
+}
+
+// Rust: rustc in a persistent per-lesson workspace under data/rs-workspaces
+// (same shape as C#) — the compiled main.exe and rustc's incremental state
+// stay put between runs. Compile errors come back as the run's stderr with
+// ok:false: they ARE the learning content, not an internal failure.
+
+async function rustWorkspace(dataDir: string, opts: LocalRunOptions): Promise<string> {
+  const wsKey = opts.lessonKey ?? `adhoc/${opts.entry}`;
+  const dir = path.join(dataDir, "rs-workspaces", crypto.createHash("sha1").update(wsKey).digest("hex"));
+  await fs.mkdir(dir, { recursive: true });
+  // Drop stray sources from earlier runs — a leftover module file would let
+  // `mod x;` silently resolve against stale code.
+  for (const existing of await fs.readdir(dir)) {
+    if (existing.endsWith(".rs") && !(existing in opts.files)) {
+      await fs.rm(path.join(dir, existing), { force: true });
+    }
+  }
+  for (const [name, contents] of Object.entries(opts.files)) {
+    const full = path.join(dir, name);
+    // Refuse path escapes from content/tutor-provided filenames.
+    if (!full.startsWith(dir)) throw new Error(`illegal file path: ${name}`);
+    await fs.mkdir(path.dirname(full), { recursive: true });
+    await fs.writeFile(full, contents, "utf8");
+  }
+  return dir;
+}
+
+async function runRust(dataDir: string, opts: LocalRunOptions, timeoutMs: number): Promise<RunResult> {
+  const dir = await rustWorkspace(dataDir, opts);
+  const rustc = await resolveBinary(rustcCandidates());
+  const compile = await spawnCapture({
+    command: rustc,
+    args: [opts.entry, "-o", "main.exe", "--edition", "2021"],
+    cwd: dir,
+    timeoutMs: Math.max(timeoutMs, 60_000),
+  });
+  if (!compile.ok) return compile; // rustc diagnostics are already in stderr
+  const run = await spawnCapture({
+    command: path.join(dir, "main.exe"),
+    args: [],
+    cwd: dir,
+    stdin: opts.stdin,
+    timeoutMs,
+    nonce: opts.nonce,
+  });
+  return {
+    ...run,
+    // Surface compile warnings (unused variables etc.) alongside the program's
+    // own stderr — learners should see them without failing the run.
+    stderr: compile.stderr ? compile.stderr + (run.stderr ? `\n${run.stderr}` : "") : run.stderr,
+    durationMs: compile.durationMs + run.durationMs,
+  };
+}
+
+// SQL: not a child process — sql.js (SQLite compiled to wasm) runs in-process
+// against a fresh in-memory database per run. Seed files execute before the
+// entry; result sets render through the shared formatter so stdout checks
+// byte-match the browser runner.
+
+type SqlJsStatic = Awaited<ReturnType<typeof initSqlJs>>;
+let sqlJsInit: Promise<SqlJsStatic> | null = null;
+
+function getSqlJs(): Promise<SqlJsStatic> {
+  if (!sqlJsInit) {
+    sqlJsInit = initSqlJs();
+    sqlJsInit.catch(() => {
+      sqlJsInit = null; // failed wasm init shouldn't poison every later run
+    });
+  }
+  return sqlJsInit;
+}
+
+async function runSqlInProcess(opts: LocalRunOptions, timeoutMs: number): Promise<RunResult> {
+  const start = Date.now();
+  const guardMs = Math.max(timeoutMs, 5_000);
+  let timer: NodeJS.Timeout | undefined;
+  // Execution is synchronous inside sql.js — the race only guards a wedged
+  // wasm load, so no kill machinery is needed.
+  const guard = new Promise<RunResult>((resolve) => {
+    timer = setTimeout(
+      () =>
+        resolve({
+          ok: false,
+          exitCode: null,
+          stdout: "",
+          stderr: `Timed out after ${guardMs / 1000}s`,
+          durationMs: Date.now() - start,
+          timedOut: true,
+        }),
+      guardMs,
+    );
+    timer.unref();
+  });
+  const exec = (async (): Promise<RunResult> => {
+    const SQL = await getSqlJs();
+    const db = new SQL.Database();
+    try {
+      const results = runSqlProgram(db, opts.files, opts.entry);
+      return {
+        ok: true,
+        exitCode: 0,
+        stdout: truncateOutput(formatSqlResults(results)),
+        stderr: "",
+        durationMs: Date.now() - start,
+        timedOut: false,
+      };
+    } catch (err) {
+      return {
+        ok: false,
+        exitCode: 1,
+        stdout: "",
+        stderr: err instanceof Error ? err.message : String(err),
+        durationMs: Date.now() - start,
+        timedOut: false,
+      };
+    } finally {
+      db.close();
+    }
+  })();
+  try {
+    return await Promise.race([exec, guard]);
+  } finally {
+    clearTimeout(timer);
+  }
 }

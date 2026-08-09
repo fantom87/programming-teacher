@@ -286,13 +286,22 @@ export async function resetAllTutorState(dataDir: string): Promise<void> {
 // Same guidance /api/run and /api/check give — the tutor must never surface a
 // raw "spawn dotnet ENOENT" as if it were the learner's bug.
 async function missingRuntimeMessage(language: string): Promise<string | null> {
-  if (language !== "python" && language !== "csharp") return null;
+  if (!["python", "csharp", "go", "rust", "bash"].includes(language)) return null;
   const runtimes = await detectRuntimes();
   if (language === "python" && !runtimes.python) {
     return "Python isn't installed (or not on PATH). Install it with: winget install Python.Python.3.12";
   }
   if (language === "csharp" && !runtimes.dotnet) {
     return "The .NET SDK isn't installed. Install it with: winget install Microsoft.DotNet.SDK.8";
+  }
+  if (language === "go" && !runtimes.go) {
+    return "Go isn't installed. Download the Windows zip from https://go.dev/dl and extract it to %LOCALAPPDATA%\\Programs\\go (so go.exe ends up in %LOCALAPPDATA%\\Programs\\go\\bin).";
+  }
+  if (language === "rust" && !runtimes.rust) {
+    return "Rust isn't installed. Install it from https://rustup.rs (the default options are fine).";
+  }
+  if (language === "bash" && !runtimes.bash) {
+    return "Bash couldn't be found. It comes with Git for Windows — install it with: winget install Git.Git";
   }
   return null;
 }

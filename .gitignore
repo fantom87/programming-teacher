@@ -2,6 +2,7 @@ node_modules/
 dist/
 data/
 web/public/pyodide/
+web/public/sql-wasm*.wasm
 *.log
 .env
 app/dist/

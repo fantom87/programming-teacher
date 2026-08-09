@@ -27,13 +27,23 @@ import { javascript } from "@codemirror/lang-javascript";
 import { python } from "@codemirror/lang-python";
 import { html } from "@codemirror/lang-html";
 import { css } from "@codemirror/lang-css";
+import { sql } from "@codemirror/lang-sql";
+import { go } from "@codemirror/lang-go";
+import { rust } from "@codemirror/lang-rust";
 import { csharp } from "@codemirror/legacy-modes/mode/clike";
+import { powerShell } from "@codemirror/legacy-modes/mode/powershell";
+import { shell } from "@codemirror/legacy-modes/mode/shell";
 import { oneDark } from "@codemirror/theme-one-dark";
 import type { Language } from "@teacher/shared";
 
 function languageExtension(language: Language, filename: string): Extension {
   if (filename.endsWith(".css")) return css();
   if (filename.endsWith(".html")) return html();
+  if (filename.endsWith(".sql")) return sql();
+  if (filename.endsWith(".go")) return go();
+  if (filename.endsWith(".rs")) return rust();
+  if (filename.endsWith(".ps1")) return StreamLanguage.define(powerShell);
+  if (filename.endsWith(".sh")) return StreamLanguage.define(shell);
   switch (language) {
     case "python":
       return python();
@@ -41,6 +51,16 @@ function languageExtension(language: Language, filename: string): Extension {
       return html();
     case "csharp":
       return StreamLanguage.define(csharp);
+    case "sql":
+      return sql();
+    case "go":
+      return go();
+    case "rust":
+      return rust();
+    case "powershell":
+      return StreamLanguage.define(powerShell);
+    case "bash":
+      return StreamLanguage.define(shell);
     case "javascript":
     default:
       return javascript({ typescript: filename.endsWith(".ts") });

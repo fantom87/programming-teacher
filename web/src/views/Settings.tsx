@@ -172,6 +172,11 @@ export default function Settings({ onSettingsChange }: { onSettingsChange: (s: S
             <li>Python: {health.runtimes.python ?? "not found — winget install Python.Python.3.12"}</li>
             <li>Node: {health.runtimes.node ?? "not found — winget install OpenJS.NodeJS.LTS"}</li>
             <li>.NET (for C#): {health.runtimes.dotnet ?? "not found — winget install Microsoft.DotNet.SDK.8"}</li>
+            <li>Go: {health.runtimes.go ?? "not found — download from https://go.dev/dl"}</li>
+            <li>Rust: {health.runtimes.rust ?? "not found — install from https://rustup.rs"}</li>
+            <li>PowerShell: {health.runtimes.powershell ?? "not found"}</li>
+            <li>Bash (Git): {health.runtimes.bash ?? "not found — comes with Git for Windows"}</li>
+            <li>SQL: {health.runtimes.sql}</li>
           </ul>
         )}
       </section>

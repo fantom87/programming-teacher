@@ -12,9 +12,9 @@ import { appendJournal } from "../store/profile.js";
 import { readJson, withFileLock, writeJsonInLock } from "../store/jsonStore.js";
 import { updateChecks } from "../tutor/service.js";
 import { takeSnapshot, listSnapshots, getSnapshot } from "../store/snapshots.js";
-import { detectRuntimes } from "../preflight.js";
+import { detectRuntimes, type RuntimeStatus } from "../preflight.js";
 
-function missingRuntimeError(language: string, runtimes: { python: string | null; node: string | null; dotnet: string | null }) {
+function missingRuntimeError(language: string, runtimes: RuntimeStatus) {
   if (language === "python" && !runtimes.python) {
     return "Python isn't installed (or not on PATH). Install it with: winget install Python.Python.3.12";
   }
@@ -23,6 +23,15 @@ function missingRuntimeError(language: string, runtimes: { python: string | null
   }
   if (language === "csharp" && !runtimes.dotnet) {
     return "The .NET SDK isn't installed. Install it with: winget install Microsoft.DotNet.SDK.8";
+  }
+  if (language === "go" && !runtimes.go) {
+    return "Go isn't installed. Download the Windows zip from https://go.dev/dl and extract it to %LOCALAPPDATA%\\Programs\\go (so go.exe ends up in %LOCALAPPDATA%\\Programs\\go\\bin).";
+  }
+  if (language === "rust" && !runtimes.rust) {
+    return "Rust isn't installed. Install it from https://rustup.rs (the default options are fine).";
+  }
+  if (language === "bash" && !runtimes.bash) {
+    return "Bash couldn't be found. It comes with Git for Windows — install it with: winget install Git.Git";
   }
   return null;
 }

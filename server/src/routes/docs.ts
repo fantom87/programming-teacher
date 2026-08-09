@@ -13,7 +13,7 @@ export interface DocsSection {
   pages: DocsIndexPage[];
 }
 
-const SECTIONS = ["concepts", "python", "javascript", "html-css", "csharp"];
+const SECTIONS = ["concepts", "python", "javascript", "html-css", "csharp", "sql", "shell", "go", "rust"];
 
 export async function loadDocsIndex(docsDir: string): Promise<DocsSection[]> {
   const out: DocsSection[] = [];

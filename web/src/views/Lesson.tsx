@@ -9,6 +9,7 @@ import TutorChat from "../components/TutorChat";
 import type { TutorEvent } from "../api/tutorStream";
 import { runJs } from "../runners/jsWorkerRunner";
 import { runPython, warmPyodide, onPyodideStatus, isPyodideWarm } from "../runners/pyodideRunner";
+import { runSql, warmSqlJs } from "../runners/sqlRunner";
 import { buildSrcdoc } from "../runners/htmlPreview";
 import { api } from "../api/client";
 import { useSettings } from "../settingsContext";
@@ -170,6 +171,7 @@ export default function LessonView({ lessonKey, theme, navigate, onProgressChang
           warmPyodide();
           if (!isPyodideWarm()) setNotice("Loading Python (one-time, ~13 MB)…");
         }
+        if (l.language === "sql" && l.runner === "browser") warmSqlJs();
         const [progress, freshSettings] = await Promise.all([
           api.progress(),
           api.settings().catch(() => null),
@@ -242,11 +244,13 @@ export default function LessonView({ lessonKey, theme, navigate, onProgressChang
     try {
       if (lesson.runner === "local") {
         setResult(await api.run(lessonKey, filesRef.current));
-      } else if (lesson.language === "javascript" || lesson.language === "python") {
+      } else if (lesson.language === "javascript" || lesson.language === "python" || lesson.language === "sql") {
         const run =
           lesson.language === "javascript"
             ? await runJs(filesRef.current[entry] ?? "")
-            : await runPython(filesRef.current[entry] ?? "");
+            : lesson.language === "python"
+              ? await runPython(filesRef.current[entry] ?? "")
+              : await runSql(filesRef.current, entry);
         setResult(run);
         void fetch("/api/snapshots", {
           method: "POST",

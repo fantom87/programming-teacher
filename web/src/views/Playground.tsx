@@ -5,6 +5,7 @@ import OutputPane from "../components/OutputPane";
 import TutorChat from "../components/TutorChat";
 import { runJs } from "../runners/jsWorkerRunner";
 import { runPython, warmPyodide } from "../runners/pyodideRunner";
+import { runSql, warmSqlJs } from "../runners/sqlRunner";
 import { buildSrcdoc } from "../runners/htmlPreview";
 import { api } from "../api/client";
 import { tabListKeyDown } from "./Lesson";
@@ -14,6 +15,11 @@ const ENTRY: Record<Language, string> = {
   javascript: "main.js",
   "html-css": "index.html",
   csharp: "Program.cs",
+  sql: "query.sql",
+  powershell: "script.ps1",
+  bash: "script.sh",
+  go: "main.go",
+  rust: "main.rs",
 };
 
 const LABEL: Record<Language, string> = {
@@ -21,6 +27,11 @@ const LABEL: Record<Language, string> = {
   javascript: "JavaScript",
   "html-css": "HTML/CSS",
   csharp: "C#",
+  sql: "SQL",
+  powershell: "PowerShell",
+  bash: "Bash",
+  go: "Go",
+  rust: "Rust",
 };
 
 const LANGUAGES = Object.keys(ENTRY) as Language[];
@@ -56,6 +67,7 @@ export default function Playground({ theme }: { theme: "dark" | "light" }) {
     setNotice(null);
     setPreview(language === "html-css" ? buildSrcdoc({ [entry]: codeMapRef.current[language] ?? "" }) : null);
     if (language === "python") warmPyodide();
+    if (language === "sql") warmSqlJs();
     // Fetch each language's draft once; after that the in-memory map is the
     // source of truth (a refetch would clobber unsaved edits).
     if (loadedGen[language] === undefined) {
@@ -118,6 +130,7 @@ export default function Playground({ theme }: { theme: "dark" | "light" }) {
     try {
       if (language === "javascript") setResult(await runJs(src));
       else if (language === "python") setResult(await runPython(src));
+      else if (language === "sql") setResult(await runSql({ [entry]: src }, entry));
       else if (language === "html-css") setPreview(buildSrcdoc({ [entry]: src }));
       else setResult(await api.run(tutorKey, { [entry]: src }));
     } catch (err) {

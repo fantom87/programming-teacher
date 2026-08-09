@@ -36,7 +36,16 @@ export interface CurriculumResponse {
 export interface Health {
   ok: boolean;
   version: string;
-  runtimes: { python: string | null; node: string | null; dotnet: string | null };
+  runtimes: {
+    python: string | null;
+    node: string | null;
+    dotnet: string | null;
+    go: string | null;
+    rust: string | null;
+    powershell: string | null;
+    bash: string | null;
+    sql: string;
+  };
   sdkAuth: "unknown" | "checking" | "ok" | "failed";
   sdkAuthDetail?: string;
 }
