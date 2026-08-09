@@ -147,7 +147,10 @@ closure, then produces three things in `app/dist`:
 
 - **`Programming Teacher 1.0.0.zip`** — the shareable one folder, exe inside.
 - **`Programming Teacher 1.0.0.exe`** — a one-click installer with Start Menu
-  and desktop shortcuts, for a machine you actually use it on.
+  and desktop shortcuts, for a machine you actually use it on. It keeps your
+  progress in the usual per-user location rather than beside the exe, because
+  uninstalling (and upgrading, which uninstalls first) deletes the install
+  folder. The app detects which of the two it is by looking for an uninstaller.
 - **`Programming Teacher.lnk`** in the repo root, pointing at the unpacked build.
 
 `npm run app:zip` re-zips an existing build without rebuilding it.

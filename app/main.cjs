@@ -52,13 +52,29 @@ function writableDir(dir) {
   }
 }
 
+/**
+ * Is this folder owned by an installer? The NSIS uninstaller does RMDir /r on
+ * the install directory — and an upgrade runs the old uninstaller first — so
+ * anything we keep beside the exe there would be deleted along with the app.
+ * The zip build has no uninstaller, so its folder is genuinely ours.
+ */
+function installerManaged(dir) {
+  try {
+    return fs.readdirSync(dir).some((f) => /^Uninstall .*\.exe$/i.test(f));
+  } catch {
+    return false;
+  }
+}
+
 // Portable by default: everything lives in the app's own folder, so the whole
-// thing is one directory you can copy, move, or delete. If that folder isn't
-// writable (installed under Program Files, run from a read-only share), this is
-// null and the per-user location takes over rather than the app failing.
+// thing is one directory you can copy, move, or delete. Two cases fall back to
+// the per-user location instead: an installed build (above), and a folder we
+// can't write to (Program Files, a read-only share).
 const PORTABLE_DATA = (() => {
   if (!PACKAGED) return null;
-  const beside = path.join(path.dirname(process.execPath), "data");
+  const dir = path.dirname(process.execPath);
+  if (installerManaged(dir)) return null;
+  const beside = path.join(dir, "data");
   return writableDir(beside) ? beside : null;
 })();
 
