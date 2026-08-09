@@ -13,9 +13,13 @@ Built for one learner on one machine. Not a product, not hosted anywhere.
 
 ## Try it
 
-Grab **`Programming Teacher 1.0.0.zip`** (~140 MB) from this repo's
-[Releases](../../releases) page, extract it, and run **Programming Teacher.exe**
-inside. It's ready in about five seconds.
+Grab **`Programming.Teacher.1.0.0.zip`** (140 MB) from the
+[Releases](../../releases/latest) page, extract it, and run
+**Programming Teacher.exe** inside. It's ready in about five seconds.
+
+There's a **`.exe` installer** on the same page if you'd rather have Start Menu
+and desktop shortcuts. Same app; it just keeps your progress in the usual
+per-user location instead of inside the app folder.
 
 There is nothing to install — not even Node. The app carries its own runtime,
 its own server, all 357 lessons and the whole docs library. It writes progress,
