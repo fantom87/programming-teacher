@@ -1,0 +1,18 @@
+body {
+  font-family: system-ui, sans-serif;
+  line-height: 1.6;
+  margin: 0;
+  padding: 1rem;
+  background-color: #171c3a;
+  color: #f2f0ff;
+}
+
+.wrap {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.tagline {
+  color: #b8b3e6;
+  font-size: 1.125rem;
+}

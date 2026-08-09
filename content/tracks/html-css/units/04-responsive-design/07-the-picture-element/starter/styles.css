@@ -1,0 +1,25 @@
+body {
+  font-family: system-ui, sans-serif;
+  line-height: 1.6;
+  margin: 0;
+  padding: 1.5rem;
+  background-color: #f2f6f8;
+  color: #1f2c33;
+}
+
+.visit {
+  max-width: 42rem;
+  margin-inline: auto;
+}
+
+h1 {
+  color: #14506e;
+}
+
+/* This rule styles the img inside your picture element too —
+   picture itself is just a chooser, the img is the real element. */
+.hero-photo img {
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+}

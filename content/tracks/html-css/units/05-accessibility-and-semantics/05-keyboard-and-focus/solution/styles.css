@@ -1,0 +1,68 @@
+body {
+  font-family: Georgia, "Times New Roman", serif;
+  margin: 0;
+  color: #26303b;
+  background: #f6f8fa;
+}
+
+a:focus-visible {
+  outline: 3px solid darkorange;
+  outline-offset: 2px;
+}
+
+.skip-link {
+  position: absolute;
+  top: -3rem;
+  left: 8px;
+  background: #1d2733;
+  color: #f2f6fa;
+  padding: 8px 14px;
+  border-radius: 0 0 8px 8px;
+}
+
+.skip-link:focus {
+  top: 0;
+}
+
+.site-header {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 14px 24px;
+  background: #1d2733;
+}
+
+.brand {
+  color: #f2f6fa;
+  font-weight: 700;
+}
+
+.site-nav {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.site-nav a {
+  color: #c3d0dd;
+  text-decoration: none;
+}
+
+.site-nav a[aria-current="page"] {
+  color: #ffc966;
+}
+
+main {
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: 40px 24px;
+}
+
+main a {
+  color: #205a9e;
+}
+
+footer {
+  padding: 16px 24px;
+  color: #5c6773;
+}

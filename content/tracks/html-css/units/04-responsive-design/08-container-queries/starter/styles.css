@@ -1,0 +1,63 @@
+body {
+  font-family: system-ui, sans-serif;
+  line-height: 1.6;
+  margin: 0;
+  padding: 1.5rem;
+  background-color: #fbf8f2;
+  color: #2c2a24;
+}
+
+/* Page layout — one column on phones, main + sidebar from 700px (lesson 2!). */
+.layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  max-width: 60rem;
+  margin-inline: auto;
+}
+
+@media (min-width: 700px) {
+  .layout {
+    grid-template-columns: 2fr 1fr;
+  }
+}
+
+.sidebar h2 {
+  font-size: 1.125rem;
+  color: #7a6a4f;
+}
+
+/* 1. Make each slot a measurable container here. */
+
+/* The card, stacked by default. */
+.card {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  background-color: white;
+  border: 1px solid #e7dfd0;
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.card-art {
+  display: grid;
+  place-items: center;
+  font-size: 3rem;
+  background-color: #f4ecd9;
+  border-radius: 10px;
+  min-height: 6rem;
+}
+
+.card h2 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.card-meta {
+  color: #8a7d63;
+  font-size: 0.875rem;
+  margin-bottom: 0;
+}
+
+/* 2. Your @container block goes here. */

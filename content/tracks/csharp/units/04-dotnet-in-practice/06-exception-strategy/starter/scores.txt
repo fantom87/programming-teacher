@@ -1,0 +1,4 @@
+alice,50
+bob,notanumber
+carol,75
+dave,25

@@ -1,0 +1,20 @@
+body {
+  font-family: "Segoe UI", system-ui, sans-serif;
+  line-height: 1.6;
+  color: #33302a;
+  background: #fbf8f3;
+  margin: 0;
+}
+
+main {
+  max-width: 42rem;
+  margin: 0 auto;
+  padding: 32px 24px;
+}
+
+h1 {
+  font-size: 1.9rem;
+}
+
+/* The old "fix" was picking heading levels by their size.
+   Choose levels for structure in the HTML, then size them here. */

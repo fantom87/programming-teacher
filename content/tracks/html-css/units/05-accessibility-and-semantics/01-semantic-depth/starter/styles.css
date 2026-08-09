@@ -1,0 +1,65 @@
+body {
+  font-family: Georgia, "Times New Roman", serif;
+  margin: 0;
+  color: #2b2620;
+  background: #faf7f1;
+}
+
+.masthead {
+  background: #2f4636;
+  color: #f4efe4;
+  padding: 24px 32px;
+}
+
+.masthead h1 {
+  margin: 0;
+}
+
+.tagline {
+  margin: 4px 0 0;
+  font-style: italic;
+  color: #cfc4a7;
+}
+
+.content {
+  display: flex;
+  gap: 32px;
+  padding: 32px;
+}
+
+.story {
+  flex: 2;
+}
+
+.photo {
+  margin: 16px 0;
+}
+
+.photo img {
+  max-width: 100%;
+}
+
+.caption {
+  margin: 4px 0 0;
+  font-size: 0.85rem;
+  color: #6b6355;
+}
+
+.sidebar {
+  flex: 1;
+  background: #efe8d8;
+  padding: 16px;
+  align-self: flex-start;
+}
+
+.sidebar h2 {
+  margin-top: 0;
+  font-size: 1.1rem;
+}
+
+.bottom {
+  border-top: 1px solid #d9d2c2;
+  padding: 16px 32px;
+  font-size: 0.85rem;
+  color: #6b6355;
+}

@@ -1,0 +1,38 @@
+body {
+  font-family: system-ui, sans-serif;
+  line-height: 1.6;
+  margin: 0;
+  background-color: #fdfbf6;
+  color: #22261f;
+}
+
+/* The fluid frame: max-width, centering, fluid gutters go here. */
+.wrap {
+}
+
+/* Fluid vertical breathing room goes here. */
+.hero {
+  background-color: #2f4d3a;
+  color: #f4f9ef;
+}
+
+/* Your own clamp() for the headline goes here. */
+.hero h1 {
+  margin: 0 0 0.5rem;
+}
+
+.tagline {
+  font-size: 1.125rem;
+  color: #cfe3c8;
+  max-width: 45ch;
+}
+
+.button {
+  display: inline-block;
+  background-color: #f4c95d;
+  color: #22261f;
+  padding: 0.6rem 1.4rem;
+  border-radius: 999px;
+  text-decoration: none;
+  font-weight: 600;
+}

@@ -1,0 +1,32 @@
+body {
+  font-family: Georgia, serif;
+  line-height: 1.6;
+  margin: 0;
+  padding: 1.5rem;
+  background-color: #faf8f3;
+  color: #2a2722;
+}
+
+.essay {
+  max-width: 60rem;
+  margin-inline: auto;
+}
+
+.essay p {
+  max-width: 65ch;
+}
+
+h2 {
+  font-size: 1.4rem;
+}
+
+@media (min-width: 900px) {
+  h2 {
+    font-size: 1.75rem;
+  }
+}
+
+h1 {
+  margin-top: 0;
+  font-size: clamp(1.9rem, 1.3rem + 2.5vw, 3rem);
+}

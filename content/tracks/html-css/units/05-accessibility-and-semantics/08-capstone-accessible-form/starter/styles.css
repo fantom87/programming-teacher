@@ -1,0 +1,11 @@
+/* Style the page here. The load-bearing accessibility rules:
+
+   a:focus-visible, button:focus-visible, input:focus-visible {
+     outline: 3px solid darkorange;
+   }
+
+   .skip-link        → position: absolute, parked above the viewport
+   .skip-link:focus  → pulled back into view
+
+   Then choose a palette and CHECK it: every text color at 4.5:1 or
+   better against the surface it actually sits on. */

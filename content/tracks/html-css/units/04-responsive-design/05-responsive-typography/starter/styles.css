@@ -1,0 +1,22 @@
+body {
+  font-family: Georgia, serif;
+  line-height: 1.6;
+  margin: 0;
+  padding: 1.5rem;
+  background-color: #faf8f3;
+  color: #2a2722;
+}
+
+.essay {
+  max-width: 60rem;
+  margin-inline: auto;
+}
+
+/* 1. Cap the paragraph measure at 65ch. */
+
+/* 2. Base h2 size, then the 900px step-up in an @media block. */
+
+/* 3. The h1: a clamp() with a rem + vw middle value. */
+h1 {
+  margin-top: 0;
+}

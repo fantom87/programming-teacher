@@ -1,0 +1,33 @@
+body {
+  font-family: Georgia, serif;
+  line-height: 1.6;
+  margin: 0;
+  padding: 1rem;
+  background-color: #f7f5ef;
+  color: #26241f;
+}
+
+.site-title {
+  font-size: 1.75rem;
+  color: #3d5a3c;
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+.trail-facts {
+  background-color: #e8ecdd;
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  align-self: start;
+}
+
+.trail-facts h2 {
+  margin-top: 0;
+  font-size: 1.125rem;
+}
+
+/* Add your @media block below — the base rules above stay as they are. */

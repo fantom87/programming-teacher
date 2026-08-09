@@ -1,0 +1,53 @@
+/* Base styles: the phone layout. These stay exactly as they are. */
+
+body {
+  font-family: system-ui, sans-serif;
+  line-height: 1.6;
+  margin: 0;
+  background-color: #fbf7f0;
+  color: #2b2620;
+}
+
+.page {
+  padding-inline: 1rem;
+  padding-block: 1.5rem;
+}
+
+.intro {
+  color: #6b6156;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+.card {
+  background-color: white;
+  border: 1px solid #e4dccd;
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+}
+
+.card h2 {
+  margin-top: 0;
+  font-size: 1.125rem;
+  color: #8a4b2d;
+}
+
+@media (min-width: 640px) {
+  .page {
+    padding-inline: 2rem;
+  }
+
+  .cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 960px) {
+  .cards {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}

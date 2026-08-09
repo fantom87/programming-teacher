@@ -62,8 +62,17 @@
       "title": ".NET in Practice",
       "tier": "intermediate",
       "summary": "Projects, NuGet, file I/O, JSON, nullable reference types, debugging.",
-      "lessons": [],
-      "planned": true,
+      "lessons": [
+        "01-projects-and-solutions",
+        "02-the-dotnet-cli",
+        "03-nuget-packages",
+        "04-files-and-directories",
+        "05-json-with-system-text-json",
+        "06-exception-strategy",
+        "07-nullable-reference-types",
+        "08-debugging-and-diagnostics",
+        "09-configuration-basics"
+      ],
       "topics": ["solutions and project files", "dotnet CLI", "NuGet packages", "file and directory I/O", "System.Text.Json", "exception handling strategy", "nullable reference types", "debugging and diagnostics", "configuration basics"]
     },
     {
@@ -71,8 +80,16 @@
       "title": "Modern C#",
       "tier": "intermediate",
       "summary": "Records, pattern matching, delegates and events; ends with the Intermediate capstone.",
-      "lessons": [],
-      "planned": true,
+      "lessons": [
+        "01-records",
+        "02-switch-expressions",
+        "03-property-patterns",
+        "04-tuples-and-deconstruction",
+        "05-delegates-and-lambdas",
+        "06-events",
+        "07-extension-methods",
+        "08-capstone-budget-tracker"
+      ],
       "topics": ["records and immutability", "pattern matching in depth", "delegates and lambdas", "events", "extension methods", "tuples and deconstruction", "capstone: inventory or budget tracker"]
     },
     {

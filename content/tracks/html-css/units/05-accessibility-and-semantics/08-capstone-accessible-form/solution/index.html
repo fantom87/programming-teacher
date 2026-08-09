@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Rootworks Community Garden — Volunteer</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to main content</a>
+    <header class="site-header">
+      <span class="brand">Rootworks Community Garden</span>
+      <nav aria-label="Primary">
+        <a href="index.html">Home</a>
+        <a href="plots.html">Plots</a>
+        <a href="volunteer.html" aria-current="page">Volunteer</a>
+      </nav>
+    </header>
+    <main id="main-content">
+      <h1>Volunteer with Rootworks</h1>
+      <p>Two hours a month keeps twelve beds fed, watered, and argued over
+        in the friendliest possible way. Tell us how you'd like to help.</p>
+      <form class="signup">
+        <fieldset>
+          <legend>About you</legend>
+          <p>
+            <label for="volunteer-name">Your name</label>
+            <input type="text" id="volunteer-name" name="name">
+          </p>
+          <p>
+            <label for="volunteer-email">Email address</label>
+            <input type="email" id="volunteer-email" name="email">
+          </p>
+        </fieldset>
+        <fieldset>
+          <legend>Availability</legend>
+          <p>
+            <input type="radio" id="avail-weekdays" name="availability" value="weekdays">
+            <label for="avail-weekdays">Weekdays</label>
+          </p>
+          <p>
+            <input type="radio" id="avail-weekends" name="availability" value="weekends">
+            <label for="avail-weekends">Weekends</label>
+          </p>
+        </fieldset>
+        <fieldset>
+          <legend>What interests you</legend>
+          <p>
+            <input type="checkbox" id="int-planting" name="interests" value="planting">
+            <label for="int-planting">Planting and weeding</label>
+          </p>
+          <p>
+            <input type="checkbox" id="int-compost" name="interests" value="compost">
+            <label for="int-compost">Compost wrangling</label>
+          </p>
+          <p>
+            <input type="checkbox" id="int-tools" name="interests" value="tools">
+            <label for="int-tools">Tool library upkeep</label>
+          </p>
+        </fieldset>
+        <button type="submit">Sign me up</button>
+      </form>
+    </main>
+    <footer>
+      <p>Rootworks Community Garden — behind the library, past the tall
+        sunflowers.</p>
+    </footer>
+  </body>
+</html>

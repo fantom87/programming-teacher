@@ -1,0 +1,67 @@
+body {
+  font-family: "Segoe UI", system-ui, sans-serif;
+  margin: 0;
+  color: #2a2420;
+  background: #fdfaf6;
+}
+
+.site-header {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 14px 24px;
+  background: #221a14;
+  color: #f3ede6;
+}
+
+.brand {
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.site-nav {
+  display: flex;
+  gap: 16px;
+  flex: 1;
+}
+
+.site-nav a {
+  color: #d9cfc3;
+  text-decoration: none;
+}
+
+.here {
+  color: #ffb454;
+  font-weight: 700;
+}
+
+.order-btn {
+  background: #ffb454;
+  color: #221a14;
+  border: 0;
+  font: inherit;
+  font-weight: 700;
+  padding: 8px 16px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+main {
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: 40px 24px;
+}
+
+footer {
+  border-top: 1px solid #e4dbd0;
+  padding: 16px 24px;
+}
+
+.footer-nav {
+  display: flex;
+  gap: 16px;
+}
+
+.footer-nav a {
+  color: #6b5f52;
+}

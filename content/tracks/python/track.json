@@ -27,8 +27,16 @@
       "title": "Data and Collections",
       "tier": "foundations",
       "summary": "Lists, dicts, strings in depth, iterating over data.",
-      "lessons": [],
-      "planned": true,
+      "lessons": [
+        "01-your-first-list",
+        "02-indexing-and-slicing",
+        "03-string-methods",
+        "04-in-or-not-in",
+        "05-tuples",
+        "06-dicts",
+        "07-sets",
+        "08-mini-project-snack-stand"
+      ],
       "topics": ["lists", "indexing and slicing", "tuples", "dicts", "sets", "string methods", "nested data", "membership tests"]
     },
     {
@@ -72,8 +80,16 @@
       "title": "Pythonic Idioms",
       "tier": "intermediate",
       "summary": "Comprehensions, generators, dataclasses, typing intro.",
-      "lessons": [],
-      "planned": true,
+      "lessons": [
+        "01-list-comprehensions",
+        "02-dict-and-set-comprehensions",
+        "03-unpacking",
+        "04-enumerate-and-zip",
+        "05-iterators-and-generators",
+        "06-itertools-and-functools",
+        "07-dataclasses-and-type-hints",
+        "08-eafp-style"
+      ],
       "topics": ["list/dict/set comprehensions", "generators and yield", "iterators", "unpacking", "enumerate and zip", "itertools and functools", "dataclasses", "type hints intro", "EAFP style"]
     },
     {
@@ -81,8 +97,17 @@
       "title": "Real-World Python",
       "tier": "intermediate",
       "summary": "Stdlib tour, CLI tools, venv/pip; ends with the Intermediate capstone.",
-      "lessons": [],
-      "planned": true,
+      "lessons": [
+        "01-working-with-json",
+        "02-csv-files",
+        "03-dates-and-times",
+        "04-regular-expressions",
+        "05-command-line-arguments",
+        "06-virtual-environments",
+        "07-pip-and-requirements",
+        "08-structuring-a-project",
+        "09-capstone-expense-cruncher"
+      ],
       "topics": ["json and csv", "datetime", "regex", "argparse", "virtual environments", "pip and requirements", "structuring a small project", "capstone: data-crunching CLI tool"]
     },
     {

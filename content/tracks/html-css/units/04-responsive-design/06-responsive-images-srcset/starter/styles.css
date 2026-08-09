@@ -1,0 +1,25 @@
+body {
+  font-family: system-ui, sans-serif;
+  line-height: 1.6;
+  margin: 0;
+  padding: 1.5rem;
+  background-color: #10161d;
+  color: #e8eef4;
+}
+
+.feature {
+  max-width: 40rem;
+  margin-inline: auto;
+}
+
+.photo {
+  margin: 0;
+}
+
+/* Make the photo fluid: fill the column, keep its shape. */
+
+.photo figcaption {
+  color: #8fa3b5;
+  font-size: 0.875rem;
+  padding-block: 0.5rem;
+}

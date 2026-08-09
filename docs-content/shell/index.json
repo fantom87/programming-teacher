@@ -1,0 +1,19 @@
+{
+  "pages": [
+    { "slug": "what-is-a-shell", "title": "What is a shell?", "keywords": ["shell", "terminal", "prompt", "cmdlets", "Verb-Noun", "Get-Help", "Get-Command", "aliases"] },
+    { "slug": "navigating-the-filesystem", "title": "Navigating the filesystem", "keywords": ["Set-Location", "Get-ChildItem", "paths", "Copy-Item", "Move-Item", "Remove-Item", "Test-Path", "Join-Path", "wildcards"] },
+    { "slug": "the-pipeline", "title": "The pipeline", "keywords": ["pipeline", "Select-Object", "Where-Object", "Sort-Object", "ForEach-Object", "Group-Object", "Measure-Object"] },
+    { "slug": "objects-vs-text", "title": "Objects vs text", "keywords": ["objects", "properties", "Get-Member", "calculated properties", "Format-Table", "Format-List"] },
+    { "slug": "variables-and-types", "title": "Variables and types", "keywords": ["variables", "types", "casting", "strings", "interpolation", "here-strings", "arrays", "hashtables"] },
+    { "slug": "operators-and-comparisons", "title": "Operators and comparisons", "keywords": ["-eq", "-ne", "-gt", "-lt", "-like", "-match", "-and", "-or", "-contains", "comparison"] },
+    { "slug": "control-flow", "title": "Control flow", "keywords": ["if", "elseif", "else", "switch", "foreach", "while", "do", "break", "continue"] },
+    { "slug": "functions-and-parameters", "title": "Functions and parameters", "keywords": ["functions", "param", "parameters", "switch parameter", "validation", "return", "scope"] },
+    { "slug": "scripts-and-execution", "title": "Scripts and execution", "keywords": ["scripts", "ps1", "execution policy", "RemoteSigned", "comment-based help", "$PROFILE", "splatting"] },
+    { "slug": "regex-and-matching", "title": "Regex and matching", "keywords": ["regex", "regular expressions", "-match", "$Matches", "capture groups", "-replace", "-split", "Select-String"] },
+    { "slug": "working-with-json-and-csv", "title": "Working with JSON and CSV", "keywords": ["JSON", "CSV", "Import-Csv", "Export-Csv", "ConvertFrom-Json", "ConvertTo-Json", "PSCustomObject", "-Depth"] },
+    { "slug": "calling-apis", "title": "Calling APIs", "keywords": ["API", "REST", "Invoke-RestMethod", "Invoke-WebRequest", "headers", "query string", "paging", "download"] },
+    { "slug": "error-handling", "title": "Error handling", "keywords": ["errors", "try", "catch", "finally", "-ErrorAction", "throw", "terminating", "Write-Warning", "Write-Verbose"] },
+    { "slug": "bash-essentials", "title": "Bash essentials", "keywords": ["bash", "linux", "grep", "pipes", "redirection", "sed", "awk", "shebang", "chmod", "exit codes"] },
+    { "slug": "powershell-vs-bash", "title": "PowerShell vs bash", "keywords": ["powershell", "bash", "comparison", "objects", "text", "portability", "differences", "cheatsheet"] }
+  ]
+}

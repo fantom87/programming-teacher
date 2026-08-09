@@ -63,8 +63,16 @@
       "title": "Responsive Design",
       "tier": "intermediate",
       "summary": "Mobile-first, fluid units, media and container queries.",
-      "lessons": [],
-      "planned": true,
+      "lessons": [
+        "01-the-viewport-meta",
+        "02-media-queries",
+        "03-mobile-first",
+        "04-fluid-units-and-clamp",
+        "05-responsive-typography",
+        "06-responsive-images-srcset",
+        "07-the-picture-element",
+        "08-container-queries"
+      ],
       "topics": ["mobile-first methodology", "media queries", "fluid units and clamp()", "responsive typography", "responsive images (srcset, picture)", "container queries", "viewport meta"]
     },
     {
@@ -72,8 +80,16 @@
       "title": "Accessibility and Semantics",
       "tier": "intermediate",
       "summary": "Semantic HTML depth, ARIA, accessible forms; ends with the Intermediate capstone.",
-      "lessons": [],
-      "planned": true,
+      "lessons": [
+        "01-semantic-depth",
+        "02-document-outline",
+        "03-aria-roles",
+        "04-accessible-forms",
+        "05-keyboard-and-focus",
+        "06-color-contrast",
+        "07-alt-text-strategy",
+        "08-capstone-accessible-form"
+      ],
       "topics": ["semantic element depth", "document outline", "ARIA roles and when not to use them", "accessible forms", "keyboard navigation and focus styles", "color contrast", "alt-text strategy", "capstone: accessible multi-section form page"]
     },
     {

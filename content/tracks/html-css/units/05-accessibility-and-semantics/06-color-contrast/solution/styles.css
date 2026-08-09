@@ -1,0 +1,37 @@
+body {
+  font-family: "Segoe UI", system-ui, sans-serif;
+  background: #1b1e24;
+  color: #cfd4dc; /* 11.2:1 — same cool gray, brighter */
+  margin: 0;
+}
+
+.flyer {
+  max-width: 32rem;
+  margin: 0 auto;
+  padding: 48px 24px;
+}
+
+h1 {
+  color: #f4f6f8; /* 15.4:1 — the headline was always fine */
+  font-size: 2.2rem;
+  margin-bottom: 4px;
+}
+
+.when {
+  font-style: italic;
+}
+
+.cta {
+  display: inline-block;
+  background-color: #ffd166;
+  color: #1b1e24; /* 11.6:1 — dark-on-accent */
+  text-decoration: none;
+  font-weight: 700;
+  padding: 12px 22px;
+  border-radius: 999px;
+}
+
+.fine-print {
+  color: #9aa3b0; /* 6.5:1 — still quiet, now legible */
+  font-size: 0.85rem;
+}

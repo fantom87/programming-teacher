@@ -63,8 +63,16 @@
       "title": "Modern JavaScript",
       "tier": "intermediate",
       "summary": "ES modules, destructuring, classes, promises and async.",
-      "lessons": [],
-      "planned": true,
+      "lessons": [
+        "01-destructuring-and-spread",
+        "02-optional-chaining",
+        "03-es-modules",
+        "04-classes-and-prototypes",
+        "05-closures-in-depth",
+        "06-promises",
+        "07-async-await",
+        "08-async-error-handling"
+      ],
       "topics": ["ES modules", "destructuring and spread/rest", "optional chaining", "classes and prototypes", "closures in depth", "promises", "async/await", "error handling in async code"]
     },
     {
@@ -72,8 +80,17 @@
       "title": "TypeScript Essentials",
       "tier": "intermediate",
       "summary": "Types, interfaces, generics, narrowing; ends with the Intermediate capstone.",
-      "lessons": [],
-      "planned": true,
+      "lessons": [
+        "01-hello-typescript",
+        "02-typing-functions-and-objects",
+        "03-interfaces-vs-type-aliases",
+        "04-unions-and-narrowing",
+        "05-any-unknown-never",
+        "06-generics",
+        "07-tsconfig-basics",
+        "08-migrating-js-to-ts",
+        "09-capstone-typed-task-board"
+      ],
       "topics": ["type annotations", "interfaces vs type aliases", "unions and narrowing", "generics", "unknown/any/never", "typing functions and objects", "tsconfig basics", "migrating JS to TS", "capstone: typed browser app"]
     },
     {

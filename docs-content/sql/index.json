@@ -1,0 +1,19 @@
+{
+  "pages": [
+    { "slug": "what-is-a-database", "title": "What is a database?", "keywords": ["database", "tables", "rows", "columns", "schema", "SQLite", "relational"] },
+    { "slug": "select-basics", "title": "SELECT basics", "keywords": ["SELECT", "FROM", "columns", "expressions", "alias", "AS", "DISTINCT", "LIMIT"] },
+    { "slug": "filtering-with-where", "title": "Filtering with WHERE", "keywords": ["WHERE", "AND", "OR", "NOT", "IN", "BETWEEN", "LIKE", "NULL", "IS NULL"] },
+    { "slug": "sorting-and-limiting", "title": "Sorting and limiting", "keywords": ["ORDER BY", "ASC", "DESC", "LIMIT", "OFFSET", "top-N", "pagination"] },
+    { "slug": "aggregate-functions", "title": "Aggregate functions", "keywords": ["COUNT", "SUM", "AVG", "MIN", "MAX", "aggregates", "ROUND", "DISTINCT"] },
+    { "slug": "group-by-and-having", "title": "GROUP BY and HAVING", "keywords": ["GROUP BY", "HAVING", "groups", "CASE", "conditional aggregation", "query order"] },
+    { "slug": "joins", "title": "Joins", "keywords": ["JOIN", "INNER JOIN", "LEFT JOIN", "ON", "foreign key", "junction table", "aliases"] },
+    { "slug": "subqueries", "title": "Subqueries", "keywords": ["subquery", "scalar", "correlated", "IN", "EXISTS", "NOT EXISTS", "derived table"] },
+    { "slug": "ctes", "title": "CTEs (WITH)", "keywords": ["CTE", "WITH", "common table expression", "recursive", "chaining", "readability"] },
+    { "slug": "inserting-and-updating", "title": "Inserting and updating", "keywords": ["INSERT", "VALUES", "UPDATE", "SET", "upsert", "ON CONFLICT", "RETURNING"] },
+    { "slug": "deleting-data", "title": "Deleting data", "keywords": ["DELETE", "WHERE", "transactions", "BEGIN", "ROLLBACK", "COMMIT", "DROP"] },
+    { "slug": "creating-tables", "title": "Creating tables", "keywords": ["CREATE TABLE", "types", "type affinity", "ALTER TABLE", "DROP TABLE", "views", "DDL"] },
+    { "slug": "constraints-and-keys", "title": "Constraints and keys", "keywords": ["primary key", "foreign key", "NOT NULL", "UNIQUE", "DEFAULT", "CHECK", "AUTOINCREMENT", "PRAGMA"] },
+    { "slug": "indexes", "title": "Indexes", "keywords": ["index", "CREATE INDEX", "EXPLAIN QUERY PLAN", "performance", "table scan", "unique index"] },
+    { "slug": "window-functions", "title": "Window functions", "keywords": ["window functions", "OVER", "PARTITION BY", "ROW_NUMBER", "RANK", "LAG", "LEAD", "running total"] }
+  ]
+}
