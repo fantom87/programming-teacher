@@ -13,22 +13,27 @@ Built for one learner on one machine. Not a product, not hosted anywhere.
 
 ## Try it
 
-Grab **`Programming.Teacher.1.0.0.zip`** (135 MB) from the
-[Releases](../../releases/latest) page, extract it, and run
-**Programming Teacher.exe** inside. It's ready in about five seconds.
+From the [Releases](../../releases/latest) page:
 
-There's a **`.exe` installer** on the same page if you'd rather have Start Menu
-and desktop shortcuts. Same app; it just keeps your progress in the usual
-per-user location instead of inside the app folder.
+| | Download | |
+|---|---|---|
+| **Windows** | `Programming.Teacher.1.0.0.zip` (135 MB) | Extract, run **Programming Teacher.exe** inside |
+| | `Programming.Teacher.1.0.0.exe` (98 MB) | Installer, if you want Start Menu and desktop shortcuts |
+| **Linux** | `Programming-Teacher-1.0.0-x86_64.AppImage` (122 MB) | `chmod +x` it and run it |
 
-There is nothing to install — not even Node. The app carries its own runtime,
-its own server, all 357 lessons and the whole docs library. It writes progress,
-snapshots and logs to a `data` folder **beside the exe**, so the app is exactly
-one folder: copy it to a USB stick, move it, or delete it and nothing is left
-behind. Extracting a newer zip over the old folder keeps your progress.
+Ready in about five seconds. There is nothing to install — not even Node. The
+app carries its own runtime, its own server, all 357 lessons and the whole docs
+library.
 
-**Windows only, for now.** macOS and Linux work fine from source (below); they
-just don't have a packaged build yet.
+**The Windows zip is a single folder.** Progress, snapshots and logs go in a
+`data` folder beside the exe, so you can copy it to a USB stick, move it, or
+delete it and nothing is left behind; extracting a newer zip over the old
+folder keeps your progress. The installer and the AppImage use the ordinary
+per-user location instead (`%APPDATA%`, `~/.config`) — an uninstall would take
+an install-folder `data` with it, and an AppImage runs from a temporary mount
+that doesn't survive closing the app.
+
+**macOS** has no packaged build; it runs from source (below).
 
 **What works with nothing else installed:** 250 of the 357 lessons run entirely
 in the app — SQL (86), Python via Pyodide (60), HTML/CSS (62) and JavaScript
@@ -159,6 +164,20 @@ closure, then produces three things in `app/dist`:
 
 `npm run app:zip` re-zips an existing build without rebuilding it.
 
+The Linux AppImage builds in a container, so it doesn't need a Linux machine —
+and, usefully, it proves the app still builds from a clean checkout with
+nothing cached:
+
+```bash
+npm run app:dist:linux
+node scripts/test-linux.mjs
+```
+
+The test is the real gate: it runs the AppImage in a bare Debian container with
+no Node, no Python and no toolchain, then checks the server came up, the
+curriculum loaded, the app page serves, a lesson completes, and progress landed
+somewhere that outlives the process.
+
 ## Look at the code in a browser
 
 **Code → Codespaces → Create codespace on master** builds a container with Node,
@@ -203,6 +222,7 @@ Most useful places to look:
 
 Notes go in [`FEEDBACK.md`](FEEDBACK.md) or an issue, whichever is less friction.
 
-Honest caveats: it's Windows-first (paths, `taskkill`, PowerShell probes); the
+Honest caveats: it is Windows-first (paths, `taskkill`, PowerShell probes) even
+though the Linux build is tested end to end; the
 lesson content has been verified mechanically but not yet reviewed for teaching
 quality; and the three empty tracks are syllabus-only.

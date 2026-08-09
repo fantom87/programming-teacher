@@ -72,6 +72,13 @@ function installerManaged(dir) {
 // can't write to (Program Files, a read-only share).
 const PORTABLE_DATA = (() => {
   if (!PACKAGED) return null;
+  // An AppImage never runs from the folder it lives in: it runs from a
+  // read-only FUSE mount, or from a scratch directory under /tmp when the user
+  // (or CI) sets APPIMAGE_EXTRACT_AND_RUN. Writing data "beside the exe" there
+  // means writing to a directory that vanishes at exit. The AppImage runtime
+  // exports APPIMAGE for exactly this question, so Linux uses the per-user
+  // location — which is what Linux users expect anyway.
+  if (process.env.APPIMAGE) return null;
   const dir = path.dirname(process.execPath);
   if (installerManaged(dir)) return null;
   const beside = path.join(dir, "data");

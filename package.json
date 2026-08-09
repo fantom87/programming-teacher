@@ -19,6 +19,7 @@
     "app:pack": "npm run build && npm run bundle:server && node scripts/stage-server-deps.mjs && node scripts/make-icon.mjs",
     "app": "npm run start --prefix app",
     "app:dist": "npm run app:pack && npm run dist --prefix app && node scripts/pack-zip.mjs && node scripts/make-shortcut.mjs",
+    "app:dist:linux": "node scripts/build-linux.mjs",
     "app:zip": "node scripts/pack-zip.mjs",
     "app:shortcut": "node scripts/make-shortcut.mjs"
   },

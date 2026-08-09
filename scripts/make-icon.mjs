@@ -93,7 +93,15 @@ entry.writeUInt32LE(png.length, 8);
 entry.writeUInt32LE(22, 12); // offset
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const out = path.resolve(__dirname, "..", "app", "build", "icon.ico");
-fs.mkdirSync(path.dirname(out), { recursive: true });
-fs.writeFileSync(out, Buffer.concat([header, entry, png]));
-console.log(`wrote ${out} (${png.length} bytes png)`);
+const buildDir = path.resolve(__dirname, "..", "app", "build");
+fs.mkdirSync(buildDir, { recursive: true });
+
+const ico = path.join(buildDir, "icon.ico");
+fs.writeFileSync(ico, Buffer.concat([header, entry, png]));
+console.log(`wrote ${ico} (${png.length} bytes png)`);
+
+// Linux packaging wants the bare PNG — electron-builder reads icon.png for
+// AppImage/deb and derives the sizes it needs from a 256px source.
+const pngOut = path.join(buildDir, "icon.png");
+fs.writeFileSync(pngOut, png);
+console.log(`wrote ${pngOut}`);

@@ -1,0 +1,12 @@
+# The Linux build copies this repo into a container. Everything below is
+# either regenerated inside it, host-specific, or private.
+node_modules
+*/node_modules
+app/node_modules
+app/dist
+build
+data
+web/dist
+web/public/pyodide
+.git
+*.lnk

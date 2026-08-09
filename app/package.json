@@ -8,7 +8,8 @@
   "main": "main.cjs",
   "scripts": {
     "start": "electron .",
-    "dist": "electron-builder --win"
+    "dist": "electron-builder --win",
+    "dist:linux": "electron-builder --linux"
   },
   "build": {
     "appId": "local.bradley.programmingteacher",
@@ -45,6 +46,22 @@
       "oneClick": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true
+    },
+    "linux": {
+      "target": [
+        "AppImage"
+      ],
+      "icon": "build/icon.png",
+      "category": "Education",
+      "synopsis": "Learn programming with an AI tutor",
+      "executableName": "programming-teacher",
+      "artifactName": "Programming-Teacher-${version}-${arch}.${ext}",
+      "synopsis": "Learn programming with an AI tutor",
+      "desktop": {
+        "entry": {
+          "StartupWMClass": "programming-teacher"
+        }
+      }
     },
     "artifactName": "${productName} ${version}.${ext}",
     "electronLanguages": ["en-US"]
