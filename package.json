@@ -15,7 +15,8 @@
     "start": "npm run start -w server",
     "test": "vitest run",
     "lint-content": "tsx scripts/lint-content.ts",
-    "app:dist": "npm run build && node scripts/make-icon.mjs && npm run dist --prefix app"
+    "app:dist": "npm run build && node scripts/make-icon.mjs && npm run dist --prefix app && node scripts/make-shortcut.mjs",
+    "app:shortcut": "node scripts/make-shortcut.mjs"
   },
   "devDependencies": {
     "concurrently": "^10.0.3",

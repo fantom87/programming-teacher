@@ -7,3 +7,4 @@ web/public/sql-wasm*.wasm
 .env
 app/dist/
 app/node_modules/
+*.lnk
