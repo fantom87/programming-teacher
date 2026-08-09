@@ -16,10 +16,15 @@ web/public/sql-wasm*.wasm
 
 *.log
 
-# Real secrets live in a root .env — anchored, because lessons legitimately
-# ship .env files as teaching material (see the env-config lesson).
-/.env
-/.env.*
+# Secrets: ignore .env at ANY depth (that's where a stray key would land),
+# but let lessons ship .env files as teaching material.
+.env
+.env.*
+!content/**/.env
+!content/**/.env.*
+
+# Per-machine Claude Code config — the ".local" half is meant to stay local
+.claude/settings.local.json
 app/dist/
 app/node_modules/
 

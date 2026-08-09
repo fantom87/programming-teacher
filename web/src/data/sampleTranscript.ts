@@ -1,9 +1,9 @@
 import type { ChatItem } from "../components/TutorChat";
 
-// A real exchange, captured while testing the tutor on
-// javascript/01-js-first-steps/02-values-and-variables. Shown (clearly labelled
-// as a recording) when the tutor can't be reached, so someone without a Claude
-// login can still see what the feature does rather than an empty pane.
+// A representative exchange on javascript/01-js-first-steps/02-values-and-variables,
+// lightly edited from a real session. Shown (clearly labelled as a recording)
+// when the tutor can't be reached, so someone without a Claude login can still
+// see what the feature does rather than an empty pane.
 export const SAMPLE_TRANSCRIPT: { level: number; items: ChatItem[] }[] = [
   {
     level: 3,
@@ -42,7 +42,7 @@ export const SAMPLE_TRANSCRIPT: { level: number; items: ChatItem[] }[] = [
       {
         role: "assistant",
         text:
-          'Nice work getting all the pieces in — I can see "Bradley", "1987", and "Brad" all printed! ' +
+          'Nice work getting all the pieces in — I can see "Ada", "1815", and "Addy" all printed! ' +
           "You're right that logically it's correct.\n\nBut the automated check isn't happy yet, and I think it's " +
           "because everything got squished onto one line. Let's look at what the checker expects…",
       },

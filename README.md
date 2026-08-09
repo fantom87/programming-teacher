@@ -43,6 +43,11 @@ bash .devcontainer/start-dev.sh restart
 Setting `ANTHROPIC_API_KEY` in the Codespace's secrets works too. Settings will
 then report `using your Claude Code login`.
 
+**Keep the forwarded port Private.** That's the default, and it matters: port
+5173 proxies to `/api/run`, which executes arbitrary code by design. Setting the
+port's visibility to Public would put that on the open internet for anyone with
+the URL.
+
 **Caveats.** Rust isn't installed in the container — it would add about a
 gigabyte to the boot, and the Rust track has no lessons yet, so only the
 playground's Rust tab is affected. The container is Linux while the app is
