@@ -115,8 +115,12 @@
       "title": "Capstone: Real Console App",
       "tier": "advanced",
       "summary": "Multi-session capstone: a persistent, tested console/TUI app.",
-      "lessons": [],
-      "planned": true,
+      "lessons": [
+        "01-spec-and-architecture",
+        "02-commands-and-state",
+        "03-json-persistence",
+        "04-polish-and-report"
+      ],
       "topics": ["spec and architecture", "core domain with tests", "persistence and async I/O", "polish and final review"]
     },
     {

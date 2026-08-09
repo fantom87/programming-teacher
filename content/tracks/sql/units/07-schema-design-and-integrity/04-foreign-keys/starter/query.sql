@@ -1,0 +1,24 @@
+-- 1. Turn enforcement on for this connection:  PRAGMA foreign_keys = ON;
+--
+-- 2. CREATE TABLE loans:
+--      id          INTEGER PRIMARY KEY
+--      copy_id     INTEGER NOT NULL, REFERENCES copies(id)
+--      member_id   INTEGER NOT NULL, REFERENCES members(id)
+--      borrowed_on TEXT NOT NULL
+--      returned_on TEXT              (NULL means still out)
+--
+-- 3. INSERT the six loans on the desk, as
+--    (copy_id, member_id, borrowed_on, returned_on):
+--      (1, 1, '2025-03-02', '2025-03-20')
+--      (4, 2, '2025-03-05', NULL)
+--      (2, 3, '2025-03-11', '2025-03-25')
+--      (5, 1, '2025-04-01', NULL)
+--      (7, 4, '2025-04-03', NULL)
+--      (3, 2, '2025-04-08', '2025-04-19')
+--
+-- 4. PRAGMA foreign_key_check;   -- what did last winter leave behind?
+-- 5. DELETE the hold it names.
+-- 6. PRAGMA foreign_key_check;   -- should be clean now
+--
+-- 7. Finish with the desk report — l.id, m.name AS member, c.barcode —
+--    joining loans to members and copies, ORDER BY l.id.

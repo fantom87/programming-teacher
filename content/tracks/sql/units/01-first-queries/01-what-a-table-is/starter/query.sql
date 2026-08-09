@@ -1,0 +1,2 @@
+-- Ask the database to describe the books table.
+-- One statement, ending in a semicolon.

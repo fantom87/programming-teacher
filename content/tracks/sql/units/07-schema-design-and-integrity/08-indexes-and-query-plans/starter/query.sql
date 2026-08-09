@@ -1,0 +1,20 @@
+-- The desk asks "what has Marcus got out?" a thousand times a day.
+--
+-- 1. Ask SQLite how it would answer, before you help it:
+--    EXPLAIN QUERY PLAN
+--    SELECT id, borrowed_on FROM loans WHERE member_id = 2;
+--
+-- 2. CREATE INDEX idx_loans_member ON loans(member_id);
+--
+-- 3. Ask again — exactly the same EXPLAIN QUERY PLAN — and watch SCAN
+--    become SEARCH.
+--
+-- 4. Run the query for real:
+--    SELECT id, borrowed_on FROM loans WHERE member_id = 2 ORDER BY id;
+--
+-- 5. Barcodes are scanned even more often, and they must stay unique:
+--    CREATE UNIQUE INDEX idx_copies_barcode ON copies(barcode);
+--
+-- 6. List what you built:
+--    SELECT name FROM sqlite_master
+--    WHERE type = 'index' AND name LIKE 'idx_%' ORDER BY name;

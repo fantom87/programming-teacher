@@ -1,0 +1,16 @@
+-- 1. CREATE TABLE books with id INTEGER PRIMARY KEY, then title TEXT,
+--    author TEXT, year INTEGER.
+--
+-- 2. INSERT these six books WITHOUT writing any id — let SQLite assign them:
+--      'The Shipping News',          'Annie Proulx',          1993
+--      'Braiding Sweetgrass',        'Robin Wall Kimmerer',   2013
+--      'Piranesi',                   'Susanna Clarke',        2020
+--      'The Overstory',              'Richard Powers',        2018
+--      'Station Eleven',             'Emily St. John Mandel', 2014
+--      'A Psalm for the Wild-Built', 'Becky Chambers',        2021
+--
+-- 3. SELECT id, title, year FROM books ORDER BY id.
+--
+-- 4. Then show that id and rowid are the same storage:
+--    SELECT rowid AS rowid_col, id AS id_col, title
+--    FROM books WHERE title = 'Piranesi';

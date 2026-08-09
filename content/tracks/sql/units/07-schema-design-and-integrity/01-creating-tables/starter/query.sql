@@ -1,0 +1,17 @@
+-- 1. CREATE TABLE members with four columns, in this order:
+--      id        INTEGER
+--      name      TEXT
+--      card_no   TEXT      (card numbers look like '004' — keep the zeros!)
+--      joined_on TEXT
+--
+-- 2. INSERT the four members Fernwood has signed up so far:
+--      1, 'Ada Fern',    '004', '2023-01-14'
+--      2, 'Marcus Wood', '017', '2023-06-02'
+--      3, 'Priya Rao',   '021', '2024-02-20'
+--      4, 'Dana Okoye',  '032', '2024-11-05'
+--
+-- 3. SELECT id, name, card_no, joined_on from members, ORDER BY id.
+--
+-- 4. Then prove the affinities, for member 1 only:
+--    SELECT typeof(id) AS id_type, typeof(card_no) AS card_type,
+--           CAST(card_no AS INTEGER) AS card_as_int

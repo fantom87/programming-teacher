@@ -1,0 +1,27 @@
+-- The four letters, one script. Start with PRAGMA foreign_keys = ON;
+--
+-- Part 1 — A is for atomic. Check out copy 6 to member 3 on '2025-04-22'
+-- inside BEGIN ... COMMIT: insert the loan, set copies.on_shelf = 0.
+-- Then show what the desk sees:
+--   SELECT c.barcode, c.on_shelf, m.name AS borrower
+--   FROM loans l JOIN copies c ON c.id = l.copy_id
+--                JOIN members m ON m.id = l.member_id
+--   WHERE l.id = (SELECT MAX(id) FROM loans);
+--
+-- Part 2 — and the same word means "or nothing". BEGIN, then run the
+-- volunteer's cleanup: DELETE FROM loans WHERE returned_on IS NOT NULL;
+-- and UPDATE copies SET on_shelf = 1;  then ROLLBACK.
+-- Prove the library is untouched:
+--   SELECT (SELECT COUNT(*) FROM loans) AS loans_after,
+--          (SELECT COUNT(*) FROM copies WHERE on_shelf = 0) AS off_shelf_after;
+--
+-- Part 3 — C is for consistent. Offer two impossible copies with
+-- INSERT OR IGNORE (id, book_id, barcode, condition, on_shelf):
+--   (99, 3, 'FW-9999', 'good', 7)      -- on_shelf must be 0 or 1
+--   (100, 3, 'FW-1001', 'good', 1)     -- barcode already exists
+-- Then: SELECT COUNT(*) AS copies_total FROM copies;
+--
+-- Part 4 — the closing audit. PRAGMA foreign_key_check; then the invariant
+-- that must always hold:
+--   SELECT (SELECT COUNT(*) FROM loans WHERE returned_on IS NULL) AS out_now,
+--          (SELECT COUNT(*) FROM copies WHERE on_shelf = 0) AS off_shelf;

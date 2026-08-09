@@ -1,0 +1,1 @@
+-- Same two facts as last time, with headers you chose: book and shelf_value.

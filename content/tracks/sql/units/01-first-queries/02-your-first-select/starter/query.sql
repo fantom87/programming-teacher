@@ -1,0 +1,1 @@
+-- Ask for every title in the shop, oldest row first.

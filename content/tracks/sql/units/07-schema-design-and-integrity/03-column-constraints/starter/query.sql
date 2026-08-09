@@ -1,0 +1,22 @@
+-- 1. CREATE TABLE copies — one row per physical book on the shelf:
+--      id        INTEGER PRIMARY KEY
+--      book_id   INTEGER   must always be present
+--      barcode   TEXT      must always be present, and no two copies share one
+--      condition TEXT      must always be present, defaults to 'good',
+--                          and may only be 'good', 'worn' or 'damaged'
+--
+-- 2. INSERT the six copies the desk has already labelled:
+--      (1, 'FW-1001', 'good')   (2, 'FW-1002', 'good')   (2, 'FW-1003', 'worn')
+--      (3, 'FW-1004', 'good')   (4, 'FW-1005', 'good')   (5, 'FW-1006', 'damaged')
+--    ...as (book_id, barcode, condition), letting id assign itself.
+--
+-- 3. INSERT the seventh copy — book 6, barcode 'FW-1007' — WITHOUT a
+--    condition, so the DEFAULT has to fill it in.
+--
+-- 4. The clerk also typed two bad rows. Offer them with INSERT OR IGNORE so
+--    the constraints can turn them away instead of killing the script:
+--      (3, 'FW-1004', 'good')     -- barcode already taken
+--      (5, 'FW-1008', 'chewed')   -- not a condition this library recognises
+--
+-- 5. SELECT id, book_id, barcode, condition FROM copies ORDER BY id;
+-- 6. SELECT COUNT(*) AS copies_kept FROM copies;

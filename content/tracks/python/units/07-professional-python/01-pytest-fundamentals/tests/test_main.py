@@ -1,46 +1,54 @@
-import io
-from contextlib import redirect_stdout
+TEST_NAMES = ("test_lowercases", "test_punctuation_dropped", "test_spaces_become_hyphens")
 
+def t_three_tests_exist_and_pass():
+    for name in TEST_NAMES:
+        fn = globals().get(name)
+        assert callable(fn), f"{name} should be a test function taking no parameters"
+        fn()  # a passing test just returns
 
-def t_tests_pass_individually():
-    for fn in (test_lowercases, test_punctuation_dropped, test_spaces_become_hyphens):
-        fn()  # a pytest-style test passes by simply not raising
+def t_tests_can_actually_fail():
+    real = globals()["slugify"]
+    globals()["slugify"] = lambda title: "definitely-not-right"
+    try:
+        for name in TEST_NAMES:
+            raised = False
+            try:
+                globals()[name]()
+            except AssertionError:
+                raised = True
+            assert raised, f"{name} passed against a deliberately broken slugify — is it really asserting?"
+    finally:
+        globals()["slugify"] = real
 
-
-def t_slugify_untouched():
-    assert slugify("Deep Work Wins!") == "deep-work-wins", "slugify itself should not be modified"
-
-
-def t_report_shape():
-    buf = io.StringIO()
-    with redirect_stdout(buf):
-        run_tests()
-    out = buf.getvalue()
-    assert "..." in out, "each passing test should print one dot on a single line"
-    assert out.endswith("3 passed\n"), f"the run should end with a computed '3 passed' line, got {out!r}"
-
-
-def t_collection_is_dynamic():
-    ran = []
-
-    def test_zz_injected():
-        ran.append(True)
-        raise AssertionError("boom")
-
-    globals()["test_zz_injected"] = test_zz_injected
+def t_collector_finds_new_tests():
+    import contextlib, io
+    globals()["test_zzz_injected"] = lambda: None
     try:
         buf = io.StringIO()
-        with redirect_stdout(buf):
+        with contextlib.redirect_stdout(buf):
             run_tests()
         out = buf.getvalue()
     finally:
-        del globals()["test_zz_injected"]
-    assert ran, "run_tests must discover new test_ functions by scanning globals(), not use a hardcoded list"
-    assert "F" in out, "a failing test should print an F"
-    assert "1 failed, 3 passed" in out, f"the summary should count the injected failure, got {out!r}"
+        del globals()["test_zzz_injected"]
+    assert out.startswith("....\n"), f"a 4th test was added to globals(); expected '....' then a newline, got {out!r}"
+    assert out.strip().endswith("4 passed"), f"the summary should count the discovered test, got {out!r}"
 
+def t_failures_are_counted():
+    import contextlib, io
+    def boom():
+        assert False, "failing on purpose"
+    globals()["test_zzz_boom"] = boom
+    try:
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            run_tests()
+        out = buf.getvalue()
+    finally:
+        del globals()["test_zzz_boom"]
+    assert out.startswith("...F\n"), f"a failing test should print 'F' after the three dots, got {out!r}"
+    assert out.strip().endswith("1 failed, 3 passed"), f"expected the summary '1 failed, 3 passed', got {out!r}"
 
-test("the three slugify tests pass", t_tests_pass_individually)
-test("slugify is unchanged", t_slugify_untouched)
-test("dots and summary look like pytest", t_report_shape)
-test("collection discovers tests by name", t_collection_is_dynamic)
+test("the three tests exist and pass", t_three_tests_exist_and_pass)
+test("the tests fail when slugify is broken", t_tests_can_actually_fail)
+test("run_tests discovers tests by name", t_collector_finds_new_tests)
+test("run_tests reports failures", t_failures_are_counted)

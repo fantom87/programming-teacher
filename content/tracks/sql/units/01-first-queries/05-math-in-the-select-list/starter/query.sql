@@ -1,0 +1,1 @@
+-- title, price, copies, and the shelf value: price * copies, rounded to 2 places.

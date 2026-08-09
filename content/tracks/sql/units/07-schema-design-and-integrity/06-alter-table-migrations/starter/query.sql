@@ -1,0 +1,16 @@
+-- Fernwood wants email reminders. Migrate the live members table.
+--
+-- 1. ALTER TABLE members ADD COLUMN email TEXT;
+--    (nullable, so the four existing rows are fine for a moment)
+--
+-- 2. ALTER TABLE members ADD COLUMN status ... TEXT, NOT NULL, DEFAULT 'active'
+--    (a NOT NULL column can only be added if it carries a DEFAULT — the rows
+--     already on disk need something to hold)
+--
+-- 3. Backfill the emails: lower(replace(name, ' ', '.')) || '@fernwood.example'
+--
+-- 4. Anyone who joined before 2024-01-01 is due a renewal: set their status
+--    to 'lapsed'.
+--
+-- 5. SELECT id, name, email, status FROM members ORDER BY id;
+-- 6. PRAGMA table_info(members);   -- the new shape, straight from SQLite

@@ -1,23 +1,12 @@
-// TaskDeck — capstone session 1 of 4: spec and architecture.
-//
-// THE SPEC (the whole capstone):
-//   * a task: id, title, category, priority, done flag
-//   * session 1: domain layer (TaskStore) + board rendering
-//   * session 2: mutations (add/complete/remove) behind tests
-//   * session 3: JSON persistence with async file I/O
-//   * session 4: command dispatcher, reports, final polish
-//
-// THE LAW: Domain.cs never touches Console; Program.cs never touches the
-// task List directly — everything flows through TaskStore.
-//
-// TODO Part 2 — presentation: build the store from SeedData.Tasks(), then
-// Render(store) — a STATIC local function (everything arrives via its
-// parameter) that prints:
-//   == TaskDeck ==
-//   [x] #1 Draft the spec (planning, high)     <- one line per task
-//   ...
-//   5 tasks, 2 done, 3 open                    <- every number computed
-// Marks: "x" when Done, " " otherwise. Priority prints lowercase via
-// t.Priority.ToString().ToLowerInvariant().
+// TaskFlow — presentation layer. This file owns the Console; the domain doesn't.
+Console.WriteLine("== TaskFlow v0.1 ==");
 
-Console.WriteLine("TaskDeck: not built yet");
+// TODO Part 2 — build the store from the seed and print the counts line:
+//     TaskStore store = new TaskStore(SeedData.Tasks());
+//   then "<Count> tasks: <DoneCount> done, <OpenCount> open".
+
+// TODO Part 3 — a blank line, "-- Backlog --", then every task on its own
+//   line through a local Render(TaskItem) function:
+//     [x] 1 Draft the spec (planning/High)
+//     [ ] 3 Build the domain (code/High)
+//   [x] when Done, [ ] when not.

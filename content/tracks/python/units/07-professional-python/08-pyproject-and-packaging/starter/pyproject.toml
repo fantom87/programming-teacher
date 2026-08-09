@@ -1,0 +1,18 @@
+# THE BRIEF — package this project so `pip install slugkit` works:
+#
+#   name            slugkit
+#   version         0.3.0
+#   description     turn any title into a URL slug
+#   python          3.11 or newer
+#   dependencies    click 8.1 or newer, rich 13.0 or newer
+#   command         typing "slugkit" runs main() in slugkit/cli.py
+#   build backend   hatchling
+#
+# Fill in the three tables. Dependency strings look like "click>=8.1";
+# a script target looks like "package.module:function".
+
+[build-system]
+
+[project]
+
+[project.scripts]

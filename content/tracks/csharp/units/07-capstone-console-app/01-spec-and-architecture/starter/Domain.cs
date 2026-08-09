@@ -1,9 +1,10 @@
 // Domain layer: the data and the rules. No Console in this file — ever.
 
-// TODO Part 1 — class TaskStore:
-//   - a private readonly List<TaskItem> field, set by the constructor
-//   - IReadOnlyList<TaskItem> All   (callers may look, never mutate)
-//   - int Count, DoneCount, OpenCount  (computed with LINQ, on demand)
+// TODO Part 1 — write class TaskStore here:
+//   - a private readonly List<TaskItem> field, assigned by the constructor
+//   - public IReadOnlyList<TaskItem> All  (callers may look, never mutate)
+//   - public int Count, DoneCount, OpenCount — computed properties, not
+//     stored fields that could drift out of date
 
 static class SeedData
 {

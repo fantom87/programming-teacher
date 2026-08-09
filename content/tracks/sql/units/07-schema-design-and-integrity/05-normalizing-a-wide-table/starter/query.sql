@@ -1,0 +1,25 @@
+-- Split riverside_export into the three tables it should have been.
+--
+-- 1. CREATE the tables:
+--      members(id INTEGER PRIMARY KEY, name TEXT NOT NULL,
+--              card_no TEXT NOT NULL UNIQUE)
+--      books(id INTEGER PRIMARY KEY, title TEXT NOT NULL, author TEXT NOT NULL)
+--      loans(id INTEGER PRIMARY KEY,
+--            member_id INTEGER NOT NULL REFERENCES members(id),
+--            book_id   INTEGER NOT NULL REFERENCES books(id),
+--            borrowed_on TEXT NOT NULL)
+--
+-- 2. Fill members with INSERT INTO ... SELECT DISTINCT member_name,
+--    member_card FROM riverside_export ORDER BY member_card.
+--    Fill books the same way from the title/author pair, ORDER BY book_title.
+--
+-- 3. Fill loans by re-reading the export and looking up the new ids:
+--    join riverside_export to members ON card_no = member_card and to books
+--    ON title = book_title, ORDER BY row_id.
+--
+-- 4. SELECT id, name, card_no FROM members ORDER BY id;
+-- 5. SELECT id, title, author FROM books ORDER BY id;
+-- 6. One last row proving nothing was lost:
+--    SELECT COUNT(*) AS loans_rows,
+--           (SELECT COUNT(*) FROM riverside_export) AS export_rows
+--    FROM loans;

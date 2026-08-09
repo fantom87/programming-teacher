@@ -1,39 +1,44 @@
-import io
-from contextlib import redirect_stdout
-
-
-def t_fixture_returns_fresh():
+def t_fixture_is_a_factory():
     a = fresh_cart()
     b = fresh_cart()
-    assert isinstance(a, Cart), "fresh_cart should return a Cart"
-    assert a is not b, "each call must build a NEW cart, not hand back the same one"
-    assert a.count() == 0, "a fresh cart starts empty"
+    assert isinstance(a, Cart), "fresh_cart() should return a Cart"
+    assert a is not b, "fresh_cart() must build a NEW cart each call, not hand back a shared one"
+    a.add("mug", 8.50)
+    assert fresh_cart().count() == 0, "a cart from fresh_cart() should always start empty"
 
+def t_tests_survive_being_rerun():
+    names = ("test_add_increases_count", "test_carts_are_isolated", "test_totals")
+    for name in names:
+        fn = globals().get(name)
+        assert callable(fn), f"{name} should be a test function"
+    for round_number in (1, 2):
+        for name in names:
+            globals()[name]()  # order-independent and repeatable, or state is shared
 
-def t_fixture_isolates():
-    dirty = fresh_cart()
-    dirty.add("x", 1.0)
-    assert fresh_cart().count() == 0, "state must not leak from one fixture to the next"
-
-
-def t_cases_cover_edges():
-    assert len(TOTAL_CASES) >= 3, "cover at least three cases"
-    assert any(prices == [] for prices, _ in TOTAL_CASES), "include the empty-cart edge case ([], 0.0)"
+def t_case_table_is_honest():
+    assert len(TOTAL_CASES) >= 3, f"TOTAL_CASES needs at least three rows, has {len(TOTAL_CASES)}"
+    assert any(list(prices) == [] for prices, _ in TOTAL_CASES), "include the empty-cart case ([], 0.0)"
     assert any(len(prices) >= 2 for prices, _ in TOTAL_CASES), "include a multi-item case"
     for prices, expected in TOTAL_CASES:
-        assert round(sum(prices), 2) == expected, f"case {prices} expects {expected} — that math is wrong"
+        assert abs(round(sum(prices), 2) - expected) < 1e-9, f"case {prices} expects {expected}, which isn't its total"
 
+def t_every_case_is_actually_checked():
+    multi = next(prices for prices, _ in TOTAL_CASES if len(prices) >= 2)
+    real_total = Cart.total
+    Cart.total = lambda self: real_total(self) if len(self.items) < 2 else 0.0
+    try:
+        message = None
+        try:
+            test_totals()
+        except AssertionError as e:
+            message = str(e)
+        assert message is not None, "test_totals passed while multi-item totals were broken — is every case asserted?"
+        named = str(multi) in message or any(str(p) in message for p in multi)
+        assert named, f"the failure message should name the failing case's prices {multi}; got {message!r}"
+    finally:
+        Cart.total = real_total
 
-def t_suite_green():
-    buf = io.StringIO()
-    with redirect_stdout(buf):
-        run_tests()
-    out = buf.getvalue()
-    assert "failed" not in out, f"every test should pass, got {out!r}"
-    assert out.endswith("passed\n"), f"run_tests should end with the summary line, got {out!r}"
-
-
-test("fresh_cart builds a new cart each call", t_fixture_returns_fresh)
-test("fixtures isolate state", t_fixture_isolates)
-test("the case table covers the edges", t_cases_cover_edges)
-test("the whole suite is green", t_suite_green)
+test("fresh_cart is a factory, not a shared object", t_fixture_is_a_factory)
+test("tests pass in any order, twice over", t_tests_survive_being_rerun)
+test("TOTAL_CASES covers empty and multi-item", t_case_table_is_honest)
+test("every case is checked, and named when it fails", t_every_case_is_actually_checked)

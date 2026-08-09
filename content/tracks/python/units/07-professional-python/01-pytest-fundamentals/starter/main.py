@@ -1,22 +1,26 @@
+# The code under test. It works — leave it alone.
 def slugify(title):
-    """Turn a post title into a URL slug: lowercase, hyphens, a-z0-9 only."""
-    words = title.lower().split()
-    cleaned = ["".join(ch for ch in word if ch.isalnum()) for word in words]
-    return "-".join(word for word in cleaned if word)
+    """Turn a post title into a URL slug."""
+    cleaned = "".join(c for c in title.lower() if c.isalnum() or c in " -")
+    return "-".join(cleaned.split())
 
 
-# --- your tests: pytest style (test_ prefix, one bare assert each) ---
+# 1. Three tests, pytest style. Name each one test_<what it checks>,
+#    give it no parameters, and put ONE bare assert in the body:
+#
+#      test_lowercases             "Hello"          -> "hello"
+#      test_punctuation_dropped    "Hello, World!"  -> "hello-world"
+#      test_spaces_become_hyphens  "deep work wins" -> "deep-work-wins"
 
 
-def test_lowercases():
-    ...
+# 2. run_tests() — pytest's core loop, your version:
+#    - collect every callable in globals() whose name starts with "test_"
+#      into a list FIRST (collect, then run — like pytest does)
+#    - run each one: print "." if it returns, "F" if it raises
+#      AssertionError, both with end="" so they share a line
+#    - print() to end the dot line, then the summary, computed:
+#        3 passed                 (nothing failed)
+#        1 failed, 3 passed       (something did)
 
 
-# --- your mini pytest: collect by name, run, report ---
-
-
-def run_tests():
-    ...
-
-
-run_tests()
+# 3. Call run_tests() here.

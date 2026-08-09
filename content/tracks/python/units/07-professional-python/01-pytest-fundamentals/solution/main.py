@@ -1,11 +1,8 @@
+# The code under test. It works — leave it alone.
 def slugify(title):
-    """Turn a post title into a URL slug: lowercase, hyphens, a-z0-9 only."""
-    words = title.lower().split()
-    cleaned = ["".join(ch for ch in word if ch.isalnum()) for word in words]
-    return "-".join(word for word in cleaned if word)
-
-
-# --- tests: pytest style (test_ prefix, one bare assert each) ---
+    """Turn a post title into a URL slug."""
+    cleaned = "".join(c for c in title.lower() if c.isalnum() or c in " -")
+    return "-".join(cleaned.split())
 
 
 def test_lowercases():
@@ -20,25 +17,23 @@ def test_spaces_become_hyphens():
     assert slugify("deep work wins") == "deep-work-wins"
 
 
-# --- mini pytest: collect by name, run, report ---
-
-
 def run_tests():
-    collected = [
-        (name, fn)
-        for name, fn in sorted(globals().items())
-        if name.startswith("test_") and callable(fn)
-    ]
+    """Collect every test_ function, run it, report like pytest."""
+    collected = [fn for name, fn in list(globals().items())
+                 if name.startswith("test_") and callable(fn)]
+
+    passed = 0
     failed = 0
-    for name, fn in collected:
+    for fn in collected:
         try:
             fn()
             print(".", end="")
+            passed += 1
         except AssertionError:
-            failed += 1
             print("F", end="")
+            failed += 1
+
     print()
-    passed = len(collected) - failed
     if failed:
         print(f"{failed} failed, {passed} passed")
     else:

@@ -1,0 +1,1 @@
+-- A peek: title and price for the first three rows only.

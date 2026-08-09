@@ -1,0 +1,16 @@
+-- 1. CREATE VIEW books_on_loan AS a SELECT with these output columns:
+--      l.id AS loan_id, m.name AS member, b.title AS title, l.borrowed_on
+--    joining loans -> copies -> books and loans -> members,
+--    keeping only the rows where l.returned_on IS NULL.
+--    (No ORDER BY inside the view — sorting is the caller's job.)
+--
+-- 2. SELECT loan_id, member, title FROM books_on_loan ORDER BY loan_id;
+--
+-- 3. Loan 4 comes back to the desk:
+--    UPDATE loans SET returned_on = '2025-04-21' WHERE id = 4;
+--
+-- 4. Ask the view the same question again — same SELECT, one row lighter.
+--
+-- 5. Then aggregate over the view like any other table:
+--    SELECT member, COUNT(*) AS out_now FROM books_on_loan
+--    GROUP BY member ORDER BY member;

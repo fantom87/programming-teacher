@@ -115,8 +115,17 @@
       "title": "Professional Python",
       "tier": "advanced",
       "summary": "pytest, packaging, tooling, logging, project structure.",
-      "lessons": [],
-      "planned": true,
+      "lessons": [
+        "01-pytest-fundamentals",
+        "02-fixtures-and-parametrize",
+        "03-mocking-and-monkeypatching",
+        "04-measuring-coverage",
+        "05-ruff-and-black",
+        "06-type-checking-with-mypy",
+        "07-logging",
+        "08-pyproject-and-packaging",
+        "09-project-layout-conventions"
+      ],
       "topics": ["pytest fundamentals", "fixtures and parametrize", "mocking", "coverage", "ruff and black", "mypy", "logging", "pyproject and packaging", "project layout conventions"]
     },
     {

@@ -1,0 +1,20 @@
+-- A checkout is two statements that must both happen, or neither.
+--
+-- 1. BEGIN; then INSERT the loan and flip the copy off the shelf, then COMMIT:
+--      INSERT INTO loans (copy_id, member_id, borrowed_on, returned_on)
+--        VALUES (6, 3, '2025-04-22', NULL);
+--      UPDATE copies SET on_shelf = 0 WHERE id = 6;
+--
+-- 2. Show the result: SELECT id, barcode, on_shelf FROM copies
+--    WHERE id = 6;
+--
+-- 3. Now the near-miss. Someone wants to "tidy up" the finished loans.
+--    BEGIN; DELETE FROM loans WHERE returned_on IS NOT NULL;
+--    Inside the transaction, look at the damage:
+--      SELECT COUNT(*) AS loans_inside FROM loans;
+--    Then ROLLBACK.
+--
+-- 4. Look again from outside: SELECT COUNT(*) AS loans_after FROM loans;
+--
+-- 5. Finish with the shelf: SELECT id, barcode, on_shelf FROM copies
+--    WHERE on_shelf = 0 ORDER BY id;
