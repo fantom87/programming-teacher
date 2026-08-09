@@ -1,50 +1,80 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { AssistanceLevel, Settings as SettingsType } from "@teacher/shared";
 import { ASSISTANCE_NAMES } from "@teacher/shared";
-
-interface Health {
-  runtimes: { python: string | null; node: string | null; dotnet: string | null };
-  sdkAuth: string;
-  sdkAuthDetail?: string;
-}
+import { api, type Health } from "../api/client";
 
 export default function Settings({ onSettingsChange }: { onSettingsChange: (s: SettingsType) => void }) {
   const [settings, setSettings] = useState<SettingsType | null>(null);
   const [health, setHealth] = useState<Health | null>(null);
   const [profile, setProfile] = useState("");
   const [profileDirty, setProfileDirty] = useState(false);
+  const [error, setError] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
+  const toastTimer = useRef<number | undefined>(undefined);
 
-  useEffect(() => {
-    fetch("/api/settings").then((r) => r.json()).then(setSettings).catch(console.error);
-    fetch("/api/health").then((r) => r.json()).then(setHealth).catch(console.error);
-    fetch("/api/profile").then((r) => r.json()).then((j) => setProfile(j.profile)).catch(console.error);
+  const load = useCallback(() => {
+    setError(false);
+    api.settings().then(setSettings).catch(() => setError(true));
+    api.health().then(setHealth).catch(() => {});
+    api.profile().then((j) => setProfile(j.profile)).catch(() => {});
   }, []);
 
+  useEffect(load, [load]);
+
+  function showToast(message: string) {
+    setToast(message);
+    window.clearTimeout(toastTimer.current);
+    toastTimer.current = window.setTimeout(() => setToast(null), 6000);
+  }
+
+  // Optimistic save with rollback: the server zod-validates and 400s bad
+  // payloads (e.g. a cleared number field) — the UI must not silently keep
+  // showing a value that never landed on disk.
   async function save(next: SettingsType) {
+    const prev = settings;
     setSettings(next);
     onSettingsChange(next);
-    await fetch("/api/settings", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(next),
-    });
+    try {
+      await api.saveSettings(next);
+    } catch (err) {
+      if (prev) {
+        setSettings(prev);
+        onSettingsChange(prev);
+      }
+      showToast(`Couldn't save settings: ${err instanceof Error ? err.message : String(err)}`);
+    }
   }
 
   async function saveProfile() {
-    await fetch("/api/profile", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ profile }),
-    });
-    setProfileDirty(false);
+    try {
+      await api.saveProfile(profile);
+      setProfileDirty(false);
+    } catch (err) {
+      showToast(`Couldn't save notes: ${err instanceof Error ? err.message : String(err)}`);
+    }
   }
 
   async function resetProgress() {
     if (!confirm("Really reset ALL progress, streaks, and the journal? This can't be undone.")) return;
-    await fetch("/api/progress/reset", { method: "POST" });
-    location.reload();
+    try {
+      await api.resetProgress();
+      location.reload();
+    } catch (err) {
+      showToast(`Reset failed: ${err instanceof Error ? err.message : String(err)}`);
+    }
   }
 
+  if (error && !settings) {
+    return (
+      <div className="view-pad">
+        <h1>Can't reach the local server</h1>
+        <p className="dim">The app's local server isn't answering — it may have stopped.</p>
+        <button className="primary" onClick={load}>
+          Retry
+        </button>
+      </div>
+    );
+  }
   if (!settings) return <div className="view-pad">Loading…</div>;
 
   return (
@@ -68,6 +98,14 @@ export default function Settings({ onSettingsChange }: { onSettingsChange: (s: S
             max={24}
             value={settings.editor.fontSize}
             onChange={(e) => save({ ...settings, editor: { ...settings.editor, fontSize: Number(e.target.value) } })}
+          />
+        </label>
+        <label className="setting-row">
+          Editor autocomplete
+          <input
+            type="checkbox"
+            checked={settings.editor.autocomplete}
+            onChange={(e) => save({ ...settings, editor: { ...settings.editor, autocomplete: e.target.checked } })}
           />
         </label>
       </section>
@@ -139,11 +177,27 @@ export default function Settings({ onSettingsChange }: { onSettingsChange: (s: S
       </section>
 
       <section>
+        <h2>Your data</h2>
+        <p className="dim small">
+          Everything the app stores about you — settings, progress, journal, and drafts — as one JSON file.
+        </p>
+        <a className="download-link" href="/api/export" download>
+          ⬇ Download my data
+        </a>
+      </section>
+
+      <section>
         <h2>Danger zone</h2>
         <button className="danger" onClick={resetProgress}>
           Reset all progress
         </button>
       </section>
+
+      {toast && (
+        <div className="toast" role="alert">
+          {toast}
+        </div>
+      )}
     </div>
   );
 }

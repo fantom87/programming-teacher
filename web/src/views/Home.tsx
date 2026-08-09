@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import type { Progress } from "@teacher/shared";
 import { api, type CurriculumResponse, type TrackView } from "../api/client";
 import ProgressBar from "../components/ProgressBar";
 import type { Route } from "../App";
@@ -18,18 +19,43 @@ function trackStats(track: TrackView) {
 
 export default function Home({ navigate }: { navigate: (r: Route) => void }) {
   const [data, setData] = useState<CurriculumResponse | null>(null);
+  const [progress, setProgress] = useState<Progress | null>(null);
+  const [error, setError] = useState(false);
   const lastLesson = localStorage.getItem("lastLessonKey");
   const lastLessonTitle = localStorage.getItem("lastLessonTitle");
 
-  useEffect(() => {
-    api.curriculum().then(setData).catch(console.error);
+  const load = useCallback(() => {
+    setError(false);
+    api.curriculum().then(setData).catch(() => setError(true));
+    api.progress().then(setProgress).catch(() => {});
   }, []);
 
+  useEffect(load, [load]);
+
+  if (error && !data) {
+    return (
+      <div className="view-pad">
+        <h1>Can't reach the local server</h1>
+        <p className="dim">The app's local server isn't answering — it may have stopped.</p>
+        <button className="primary" onClick={load}>
+          Retry
+        </button>
+      </div>
+    );
+  }
   if (!data) return <div className="view-pad">Loading…</div>;
+
+  const lessonsDone = progress ? Object.values(progress.lessons).filter((l) => l.completedAt).length : 0;
 
   return (
     <div className="view-pad home">
       <h1>Welcome back</h1>
+      {progress && (
+        <p className="stats-strip dim small">
+          🔥 {progress.streak.current}-day streak · {lessonsDone} lesson{lessonsDone === 1 ? "" : "s"} completed ·{" "}
+          {progress.totals.runs} code runs
+        </p>
+      )}
       {lastLesson && (
         <button className="primary continue-btn" onClick={() => navigate({ view: "lesson", key: lastLesson })}>
           ▶ Continue: {lastLessonTitle ?? lastLesson}

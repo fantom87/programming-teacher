@@ -62,7 +62,8 @@ a statement. That `6 or 7` is a pattern matching either value, and the
 compiler will warn you if your arms can miss a case. You'll see switch
 expressions everywhere in modern C# code.
 
-> **Heads-up**: first Run compiles (~10s); later runs are fast.
+> **Heads-up**: first Run compiles (~10s); later runs are quicker, but still
+> take a few seconds.
 
 ### Your goal
 

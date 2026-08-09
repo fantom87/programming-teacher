@@ -55,7 +55,12 @@ the frame is the border, and the gap between frames on the wall is the margin.
 }
 ```
 
-The `border` line sets three things at once — thickness, line style, color.
+The `border` line is a **shorthand** — it sets three things at once:
+thickness, line style, color. Real CSS also accepts the three longhand
+properties (`border-width`, `border-style`, `border-color`), but this lesson
+practices the shorthand, and its checker looks for exactly that one-line
+form: `border: 2px solid darkblue;`.
+
 The padding here applies to all four sides. And `margin-bottom` pushes down
 only, which is the classic way to space a stack of boxes: each card shoves the
 next one 24 pixels lower.

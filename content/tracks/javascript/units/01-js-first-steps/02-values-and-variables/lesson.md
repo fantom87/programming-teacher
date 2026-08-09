@@ -10,6 +10,10 @@ files:
 goal: "Create a `name` variable with let, a `birthYear` constant with const, and print both — then reassign `name` and print it again."
 docs: [javascript/variables-and-types, concepts/naming-things]
 checks:
+  - id: uses-let-and-const
+    type: tests
+    entry: main.js
+    testFile: tests/test_main.js
   - id: prints-three-lines
     type: stdout
     entry: main.js

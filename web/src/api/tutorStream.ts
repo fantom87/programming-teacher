@@ -13,7 +13,17 @@ export type TutorEvent =
 
 export function openTutorStream(lessonKey: string, onEvent: (e: TutorEvent) => void): () => void {
   const es = new EventSource(`/api/tutor/stream?id=${encodeURIComponent(lessonKey)}`);
+  // The server replays its per-key buffer with monotonic `id:` frames on every
+  // (re)subscribe, and EventSource re-sends Last-Event-ID on auto-reconnects.
+  // Dedupe by id here so a frame is never applied twice even if the server
+  // replays more than we need.
+  let lastId = 0;
   es.onmessage = (e) => {
+    const id = Number(e.lastEventId);
+    if (Number.isFinite(id) && id > 0) {
+      if (id <= lastId) return; // already applied (replayed frame)
+      lastId = id;
+    }
     try {
       onEvent(JSON.parse(e.data) as TutorEvent);
     } catch {

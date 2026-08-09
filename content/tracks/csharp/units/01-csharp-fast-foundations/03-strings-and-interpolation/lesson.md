@@ -49,8 +49,8 @@ Console.WriteLine($"Owed: {total:F2}");   // Owed: 7.50
 `F2` means "fixed-point, two decimal places" — essential for money, where
 `7.5` looks like a typo and `7.50` looks like a price.
 
-> **Heads-up**: the first Run of a session compiles first — give it ~10
-> seconds. Later runs are quick.
+> **Heads-up**: the first Run compiles first — give it ~10 seconds. Later
+> runs are quicker, but still take a few seconds.
 
 ### Your goal
 

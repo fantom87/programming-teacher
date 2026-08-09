@@ -1,16 +1,18 @@
+import crypto from "node:crypto";
 import type { CheckResult, CheckSpec, Lesson, RunResult } from "@teacher/shared";
 import {
+  buildJsTestProgram,
+  buildPyTestProgram,
   evaluateDomCheck,
   evaluateStdoutCheck,
   evaluateTestsCheck,
-  JS_TEST_HARNESS,
-  PY_TEST_HARNESS,
 } from "@teacher/shared";
 import { runLocal } from "../runner/localRunner.js";
 import { evaluateDomAssertions } from "../runner/domCheck.js";
 
-// Canonical check pass. The browser gives instant feedback with the same
-// shared engine; this server-side pass is the one that counts.
+// Canonical check pass. The browser gives instant preview feedback with the
+// same shared engine; this server-side pass is the one that counts.
+// Completion is decided by completionVerdict (shared/src/checkEngine.ts).
 
 export type JudgeFn = (lesson: Lesson, rubric: string, files: Record<string, string>, run: RunResult | null) => Promise<CheckResult>;
 
@@ -18,6 +20,7 @@ export type JudgeFn = (lesson: Lesson, rubric: string, files: Record<string, str
 let judge: JudgeFn = async (_lesson, _rubric, _files, _run) => ({
   checkId: "",
   passed: false,
+  unreachable: true,
   message: "AI-graded checks arrive with the tutor (milestone M3).",
 });
 
@@ -28,19 +31,21 @@ export function setJudge(fn: JudgeFn): void {
 export interface CheckPassResult {
   run: RunResult | null;
   checks: CheckResult[];
-  /** all non-ai-judge checks passed */
-  passedRequired: boolean;
 }
 
-function testProgram(lesson: Lesson, files: Record<string, string>, spec: Extract<CheckSpec, { type: "tests" }>, testSource: string): { files: Record<string, string>; entry: string } {
+export function testProgram(
+  lesson: Lesson,
+  files: Record<string, string>,
+  spec: Extract<CheckSpec, { type: "tests" }>,
+  testSource: string,
+): { files: Record<string, string>; entry: string; nonce: string } {
   const userCode = files[spec.entry] ?? "";
+  const nonce = crypto.randomBytes(8).toString("hex");
   if (lesson.language === "python") {
-    const combined = `${userCode}\n${PY_TEST_HARNESS}\n${testSource}\n`;
-    return { files: { ...files, "__tests__.py": combined }, entry: "__tests__.py" };
+    return { files: { ...files, "__tests__.py": buildPyTestProgram(userCode, testSource, nonce) }, entry: "__tests__.py", nonce };
   }
   // javascript
-  const combined = `${JS_TEST_HARNESS}\n${userCode}\n${testSource}\n`;
-  return { files: { ...files, "__tests__.js": combined }, entry: "__tests__.js" };
+  return { files: { ...files, "__tests__.js": buildJsTestProgram(userCode, testSource, nonce) }, entry: "__tests__.js", nonce };
 }
 
 export async function runCheckPass(
@@ -50,18 +55,34 @@ export async function runCheckPass(
   testSources: Record<string, string>, // testFile path -> contents (loaded from lesson dir)
 ): Promise<CheckPassResult> {
   const checks: CheckResult[] = [];
+  const lessonKey = `${lesson.trackId}/${lesson.unitId}/${lesson.id}`;
   let baseRun: RunResult | null = null;
+
+  // Identical programs run once: a lesson with several stdout checks on the
+  // same (entry, stdin) — and the ai-judge's base run — reuse one RunResult
+  // instead of re-spawning per check (each C# spawn costs a compile).
+  const runCache = new Map<string, RunResult>();
+  const cachedRun = async (entry: string, stdin: string | undefined): Promise<RunResult> => {
+    const cacheKey = JSON.stringify([entry, stdin ?? null]);
+    let run = runCache.get(cacheKey);
+    if (!run) {
+      run = await runLocal(dataDir, {
+        language: lesson.language,
+        entry,
+        files,
+        stdin,
+        timeoutMs: lesson.timeoutMs,
+        lessonKey,
+      });
+      runCache.set(cacheKey, run);
+    }
+    return run;
+  };
 
   for (const spec of lesson.checks) {
     switch (spec.type) {
       case "stdout": {
-        const run = await runLocal(dataDir, {
-          language: lesson.language,
-          entry: spec.entry,
-          files,
-          stdin: spec.stdin,
-          timeoutMs: lesson.timeoutMs,
-        });
+        const run = await cachedRun(spec.entry, spec.stdin);
         baseRun ??= run;
         checks.push(evaluateStdoutCheck(spec, run));
         break;
@@ -78,7 +99,10 @@ export async function runCheckPass(
           entry: prog.entry,
           files: prog.files,
           timeoutMs: lesson.timeoutMs,
+          lessonKey,
+          nonce: prog.nonce,
         });
+        baseRun ??= run; // tests-only lessons: the judge still deserves a run to look at
         checks.push(evaluateTestsCheck(spec, run));
         break;
       }
@@ -104,9 +128,5 @@ export async function runCheckPass(
     }
   }
 
-  const passedRequired = checks
-    .filter((c) => lesson.checks.find((s) => s.id === c.checkId)?.type !== "ai-judge")
-    .every((c) => c.passed);
-
-  return { run: baseRun, checks, passedRequired };
+  return { run: baseRun, checks };
 }

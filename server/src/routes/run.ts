@@ -1,15 +1,25 @@
+import fs from "node:fs/promises";
+import path from "node:path";
 import { Router } from "express";
+import type { Snapshot } from "@teacher/shared";
+import { completionVerdict } from "@teacher/shared";
 import { getCurriculum } from "../curriculum/loader.js";
-import { runLocal } from "../runner/localRunner.js";
+import { runLocal, sweepStaleWorkspaces } from "../runner/localRunner.js";
 import { evaluateDomAssertions } from "../runner/domCheck.js";
 import { runCheckPass } from "../checks/run.js";
-import { completeLesson, recordAttempt, recordChecks } from "../store/progress.js";
+import { completeLesson, getProgress, recordAttempt, recordChecks } from "../store/progress.js";
+import { appendJournal } from "../store/profile.js";
+import { readJson, withFileLock, writeJsonInLock } from "../store/jsonStore.js";
+import { updateChecks } from "../tutor/service.js";
 import { takeSnapshot, listSnapshots, getSnapshot } from "../store/snapshots.js";
 import { detectRuntimes } from "../preflight.js";
 
-function missingRuntimeError(language: string, runtimes: { python: string | null; dotnet: string | null }) {
+function missingRuntimeError(language: string, runtimes: { python: string | null; node: string | null; dotnet: string | null }) {
   if (language === "python" && !runtimes.python) {
     return "Python isn't installed (or not on PATH). Install it with: winget install Python.Python.3.12";
+  }
+  if (language === "javascript" && !runtimes.node) {
+    return "Node.js isn't installed (or not on PATH). Install it with: winget install OpenJS.NodeJS.LTS";
   }
   if (language === "csharp" && !runtimes.dotnet) {
     return "The .NET SDK isn't installed. Install it with: winget install Microsoft.DotNet.SDK.8";
@@ -17,8 +27,31 @@ function missingRuntimeError(language: string, runtimes: { python: string | null
   return null;
 }
 
+/** Flip `passed: true` on the snapshot just taken for a passing check — it
+ *  becomes a restore point ("✓ passing") in the history menu. */
+async function markCheckSnapshotPassed(dataDir: string, lessonKey: string): Promise<void> {
+  const dir = path.join(dataDir, "snapshots", lessonKey.replaceAll("/", "__"));
+  let entries: string[];
+  try {
+    entries = (await fs.readdir(dir)).filter((f) => f.endsWith(".json")).sort();
+  } catch {
+    return;
+  }
+  const latest = entries.at(-1);
+  if (!latest) return;
+  const file = path.join(dir, latest);
+  await withFileLock(file, async () => {
+    const snap = await readJson<Snapshot | null>(file, null);
+    if (snap && snap.trigger === "check") await writeJsonInLock(file, { ...snap, passed: true });
+  });
+}
+
 export function runRoutes(contentDir: string, dataDir: string): Router {
   const r = Router();
+
+  // Failed cleanups (Defender locks, killed children) leave orphaned run
+  // workspaces behind; clear the stale ones at server start.
+  void sweepStaleWorkspaces(dataDir);
 
   // Local-runner execution of the user's editor files (no goal checking).
   // Accepts real lesson keys and playground pseudo-lessons.
@@ -52,12 +85,14 @@ export function runRoutes(contentDir: string, dataDir: string): Router {
       entry: lesson.files[0].path,
       files,
       timeoutMs: lesson.timeoutMs,
+      lessonKey: String(lessonId),
     });
     res.json(result);
   });
 
-  // Canonical goal check: runs, evaluates every check, completes the lesson
-  // when all required (non-ai) checks pass.
+  // Canonical goal check: runs, evaluates every check, and completes the
+  // lesson per completionVerdict — every check must pass, except an ai-judge
+  // that was unreachable (offline/auth down), which never blocks completion.
   r.post("/api/check", async (req, res) => {
     const { lessonId, files } = req.body ?? {};
     const cur = await getCurriculum(contentDir);
@@ -75,11 +110,25 @@ export function runRoutes(contentDir: string, dataDir: string): Router {
     await takeSnapshot(dataDir, String(lessonId), "check", files);
 
     const pass = await runCheckPass(dataDir, lesson, files, lesson.testFiles);
+    updateChecks(String(lessonId), pass.checks); // keep the tutor's <context> goal-state line fresh
     await recordChecks(dataDir, pass.checks.filter((c) => c.passed).length, pass.checks.filter((c) => !c.passed).length);
 
     let completed = false;
-    if (pass.checks.every((c) => c.passed)) {
+    if (completionVerdict(pass.checks).complete) {
+      const before = await getProgress(dataDir);
+      const firstCompletion = !before.lessons[String(lessonId)]?.completedAt;
       await completeLesson(dataDir, String(lessonId));
+      if (firstCompletion) {
+        // The Check button and the tutor's mark_complete must both journal —
+        // learners at low assistance levels complete lessons without the tutor.
+        await appendJournal(dataDir, {
+          lessonId: String(lessonId),
+          trackId: lesson.trackId,
+          completedAt: new Date().toISOString(),
+          summary: `Completed "${lesson.title}" — ${lesson.goal}`,
+        });
+      }
+      await markCheckSnapshotPassed(dataDir, String(lessonId));
       completed = true;
     }
     res.json({ run: pass.run, checks: pass.checks, completed });

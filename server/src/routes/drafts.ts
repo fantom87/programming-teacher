@@ -6,6 +6,10 @@ import { readJson, writeJson } from "../store/jsonStore.js";
 // Draft ids are lesson keys ("python/01-first-steps/01-hello-world") or
 // "playground-<language>"; slashes become "__" on disk.
 
+// Ids come in off the wire — checked BEFORE the "/" → "__" substitution so
+// dots, colons, and backslashes can never become a path escape.
+const ID_RE = /^[a-z0-9][a-z0-9/_-]*$/i;
+
 function draftFile(dataDir: string, id: string): string {
   return path.join(dataDir, "drafts", `${id.replaceAll("/", "__")}.json`);
 }
@@ -15,8 +19,8 @@ export function draftRoutes(dataDir: string): Router {
 
   r.get("/api/drafts", async (req, res) => {
     const id = String(req.query.id ?? "");
-    if (!id) {
-      res.status(400).json({ error: "id required" });
+    if (!ID_RE.test(id)) {
+      res.status(400).json({ error: "valid id required" });
       return;
     }
     const draft = await readJson<{ files: Record<string, string> } | null>(draftFile(dataDir, id), null);
@@ -26,8 +30,12 @@ export function draftRoutes(dataDir: string): Router {
   r.put("/api/drafts", async (req, res) => {
     const id = String(req.query.id ?? "");
     const files = req.body?.files;
-    if (!id || typeof files !== "object" || files === null) {
-      res.status(400).json({ error: "id and files required" });
+    if (!ID_RE.test(id) || typeof files !== "object" || files === null || Array.isArray(files)) {
+      res.status(400).json({ error: "valid id and files required" });
+      return;
+    }
+    if (Object.values(files).some((v) => typeof v !== "string")) {
+      res.status(400).json({ error: "every file value must be a string" });
       return;
     }
     await writeJson(draftFile(dataDir, id), { files, savedAt: new Date().toISOString() });

@@ -1,25 +1,50 @@
-import { useEffect, useState } from "react";
-import type { JournalEntry, Progress } from "@teacher/shared";
+import { useCallback, useEffect, useState } from "react";
+import type { JournalEntry, Progress, Tier } from "@teacher/shared";
+import { api, type TrackView } from "../api/client";
+
+const TIER_ORDER: Tier[] = ["foundations", "core", "intermediate", "advanced", "refresher"];
+
+function tierRollup(track: TrackView): Map<Tier, { done: number; total: number }> {
+  const rollup = new Map<Tier, { done: number; total: number }>();
+  for (const u of track.units) {
+    if (u.lessons.length === 0) continue; // planned units have nothing to complete
+    const entry = rollup.get(u.tier) ?? { done: 0, total: 0 };
+    entry.total += u.lessons.length;
+    entry.done += u.lessons.filter((l) => l.completedAt).length;
+    rollup.set(u.tier, entry);
+  }
+  return rollup;
+}
 
 export default function Stats() {
   const [progress, setProgress] = useState<Progress | null>(null);
   const [journal, setJournal] = useState<JournalEntry[]>([]);
+  const [tracks, setTracks] = useState<TrackView[]>([]);
+  const [error, setError] = useState(false);
 
-  useEffect(() => {
-    fetch("/api/progress").then((r) => r.json()).then(setProgress).catch(console.error);
-    fetch("/api/journal").then((r) => r.json()).then(setJournal).catch(console.error);
+  const load = useCallback(() => {
+    setError(false);
+    api.progress().then(setProgress).catch(() => setError(true));
+    api.journal().then(setJournal).catch(() => {});
+    api.curriculum().then((c) => setTracks(c.tracks)).catch(() => {});
   }, []);
 
+  useEffect(load, [load]);
+
+  if (error && !progress) {
+    return (
+      <div className="view-pad">
+        <h1>Can't reach the local server</h1>
+        <p className="dim">The app's local server isn't answering — it may have stopped.</p>
+        <button className="primary" onClick={load}>
+          Retry
+        </button>
+      </div>
+    );
+  }
   if (!progress) return <div className="view-pad">Loading…</div>;
 
   const completed = Object.values(progress.lessons).filter((l) => l.completedAt).length;
-  const byTrack = new Map<string, number>();
-  for (const [key, lp] of Object.entries(progress.lessons)) {
-    if (lp.completedAt) {
-      const track = key.split("/")[0];
-      byTrack.set(track, (byTrack.get(track) ?? 0) + 1);
-    }
-  }
 
   return (
     <div className="view-pad">
@@ -45,10 +70,26 @@ export default function Stats() {
         </div>
       </div>
 
-      {byTrack.size > 0 && (
-        <p className="dim small">
-          By track: {[...byTrack.entries()].map(([t, n]) => `${t} ${n}`).join(" · ")}
-        </p>
+      {tracks.length > 0 && (
+        <>
+          <h2>By track and tier</h2>
+          <ul className="tier-rollup-list">
+            {tracks.map((t) => {
+              const rollup = tierRollup(t);
+              if (rollup.size === 0) return null;
+              return (
+                <li key={t.id} className="tier-rollup">
+                  <strong>{t.title}</strong>{" "}
+                  <span className="dim small">
+                    {TIER_ORDER.filter((tier) => rollup.has(tier))
+                      .map((tier) => `${tier} ${rollup.get(tier)!.done}/${rollup.get(tier)!.total}`)
+                      .join(" · ")}
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+        </>
       )}
 
       <h2>Learning journal</h2>

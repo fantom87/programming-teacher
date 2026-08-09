@@ -1,9 +1,11 @@
 import { query } from "@anthropic-ai/claude-agent-sdk";
 import type { CheckResult, Lesson, RunResult, Settings } from "@teacher/shared";
 import { JUDGE_SYSTEM, judgePrompt } from "./prompts.js";
+import { getAuthStatus } from "./service.js";
 
 // One-shot ai-judge query: no tools, single turn, strict JSON verdict.
-// Fails closed ("couldn't grade") rather than passing on parse failure.
+// An unreachable judge (SDK down, auth broken, unparseable twice) reports
+// `unreachable` — such a check never blocks completion; a real verdict does.
 
 export function sdkEnv(): Record<string, string> {
   const env: Record<string, string> = {};
@@ -13,7 +15,25 @@ export function sdkEnv(): Record<string, string> {
   return env;
 }
 
-async function oneShot(prompt: string, systemPrompt: string, model: string): Promise<string | null> {
+// The reference solution is always included in judge grading when one exists.
+// Registered by tutorRoutes (which owns the curriculum handle); callers may
+// also pass a solution explicitly to skip the lookup.
+type SolutionProvider = (lessonKey: string) => Promise<Record<string, string> | null>;
+let solutionProvider: SolutionProvider | null = null;
+
+export function setSolutionProvider(fn: SolutionProvider): void {
+  solutionProvider = fn;
+}
+
+async function loadSolution(lesson: Lesson): Promise<Record<string, string> | null> {
+  if (!solutionProvider) return null;
+  const key = `${lesson.trackId}/${lesson.unitId}/${lesson.id}`;
+  return solutionProvider(key).catch(() => null);
+}
+
+type OneShotResult = { ok: true; text: string } | { ok: false; reason: string };
+
+async function oneShot(prompt: string, systemPrompt: string, model: string): Promise<OneShotResult> {
   try {
     for await (const message of query({
       prompt,
@@ -27,13 +47,14 @@ async function oneShot(prompt: string, systemPrompt: string, model: string): Pro
       },
     })) {
       if (message.type === "result") {
-        return message.subtype === "success" ? message.result : null;
+        return message.subtype === "success" ? { ok: true, text: message.result } : { ok: false, reason: message.subtype };
       }
     }
   } catch (err) {
     console.error("[judge] query failed:", err);
+    return { ok: false, reason: String(err) };
   }
-  return null;
+  return { ok: false, reason: "no result message" };
 }
 
 function parseVerdict(text: string): { passed: boolean; message: string } | null {
@@ -50,24 +71,45 @@ function parseVerdict(text: string): { passed: boolean; message: string } | null
   return null;
 }
 
+const UNREACHABLE_MESSAGE = "Couldn't reach the tutor to grade this — it won't block you.";
+
+function unreachableResult(extra?: string): CheckResult {
+  return {
+    checkId: "",
+    passed: false,
+    unreachable: true,
+    message: extra ? `${UNREACHABLE_MESSAGE} ${extra}` : UNREACHABLE_MESSAGE,
+  };
+}
+
 export async function judgeCheck(
   getModel: () => Promise<Settings["tutorModel"]>,
   lesson: Lesson,
   rubric: string,
   files: Record<string, string>,
   run: RunResult | null,
+  solution?: Record<string, string> | null,
 ): Promise<CheckResult> {
+  // Known-broken auth: don't burn two doomed attempts, and say what's wrong.
+  if (getAuthStatus().status === "failed") {
+    return unreachableResult("(The tutor connection is down — Settings shows the fix.)");
+  }
+
   const model = await getModel();
-  const prompt = judgePrompt(lesson, rubric, files, run);
+  const sol = solution !== undefined ? solution : await loadSolution(lesson);
+  const prompt = judgePrompt(lesson, rubric, files, run, sol);
 
   for (let attempt = 0; attempt < 2; attempt++) {
-    const text = await oneShot(prompt, JUDGE_SYSTEM, model);
-    if (text) {
-      const verdict = parseVerdict(text);
+    const result = await oneShot(prompt, JUDGE_SYSTEM, model);
+    if (result.ok) {
+      const verdict = parseVerdict(result.text);
       if (verdict) {
         return { checkId: "", passed: verdict.passed, message: verdict.message || (verdict.passed ? "Approved." : "Not quite there yet.") };
       }
+    } else if (/usage|limit|credit/i.test(result.reason)) {
+      // Out of subscription budget — retrying can't help until the window resets.
+      return unreachableResult("(Claude usage limit reached — grading resumes when it resets.)");
     }
   }
-  return { checkId: "", passed: false, message: "The tutor couldn't grade this just now — try checking again." };
+  return unreachableResult();
 }

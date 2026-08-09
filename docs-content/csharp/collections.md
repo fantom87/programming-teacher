@@ -7,9 +7,9 @@ Collections hold groups of values. C# gives you a few core ones, each with a spe
 ```csharp
 int[] scores = { 90, 75, 88 };
 
-scores[0];          // 90 — positions start at 0
-scores.Length;      // 3
-scores[1] = 80;     // update an element
+Console.WriteLine(scores[0]);       // 90 — positions start at 0
+Console.WriteLine(scores.Length);   // 3
+scores[1] = 80;                     // update an element
 ```
 
 Arrays can't grow or shrink. That's usually a reason to reach for...
@@ -21,13 +21,13 @@ The `<T>` means "of some type" — `List<string>` is a list of strings, and the 
 ```csharp
 var fruits = new List<string> { "apple", "banana" };
 
-fruits.Add("cherry");           // grow
-fruits.Remove("apple");         // shrink
-fruits.Count;                   // 2
-fruits.Contains("banana");      // true
-fruits[0];                      // "banana"
+fruits.Add("cherry");                          // grow
+fruits.Remove("apple");                        // shrink
+Console.WriteLine(fruits.Count);               // 2
+Console.WriteLine(fruits.Contains("banana"));  // True
+Console.WriteLine(fruits[0]);                  // banana
 
-fruits.Add(42);                 // Compile error — ints don't belong here
+fruits.Add(42);                                // Compile error — ints don't belong here
 ```
 
 Looping works the same as arrays:
@@ -50,8 +50,8 @@ var ages = new Dictionary<string, int>
     ["Bob"] = 25,
 };
 
-ages["Alice"];              // 30
-ages["Carol"] = 41;         // add or update
+Console.WriteLine(ages["Alice"]);   // 30
+ages["Carol"] = 41;                 // add or update
 
 if (ages.TryGetValue("Dave", out int daveAge))   // safe lookup — no crash if missing
 {
@@ -71,9 +71,9 @@ Asking for a missing key with `ages["Dave"]` throws an exception — prefer `Try
 ```csharp
 var visited = new HashSet<string>();
 visited.Add("home");
-visited.Add("home");        // ignored — already there
-visited.Count;              // 1
-visited.Contains("home");   // true, and very fast
+visited.Add("home");                          // ignored — already there
+Console.WriteLine(visited.Count);             // 1
+Console.WriteLine(visited.Contains("home"));  // True, and very fast
 ```
 
 ## Which one, when?

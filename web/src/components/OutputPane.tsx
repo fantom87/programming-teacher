@@ -13,7 +13,11 @@ export default function OutputPane({ result, preview, notice, onExplainError }: 
   return (
     <div className="output-pane">
       <div className="output-header">{preview != null ? "Preview" : "Output"}</div>
-      {notice && <div className="output-notice">{notice}</div>}
+      {notice && (
+        <div className="output-notice" role="status">
+          {notice}
+        </div>
+      )}
       {preview != null ? (
         <iframe className="preview-frame" sandbox="allow-scripts" srcDoc={preview} title="Page preview" />
       ) : (
@@ -27,7 +31,7 @@ export default function OutputPane({ result, preview, notice, onExplainError }: 
         </pre>
       )}
       {result && preview == null && (
-        <div className={`output-status ${result.ok ? "ok" : "fail"}`}>
+        <div className={`output-status ${result.ok ? "ok" : "fail"}`} role="status">
           {result.timedOut
             ? "⏱ timed out"
             : result.ok

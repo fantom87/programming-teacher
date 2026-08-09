@@ -2,7 +2,11 @@ import type { CheckResult, CheckSpec } from "@teacher/shared";
 
 interface Props {
   checks: CheckSpec[];
+  /** Server-confirmed results (Check my work / tutor check_goal). */
   results: CheckResult[] | null;
+  /** Browser-side instant verdicts after a Run — shown dimmed as "preview"
+   *  until the server check confirms them. */
+  previews?: CheckResult[] | null;
   checking: boolean;
   onCheck: () => void;
 }
@@ -20,19 +24,35 @@ function describe(spec: CheckSpec): string {
   }
 }
 
-export default function GoalChecklist({ checks, results, checking, onCheck }: Props) {
+export default function GoalChecklist({ checks, results, previews, checking, onCheck }: Props) {
   return (
     <div className="goal-checklist">
-      <ul>
+      <ul aria-live="polite">
         {checks.map((spec) => {
-          const result = results?.find((r) => r.checkId === spec.id);
-          const state = result === undefined ? "todo" : result.passed ? "pass" : "fail";
+          const preview = previews?.find((r) => r.checkId === spec.id);
+          const confirmed = results?.find((r) => r.checkId === spec.id);
+          const result = preview ?? confirmed;
+          const isPreview = preview !== undefined;
+          const state =
+            result === undefined
+              ? "todo"
+              : result.unreachable
+                ? "unreachable"
+                : result.passed
+                  ? "pass"
+                  : "fail";
           return (
-            <li key={spec.id} className={`goal-item ${state}`}>
-              <span className="check-icon">{state === "pass" ? "✓" : state === "fail" ? "✗" : "○"}</span>
+            <li key={spec.id} className={`goal-item ${state}${isPreview ? " preview" : ""}`}>
+              <span className="check-icon">
+                {state === "pass" ? "✓" : state === "fail" ? "✗" : state === "unreachable" ? "◌" : "○"}
+              </span>
               <span>
                 {describe(spec)}
-                {result && !result.passed && <div className="check-message">{result.message}</div>}
+                {isPreview && <span className="preview-tag">preview</span>}
+                {state === "unreachable" && result && (
+                  <div className="check-message unreachable-message">{result.message}</div>
+                )}
+                {state === "fail" && result && <div className="check-message">{result.message}</div>}
               </span>
             </li>
           );

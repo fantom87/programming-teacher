@@ -54,7 +54,8 @@ A method that returns something is a value factory: `Square(7)` can sit
 anywhere a plain `49` could, including inside `Console.WriteLine(...)` or
 another expression.
 
-> **Heads-up**: first Run compiles (~10s). Later runs are quick.
+> **Heads-up**: first Run compiles (~10s). Later runs are quicker, but still
+> take a few seconds.
 
 ### Your goal
 
@@ -66,8 +67,9 @@ Hello, Ada!
 144
 ```
 
-1. `int Square(int n)` — returns `n * n`. Print `Square(7)` and `Square(12)`.
-2. `string Greet(string name)` — returns `"Hello, {name}!"` using
-   interpolation. Print `Greet("Ada")`.
+1. Define `int Square(int n)` — returns `n * n` — and `string Greet(string name)`
+   — returns `"Hello, {name}!"` using interpolation.
+2. Print `Square(7)`, then `Greet("Ada")`, then `Square(12)` — in that order,
+   one per line, matching the output above.
 
 The values must come from the method calls — no hard-coding `49` allowed.

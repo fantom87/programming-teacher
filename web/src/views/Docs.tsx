@@ -1,16 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
-import { marked } from "marked";
-
-interface DocsPage {
-  slug: string;
-  title: string;
-  keywords: string[];
-}
-
-interface DocsSection {
-  section: string;
-  pages: DocsPage[];
-}
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { api, type DocsSection } from "../api/client";
+import { renderMarkdown } from "../md";
 
 const SECTION_LABEL: Record<string, string> = {
   concepts: "Concepts",
@@ -28,16 +18,24 @@ interface Props {
 
 export default function Docs({ initial, compact }: Props) {
   const [index, setIndex] = useState<DocsSection[]>([]);
+  const [error, setError] = useState(false);
   const [search, setSearch] = useState("");
   const [current, setCurrent] = useState<string | null>(initial ?? null);
   const [markdown, setMarkdown] = useState<string>("");
+  // Lazily built on first search: "section/slug" → lowercased page headings,
+  // so search covers headings without shipping them in the index.
+  const [headings, setHeadings] = useState<Record<string, string[]> | null>(null);
+  const headingsLoading = useRef(false);
 
-  useEffect(() => {
-    fetch("/api/docs")
-      .then((r) => r.json())
+  const load = useCallback(() => {
+    setError(false);
+    api
+      .docsIndex()
       .then(setIndex)
-      .catch(console.error);
+      .catch(() => setError(true));
   }, []);
+
+  useEffect(load, [load]);
 
   useEffect(() => {
     if (initial) setCurrent(initial);
@@ -46,11 +44,34 @@ export default function Docs({ initial, compact }: Props) {
   useEffect(() => {
     if (!current) return;
     const [section, slug] = current.split("/");
-    fetch(`/api/docs/page?section=${section}&slug=${slug}`)
-      .then((r) => r.json())
+    api
+      .docsPage(section, slug)
       .then((j) => setMarkdown(j.markdown ?? `*Page ${current} not found.*`))
       .catch(() => setMarkdown("*Failed to load page.*"));
   }, [current]);
+
+  useEffect(() => {
+    if (!search.trim() || headings || headingsLoading.current || index.length === 0) return;
+    headingsLoading.current = true;
+    (async () => {
+      const map: Record<string, string[]> = {};
+      await Promise.all(
+        index.flatMap((s) =>
+          s.pages.map(async (p) => {
+            try {
+              const j = await api.docsPage(s.section, p.slug);
+              map[`${s.section}/${p.slug}`] = [...(j.markdown ?? "").matchAll(/^#{1,4}\s+(.+)$/gm)].map((m) =>
+                m[1].toLowerCase(),
+              );
+            } catch {
+              // page unreadable — heading search just skips it
+            }
+          }),
+        ),
+      );
+      setHeadings(map);
+    })();
+  }, [search, headings, index]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -59,11 +80,15 @@ export default function Docs({ initial, compact }: Props) {
       .map((s) => ({
         ...s,
         pages: s.pages.filter(
-          (p) => p.title.toLowerCase().includes(q) || p.slug.includes(q) || p.keywords.some((k) => k.toLowerCase().includes(q)),
+          (p) =>
+            p.title.toLowerCase().includes(q) ||
+            p.slug.includes(q) ||
+            p.keywords.some((k) => k.toLowerCase().includes(q)) ||
+            (headings?.[`${s.section}/${p.slug}`]?.some((h) => h.includes(q)) ?? false),
         ),
       }))
       .filter((s) => s.pages.length > 0);
-  }, [index, search]);
+  }, [index, search, headings]);
 
   return (
     <div className={`docs-view ${compact ? "compact" : ""}`}>
@@ -92,11 +117,17 @@ export default function Docs({ initial, compact }: Props) {
             })}
           </div>
         ))}
-        {index.length === 0 && <p className="dim small">No docs yet.</p>}
+        {index.length === 0 && error && (
+          <div className="dim small">
+            <p>Can't reach the local server.</p>
+            <button onClick={load}>Retry</button>
+          </div>
+        )}
+        {index.length === 0 && !error && <p className="dim small">No docs yet.</p>}
       </nav>
       <article className="docs-body lesson-md">
         {current ? (
-          <div dangerouslySetInnerHTML={{ __html: marked.parse(markdown) as string }} />
+          <div dangerouslySetInnerHTML={{ __html: renderMarkdown(markdown) }} />
         ) : (
           <p className="dim">Pick a page — or search. These docs are always one Ctrl+D away.</p>
         )}

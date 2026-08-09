@@ -18,12 +18,21 @@ const SECTIONS = ["concepts", "python", "javascript", "html-css", "csharp"];
 export async function loadDocsIndex(docsDir: string): Promise<DocsSection[]> {
   const out: DocsSection[] = [];
   for (const section of SECTIONS) {
+    const file = path.join(docsDir, section, "index.json");
+    let raw: string;
     try {
-      const raw = await fs.readFile(path.join(docsDir, section, "index.json"), "utf8");
-      const parsed = JSON.parse(raw) as { pages: DocsIndexPage[] };
-      out.push({ section, pages: parsed.pages });
+      raw = await fs.readFile(file, "utf8");
     } catch {
-      // section not authored yet — fine
+      continue; // section not authored yet — fine
+    }
+    // A broken index must be loud: a missing comma silently hiding a whole
+    // section's docs is the wrong failure mode for actively-authored content.
+    try {
+      const parsed = JSON.parse(raw) as { pages?: unknown };
+      if (!Array.isArray(parsed?.pages)) throw new Error('expected a top-level "pages" array');
+      out.push({ section, pages: parsed.pages as DocsIndexPage[] });
+    } catch (err) {
+      console.warn(`[docs] BROKEN INDEX ${file} — section "${section}" hidden until fixed: ${String(err)}`);
     }
   }
   return out;

@@ -72,7 +72,8 @@ The formulas you need: miles are `km * 0.621371`; Fahrenheit is
 `c * 9 / 5 + 32`; minutes are `hours * 60`. Note the `:F2` format on the miles
 line — real tools don't print `62.137100000000004`.
 
-> **Heads-up**: first Run compiles (~10s). Later runs are quick.
+> **Heads-up**: first Run compiles (~10s). Later runs are quicker, but still
+> take a few seconds.
 
 ### Your goal
 

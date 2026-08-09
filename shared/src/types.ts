@@ -60,6 +60,9 @@ export interface CheckResult {
   message: string;
   expected?: string;
   actual?: string;
+  /** true when an ai-judge check could not be graded (offline/auth) — such a
+   *  check never blocks completion; a real failed verdict does. */
+  unreachable?: boolean;
 }
 
 // ---------- Curriculum ----------
@@ -121,8 +124,17 @@ export interface LessonProgress {
 
 export interface Progress {
   lessons: Record<string, LessonProgress>;
-  streak: { current: number; best: number; lastActiveDate: string };
+  streak: {
+    current: number;
+    best: number;
+    lastActiveDate: string;
+    /** rolling activity tally for the ≥15-minute streak rule */
+    todayDate?: string;
+    todayMinutes?: number;
+  };
   totals: { runs: number; checksPassed: number; checksFailed: number };
+  /** persisted-data schema version for future migrations */
+  version?: number;
 }
 
 export interface Settings {
@@ -154,5 +166,7 @@ export interface Snapshot {
   lessonId: string;
   takenAt: string;
   trigger: "run" | "check";
+  /** set when this snapshot's code passed every check (restore point) */
+  passed?: boolean;
   files: Record<string, string>;
 }

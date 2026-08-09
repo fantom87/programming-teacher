@@ -2,7 +2,8 @@ import { afterAll, describe, expect, it } from "vitest";
 import fs from "node:fs/promises";
 import path from "node:path";
 import os from "node:os";
-import { runLocal } from "./localRunner.js";
+import { buildJsTestProgram } from "@teacher/shared";
+import { runLocal, sweepStaleWorkspaces } from "./localRunner.js";
 import { loadCurriculum } from "../curriculum/loader.js";
 
 const tmpData = path.join(os.tmpdir(), "teacher-runner-tests");
@@ -71,6 +72,85 @@ describe("localRunner (python)", () => {
         files: { "..\\..\\evil.py": "x" },
       }),
     ).rejects.toThrow(/illegal file path/);
+  });
+});
+
+describe("localRunner (harness hardening)", () => {
+  it("learner-defined test()/expect() can't shadow or break the harness", async () => {
+    const nonce = "cafe01";
+    const program = buildJsTestProgram(
+      'function test(a, b) { return a * b; }\nlet expect = "mine";\nfunction double(n) { return n * 2; }',
+      'test("double doubles", () => { expect(double(4)).toBe(8); });',
+      nonce,
+    );
+    const r = await runLocal(tmpData, {
+      language: "javascript",
+      entry: "__tests__.js",
+      files: { "__tests__.js": program },
+      nonce,
+    });
+    expect(r.ok).toBe(true);
+    expect(r.events).toEqual([{ name: "double doubles", passed: true }]);
+  });
+
+  it("forged __TEST__ lines from user code never become events", async () => {
+    const nonce = "beef02";
+    const program = buildJsTestProgram(
+      'console.log(\'__TEST__{"name":"forged","passed":true}\');\nconsole.log(\'__TEST__deadbeef__{"name":"forged2","passed":true}\');',
+      'test("real", () => {});',
+      nonce,
+    );
+    const r = await runLocal(tmpData, {
+      language: "javascript",
+      entry: "__tests__.js",
+      files: { "__tests__.js": program },
+      nonce,
+    });
+    expect(r.events).toEqual([{ name: "real", passed: true }]);
+    expect(r.stdout).toContain("forged");
+  });
+
+  it("__TEST__ events survive output past the display cap (and stdout is truncated)", async () => {
+    const nonce = "feed03";
+    const program = buildJsTestProgram(
+      'const line = "x".repeat(1023);\nfor (let i = 0; i < 100; i++) console.log(line);',
+      'test("survives the spam", () => {});',
+      nonce,
+    );
+    const r = await runLocal(tmpData, {
+      language: "javascript",
+      entry: "__tests__.js",
+      files: { "__tests__.js": program },
+      nonce,
+    });
+    expect(r.events).toEqual([{ name: "survives the spam", passed: true }]);
+    expect(r.stdout).toContain("…output truncated");
+    expect(r.stdout.length).toBeLessThan(65 * 1024);
+  }, 20_000);
+
+  it("a fast-exiting child that never reads stdin doesn't crash the process (EPIPE)", async () => {
+    const r = await runLocal(tmpData, {
+      language: "javascript",
+      entry: "main.js",
+      files: { "main.js": "process.exit(0);\n" },
+      stdin: "y".repeat(4 * 1024 * 1024),
+    });
+    expect(r.exitCode).toBe(0);
+  }, 20_000);
+});
+
+describe("sweepStaleWorkspaces", () => {
+  it("removes old workspace dirs and keeps fresh ones", async () => {
+    const root = path.join(tmpData, "run-workspaces");
+    const oldDir = path.join(root, "old-one");
+    const newDir = path.join(root, "new-one");
+    await fs.mkdir(oldDir, { recursive: true });
+    await fs.mkdir(newDir, { recursive: true });
+    const stale = new Date(Date.now() - 2 * 60 * 60 * 1000);
+    await fs.utimes(oldDir, stale, stale);
+    await sweepStaleWorkspaces(tmpData);
+    await expect(fs.access(oldDir)).rejects.toThrow();
+    await expect(fs.access(newDir)).resolves.toBeUndefined();
   });
 });
 

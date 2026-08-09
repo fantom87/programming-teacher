@@ -1,9 +1,9 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { AssistanceLevel } from "@teacher/shared";
 import { ASSISTANCE_NAMES } from "@teacher/shared";
 import TutorChat from "../components/TutorChat";
 import type { TutorEvent } from "../api/tutorStream";
-import type { TrackView } from "../api/client";
+import { api, type Health, type TrackView } from "../api/client";
 import type { Route } from "../App";
 
 interface Recommendation {
@@ -21,6 +21,14 @@ interface Props {
 export default function Onboarding({ tracks, navigate, onDone }: Props) {
   const [trackId, setTrackId] = useState<string | null>(null);
   const [rec, setRec] = useState<Recommendation | null>(null);
+  const [health, setHealth] = useState<Health | null>(null);
+
+  // The placement chat is the centerpiece of first-run — check up front
+  // whether the tutor can actually sign in, instead of letting the learner
+  // greet a dead chat.
+  useEffect(() => {
+    api.health().then(setHealth).catch(() => {});
+  }, []);
 
   const handleEvent = useCallback((e: TutorEvent) => {
     if (e.type === "recommendation") {
@@ -48,6 +56,8 @@ export default function Onboarding({ tracks, navigate, onDone }: Props) {
     else navigate({ view: "home" });
   }
 
+  const authBroken = health?.sdkAuth === "failed";
+
   if (!trackId) {
     return (
       <div className="view-pad onboarding">
@@ -74,18 +84,33 @@ export default function Onboarding({ tracks, navigate, onDone }: Props) {
   return (
     <div className="view-pad onboarding">
       <h1>Quick placement chat</h1>
-      <p className="dim">
-        The tutor will ask a few short questions to find your starting point. Say hi to begin — or skip below.
-      </p>
-      <div className="placement-chat">
-        <TutorChat
-          lessonKey={`placement/${trackId}/interview`}
-          level={3}
-          onLevelChange={() => {}}
-          getContext={() => ({ files: {}, lastRun: null })}
-          onEvent={handleEvent}
-        />
-      </div>
+      {authBroken ? (
+        <div className="auth-warn-card">
+          <strong>The AI tutor can't sign in to Claude right now,</strong> so the placement chat won't work yet.
+          <p>
+            To fix it: run <code>claude setup-token</code> in a terminal, then restart the app. Every lesson, run, and
+            check still works without the tutor — you can start learning right away and redo setup later.
+          </p>
+          <button className="primary" onClick={() => void finish(null, 3)}>
+            Skip placement — start from the very beginning
+          </button>
+        </div>
+      ) : (
+        <>
+          <p className="dim">
+            The tutor will ask a few short questions to find your starting point. Say hi to begin — or skip below.
+          </p>
+          <div className="placement-chat">
+            <TutorChat
+              lessonKey={`placement/${trackId}/interview`}
+              level={3}
+              hideSlider
+              getContext={() => ({ files: {}, lastRun: null })}
+              onEvent={handleEvent}
+            />
+          </div>
+        </>
+      )}
       {rec && (
         <div className="recommendation-card">
           <strong>Recommended start:</strong> unit <code>{rec.unitId}</code> with assistance level{" "}

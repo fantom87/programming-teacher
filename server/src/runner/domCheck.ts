@@ -1,41 +1,44 @@
 import { JSDOM } from "jsdom";
 import type { DomAssertion } from "@teacher/shared";
-import { describeAssertion, type DomAssertionOutcome } from "@teacher/shared";
+import { describeAssertion, inlineStylesheets, type DomAssertionOutcome } from "@teacher/shared";
 
 // Canonical dom-check evaluation. jsdom parses HTML + stylesheets but does no
 // layout — content authoring rules route visual/layout outcomes to ai-judge.
 
 export function buildDocument(files: Record<string, string>): { html: string; dom: JSDOM } {
   const entry = Object.keys(files).find((f) => f.endsWith(".html")) ?? "index.html";
-  let html = files[entry] ?? "";
-  // Inline linked local stylesheets so cssRule assertions can see them.
-  for (const [name, contents] of Object.entries(files)) {
-    if (name.endsWith(".css")) {
-      const linkRe = new RegExp(`<link[^>]*href=["']${name.replace(".", "\\.")}["'][^>]*>`, "i");
-      if (linkRe.test(html)) html = html.replace(linkRe, `<style>${contents}</style>`);
-    }
-  }
+  // Inline linked local stylesheets so cssRule assertions can see them (the
+  // shared helper keeps this in lock-step with the browser preview).
+  const html = inlineStylesheets(files[entry] ?? "", files);
   return { html, dom: new JSDOM(html) };
 }
 
 function cssRuleMatches(dom: JSDOM, selector: string, property: string, equals: string): { ok: boolean; found?: string } {
   const doc = dom.window.document;
-  for (const styleEl of Array.from(doc.querySelectorAll("style"))) {
-    const sheet = (styleEl as { sheet?: CSSStyleSheet }).sheet;
-    if (!sheet) continue;
-    for (const rule of Array.from(sheet.cssRules)) {
+  // Cascade-correct scan: walk EVERY rule in every style block (recursing into
+  // grouping rules like @media) and let the LAST declaration win — exactly
+  // what the live preview renders when a learner appends a corrected rule.
+  let found: string | undefined;
+  const visit = (rules: CSSRuleList): void => {
+    for (const rule of Array.from(rules)) {
       const style = (rule as CSSStyleRule).style;
       const selText = (rule as CSSStyleRule).selectorText;
-      if (!style || !selText) continue;
-      if (selText.split(",").map((s) => s.trim()).includes(selector)) {
+      if (style && selText && selText.split(",").map((s) => s.trim()).includes(selector)) {
         const value = style.getPropertyValue(property).trim();
-        if (value) {
-          return { ok: value === equals, found: value };
-        }
+        if (value) found = value;
       }
+      const inner = (rule as { cssRules?: CSSRuleList }).cssRules;
+      if (inner) visit(inner);
     }
+  };
+  for (const styleEl of Array.from(doc.querySelectorAll("style"))) {
+    const sheet = (styleEl as { sheet?: CSSStyleSheet }).sheet;
+    if (sheet) visit(sheet.cssRules);
   }
-  return { ok: false };
+  if (found === undefined) return { ok: false };
+  // Case-insensitive, trimmed comparison — "DarkBlue" is the same color as
+  // "darkblue" (no full color parsing; a hex value is still not a keyword).
+  return { ok: found.toLowerCase() === equals.trim().toLowerCase(), found };
 }
 
 export function evaluateDomAssertions(files: Record<string, string>, assertions: DomAssertion[]): {

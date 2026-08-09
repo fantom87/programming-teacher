@@ -27,17 +27,20 @@ export function lessonKey(trackId: string, unitId: string, lessonId: string): st
   return `${trackId}/${unitId}/${lessonId}`;
 }
 
-async function readDirFiles(dir: string): Promise<Record<string, string>> {
+async function readDirFiles(dir: string, prefix = ""): Promise<Record<string, string>> {
+  // Recursive: a solution dir may nest files (e.g. an html project's css/).
   const out: Record<string, string> = {};
-  let entries: string[];
+  let entries;
   try {
-    entries = await fs.readdir(dir);
+    entries = await fs.readdir(dir, { withFileTypes: true });
   } catch {
     return out;
   }
-  for (const name of entries) {
-    const full = path.join(dir, name);
-    if ((await fs.stat(full)).isFile()) out[name] = await fs.readFile(full, "utf8");
+  for (const entry of entries) {
+    const full = path.join(dir, entry.name);
+    const key = `${prefix}${entry.name}`;
+    if (entry.isDirectory()) Object.assign(out, await readDirFiles(full, `${key}/`));
+    else if (entry.isFile()) out[key] = await fs.readFile(full, "utf8");
   }
   return out;
 }
@@ -81,7 +84,13 @@ export async function loadCurriculum(contentDir: string): Promise<Curriculum> {
       continue;
     }
     if (track.id !== trackId) {
-      errors.push({ file: trackFile, message: `track id "${track.id}" doesn't match folder "${trackId}"` });
+      // Lessons are keyed by FOLDER id; a mismatched track would render with
+      // every lesson 404ing. Drop it — the error says exactly what to fix.
+      errors.push({
+        file: trackFile,
+        message: `track id "${track.id}" doesn't match folder "${trackId}" — track skipped`,
+      });
+      continue;
     }
     tracks.push(track);
 
@@ -151,15 +160,63 @@ export async function loadCurriculum(contentDir: string): Promise<Curriculum> {
 }
 
 // ---------- cached singleton ----------
+// The cache invalidates itself when any manifest or lesson body on disk is
+// newer than the last load, so content authors see edits without restarting.
+// The mtime walk is memoized for 2s so request bursts don't re-stat the tree.
 
 let cache: Curriculum | null = null;
+let cacheLoadedAt = 0;
+let cachedContentDir: string | null = null;
+let lastWalk = { at: 0, newest: 0 };
+
+const CONTENT_FILES = new Set(["tracks.json", "track.json", "lesson.md"]);
+
+async function newestContentMtime(contentDir: string): Promise<number> {
+  const now = Date.now();
+  if (now - lastWalk.at < 2000) return lastWalk.newest;
+  let newest = 0;
+  async function walk(dir: string): Promise<void> {
+    let entries;
+    try {
+      entries = await fs.readdir(dir, { withFileTypes: true });
+    } catch {
+      return; // missing dir — nothing to count
+    }
+    for (const entry of entries) {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) await walk(full);
+      else if (CONTENT_FILES.has(entry.name)) {
+        try {
+          newest = Math.max(newest, (await fs.stat(full)).mtimeMs);
+        } catch {
+          // file vanished mid-walk — ignore
+        }
+      }
+    }
+  }
+  await walk(contentDir);
+  lastWalk = { at: now, newest };
+  return newest;
+}
 
 export async function getCurriculum(contentDir: string): Promise<Curriculum> {
-  if (!cache) cache = await loadCurriculum(contentDir);
-  return cache;
+  if (cache && (await newestContentMtime(contentDir)) <= cacheLoadedAt) return cache;
+  return reloadCurriculum(contentDir);
 }
 
 export async function reloadCurriculum(contentDir: string): Promise<Curriculum> {
+  cacheLoadedAt = Date.now();
+  cachedContentDir = contentDir;
   cache = await loadCurriculum(contentDir);
   return cache;
+}
+
+/** Whether a key names a real authored lesson. Used by stores that receive
+ *  lesson keys off the wire (e.g. snapshots) without knowing the content dir.
+ *  Before the first curriculum load it answers false — validate-only callers
+ *  fail closed. */
+export async function isKnownLessonKey(key: string): Promise<boolean> {
+  if (!cachedContentDir) return false;
+  const cur = await getCurriculum(cachedContentDir);
+  return cur.lessons.has(key);
 }

@@ -55,7 +55,8 @@ know the count in advance. It's also the easiest to get stuck in: if nothing
 in the body changes the condition, the loop runs forever. The runner will cut
 you off with a timeout if that happens; just fix the loop and re-run.
 
-> **Heads-up**: first Run compiles (~10s). Later runs are quick.
+> **Heads-up**: first Run compiles (~10s). Later runs are quicker, but still
+> take a few seconds.
 
 ### Your goal
 

@@ -47,8 +47,8 @@ Two printing quirks worth knowing: `Console.WriteLine(someBool)` prints
 `True` with a capital T, and a `double` like `9.75` prints just as you'd
 expect.
 
-> **Heads-up**: the first Run compiles the project and takes ~10 seconds or
-> more. After that it's much faster.
+> **Heads-up**: the first Run compiles the project — give it ~10 seconds.
+> Later runs are quicker, but still take a few seconds.
 
 ### Your goal
 

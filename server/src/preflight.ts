@@ -15,15 +15,26 @@ function version(command: string, args: string[]): Promise<string | null> {
   });
 }
 
-let cached: RuntimeStatus | null = null;
+// Cached with a short TTL — not for the process lifetime — so "install it,
+// then hit Run again" can actually succeed without restarting the app.
+const TTL_MS = 60_000;
+let cached: { at: number; status: RuntimeStatus } | null = null;
+let probing: Promise<RuntimeStatus> | null = null;
 
-export async function detectRuntimes(): Promise<RuntimeStatus> {
-  if (cached) return cached;
-  const [python, node, dotnet] = await Promise.all([
-    version("python", ["--version"]),
-    version("node", ["--version"]),
-    version("dotnet", ["--version"]),
-  ]);
-  cached = { python, node, dotnet };
-  return cached;
+export async function detectRuntimes(force = false): Promise<RuntimeStatus> {
+  if (!force && cached && Date.now() - cached.at < TTL_MS) return cached.status;
+  probing ??= (async () => {
+    try {
+      const [python, node, dotnet] = await Promise.all([
+        version("python", ["--version"]),
+        version("node", ["--version"]),
+        version("dotnet", ["--version"]),
+      ]);
+      cached = { at: Date.now(), status: { python, node, dotnet } };
+      return cached.status;
+    } finally {
+      probing = null;
+    }
+  })();
+  return probing;
 }

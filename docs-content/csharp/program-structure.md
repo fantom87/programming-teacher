@@ -4,7 +4,7 @@ C# is a compiled language from Microsoft that runs on **.NET**. Modern C# progra
 
 ## The smallest program
 
-Since .NET 6, a file can use **top-level statements** — no ceremony, just code:
+Since C# 9 (.NET 5), a file can use **top-level statements** — no ceremony, just code:
 
 ```csharp
 // Program.cs

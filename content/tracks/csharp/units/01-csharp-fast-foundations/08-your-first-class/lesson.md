@@ -65,7 +65,8 @@ Each `new` stamps out an independent **instance** with its own field values —
 two dogs, two names, no crosstalk. Placement rule, same as methods: the class
 definition lives at the bottom of the file, below the top-level statements.
 
-> **Heads-up**: first Run compiles (~10s). Later runs are quick.
+> **Heads-up**: first Run compiles (~10s). Later runs are quicker, but still
+> take a few seconds.
 
 ### Your goal
 

@@ -51,7 +51,8 @@ Small trap for your pattern-matcher: arrays measure with `.Length`, lists with
 `.Count`. Both work with `foreach` exactly the same way — and `foreach` is how
 you'll walk them ninety percent of the time.
 
-> **Heads-up**: first Run compiles (~10s). Later runs are quick.
+> **Heads-up**: first Run compiles (~10s). Later runs are quicker, but still
+> take a few seconds.
 
 ### Your goal
 

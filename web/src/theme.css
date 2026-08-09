@@ -14,6 +14,15 @@
   --error: #f87171;
   --warn: #fbbf24;
   --shadow: rgba(0, 0, 0, 0.4);
+  /* code-block syntax tokens (lezer classHighlighter classes) */
+  --code-keyword: #bb9af7;
+  --code-string: #9ece6a;
+  --code-comment: #616a80;
+  --code-number: #ff9e64;
+  --code-name: #c0caf5;
+  --code-type: #2ac3de;
+  --code-property: #7aa2f7;
+  --code-tag: #f7768e;
 }
 
 :root[data-theme="light"] {
@@ -30,6 +39,15 @@
   --error: #b91c1c;
   --warn: #a16207;
   --shadow: rgba(30, 40, 60, 0.15);
+  /* code-block syntax tokens (lezer classHighlighter classes) */
+  --code-keyword: #7c3aed;
+  --code-string: #15803d;
+  --code-comment: #8a93a3;
+  --code-number: #b45309;
+  --code-name: #1c2028;
+  --code-type: #0e7490;
+  --code-property: #2563eb;
+  --code-tag: #be185d;
 }
 
 * {
@@ -67,8 +85,13 @@ button {
   cursor: pointer;
 }
 
-button:hover {
+button:hover:not(:disabled) {
   border-color: var(--accent);
+}
+
+button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
 button:focus-visible,
@@ -105,11 +128,61 @@ button.primary {
 .topbar {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 16px;
   padding: 8px 16px;
   background: var(--bg-panel);
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
+}
+
+/* Visually hidden until keyboard-focused, then floats over the topbar. */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 8px;
+  z-index: 70;
+  background: var(--accent);
+  color: var(--accent-contrast);
+  border-radius: 6px;
+  padding: 6px 14px;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.skip-link:focus-visible {
+  left: 8px;
+}
+
+.app-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  background: var(--bg-elevated);
+  border-bottom: 1px solid var(--warn);
+  color: var(--text);
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.app-banner span {
+  flex: 1;
+}
+
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 65;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  box-shadow: 0 6px 20px var(--shadow);
+  padding: 8px 20px;
+  font-size: 14px;
+  max-width: min(560px, 90vw);
 }
 
 .topbar .title {
@@ -552,6 +625,26 @@ button.lesson-row:hover {
   padding: 6px 8px;
 }
 
+.history-error {
+  padding: 6px 8px;
+  color: var(--error);
+}
+
+.history-item.passing {
+  color: var(--success);
+}
+
+.history-passed {
+  font-weight: 600;
+}
+
+.history-restore-passing {
+  border-bottom: 1px solid var(--border);
+  border-radius: 6px 6px 0 0;
+  font-weight: 600;
+  color: var(--success);
+}
+
 .preview-frame {
   flex: 1;
   border: none;
@@ -789,6 +882,12 @@ button.lesson-row:hover {
   z-index: 40;
 }
 
+/* Closed drawer stays mounted (page/search/scroll survive) but is invisible,
+   unfocusable, and out of the a11y tree. */
+.drawer-backdrop.drawer-closed {
+  visibility: hidden;
+}
+
 .docs-drawer {
   position: absolute;
   top: 0;
@@ -979,4 +1078,258 @@ button.danger {
   padding: 20px;
   color: var(--text-dim);
   font-size: 14px;
+}
+
+/* ---------- Stats extras ---------- */
+
+.stats-strip {
+  margin: 0 0 8px;
+}
+
+.tier-rollup-list {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.download-link {
+  display: inline-block;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* ---------- Syntax highlighting (md.ts code blocks) ---------- */
+
+.tok-keyword,
+.tok-modifier,
+.tok-operatorKeyword,
+.tok-controlKeyword,
+.tok-definitionKeyword,
+.tok-moduleKeyword {
+  color: var(--code-keyword);
+}
+
+.tok-string,
+.tok-string2,
+.tok-special {
+  color: var(--code-string);
+}
+
+.tok-comment,
+.tok-lineComment,
+.tok-blockComment,
+.tok-docComment,
+.tok-meta {
+  color: var(--code-comment);
+  font-style: italic;
+}
+
+.tok-number,
+.tok-integer,
+.tok-float,
+.tok-bool,
+.tok-atom,
+.tok-literal {
+  color: var(--code-number);
+}
+
+.tok-variableName,
+.tok-name {
+  color: var(--code-name);
+}
+
+.tok-typeName,
+.tok-className,
+.tok-namespace,
+.tok-macroName {
+  color: var(--code-type);
+}
+
+.tok-propertyName,
+.tok-attributeName,
+.tok-labelName,
+.tok-function {
+  color: var(--code-property);
+}
+
+.tok-tagName,
+.tok-angleBracket {
+  color: var(--code-tag);
+}
+
+/* ---------- Narrow windows: stack the three lesson panes ---------- */
+
+@media (max-width: 950px) {
+  .lesson-layout {
+    flex-direction: column;
+    overflow-y: auto;
+    gap: 0;
+  }
+
+  .lesson-layout .pane {
+    flex: 0 0 auto;
+    overflow: visible;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .pane-lesson {
+    max-height: 40vh;
+    overflow-y: auto;
+  }
+
+  .pane-work {
+    height: 70vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .pane-tutor {
+    height: 55vh;
+    overflow: hidden;
+  }
+
+  .docs-view {
+    flex-direction: column;
+  }
+
+  .docs-nav {
+    flex: 0 0 auto;
+    max-height: 30vh;
+  }
+}
+
+/* ---------- Lesson workspace: resizable panes ---------- */
+
+/* Same specificity as the base .pane-* rules but later in the file, so the
+   drag-set custom properties win; the <950px stacked-layout media query above
+   uses a more specific selector and still overrides all of this. */
+.pane-lesson {
+  flex-basis: var(--pane-lesson, 30%);
+}
+
+.pane-work {
+  flex-basis: var(--pane-work, 45%);
+}
+
+.pane-tutor {
+  flex-basis: var(--pane-tutor, 25%);
+}
+
+.pane-divider {
+  flex: 0 0 6px;
+  cursor: col-resize;
+  background: var(--border);
+  touch-action: none;
+}
+
+.pane-divider:hover,
+.pane-divider:active {
+  background: var(--accent);
+}
+
+@media (max-width: 950px) {
+  .pane-divider {
+    display: none;
+  }
+}
+
+/* ---------- Goal checklist: previews & unreachable judge ---------- */
+
+.goal-item.preview .check-icon,
+.goal-item.preview {
+  opacity: 0.75;
+}
+
+.preview-tag {
+  margin-left: 6px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0 6px;
+  vertical-align: middle;
+}
+
+.goal-item.unreachable .check-icon {
+  color: var(--warn);
+}
+
+.unreachable-message {
+  color: var(--warn);
+  font-style: italic;
+}
+
+/* ---------- Tutor chat: header, chips, retry, multiline input ---------- */
+
+.tutor-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.tutor-header .assistance-slider {
+  flex: 1;
+  min-width: 0;
+}
+
+.chat-reset {
+  flex: 0 0 auto;
+  margin-left: auto;
+  font-size: 12px;
+  padding: 2px 10px;
+  white-space: nowrap;
+}
+
+.chat-chip.error {
+  color: var(--error);
+  border-color: var(--error);
+}
+
+.chat-chip.limit {
+  color: var(--warn);
+  border-color: var(--warn);
+}
+
+.chat-retry {
+  align-self: center;
+  font-size: 12px;
+  padding: 2px 12px;
+  border-radius: 999px;
+}
+
+textarea.chat-input {
+  resize: none;
+  max-height: 120px;
+  overflow-y: auto;
+  line-height: 1.4;
+  font-family: inherit;
+}
+
+/* ---------- Playground draft gate ---------- */
+
+.editor-loading {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ---------- Onboarding: SDK auth warning ---------- */
+
+.auth-warn-card {
+  border: 1px solid var(--warn);
+  border-radius: 10px;
+  padding: 14px 18px;
+  margin: 12px 0;
+  background: var(--bg-panel);
+}
+
+.auth-warn-card p {
+  margin: 8px 0 12px;
 }

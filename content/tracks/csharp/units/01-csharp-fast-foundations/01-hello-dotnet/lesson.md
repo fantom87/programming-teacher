@@ -28,6 +28,10 @@ runs, a **compiler** reads all of it, checks it, and translates it into a
 faster form. If something's wrong, the compiler tells you *before* anything
 runs — you'll come to love that.
 
+> **Before you start**: this track runs on the real .NET SDK. If it isn't
+> installed yet, run `winget install Microsoft.DotNet.SDK.8` in a terminal,
+> then restart the app — the Settings page shows whether it's installed.
+
 Modern C# programs can start simple — top-level statements, no ceremony:
 
 ```csharp
@@ -36,8 +40,8 @@ Console.WriteLine("hi");
 
 Note the semicolon: every statement in C# ends with one.
 
-> **Heads-up**: the first Run compiles the project, which takes a while
-> (10 seconds or more). After that it's much faster.
+> **Heads-up**: the first Run compiles the project — give it ~10 seconds.
+> Later runs are quicker, but still take a few seconds.
 
 ### Your goal
 

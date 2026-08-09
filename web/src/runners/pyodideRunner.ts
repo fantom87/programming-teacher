@@ -11,13 +11,22 @@ import type { RunResult } from "@teacher/shared";
 const WORKER_SOURCE = `
   let pyodideReady = null;
 
+  const sendOut = (s) => postMessage({ type: "stdout", text: s });
+  const sendErr = (s) => postMessage({ type: "stderr", text: s });
+
+  // (Re)install output capture. Re-armed before every run so a learner who
+  // reassigns sys.stdout can't kill capture for all later runs.
+  function armCapture(py) {
+    py.setStdout({ batched: sendOut });
+    py.setStderr({ batched: sendErr });
+  }
+
   function getPyodide() {
     if (!pyodideReady) {
       pyodideReady = (async () => {
         const mod = await import(${JSON.stringify(`${location?.origin ?? ""}/pyodide/pyodide.mjs`)});
         const py = await mod.loadPyodide({ indexURL: ${JSON.stringify(`${location?.origin ?? ""}/pyodide/`)} });
-        py.setStdout({ batched: (s) => postMessage({ type: "stdout", text: s }) });
-        py.setStderr({ batched: (s) => postMessage({ type: "stderr", text: s }) });
+        armCapture(py);
         return py;
       })();
     }
@@ -43,7 +52,18 @@ const WORKER_SOURCE = `
     if (e.data.type !== "run") return;
     try {
       const py = await getPyodide();
-      py.runPython(e.data.code);
+      armCapture(py);
+      // Run against fresh globals so each run mirrors the server's
+      // fresh-process semantics — stale bindings from an earlier run can't
+      // make Run pass code that Check fails.
+      const globals = py.runPython('dict(__name__="__main__")');
+      try {
+        py.runPython(e.data.code, { globals });
+      } finally {
+        // Deliver any output still buffered by print(..., end="") etc.
+        try { py.runPython("import sys; sys.stdout.flush(); sys.stderr.flush()"); } catch (err) {}
+        try { globals.destroy(); } catch (err) {}
+      }
       postMessage({ type: "done", ok: true });
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
@@ -92,7 +112,9 @@ export function runPython(code: string, timeoutMs = 15_000): Promise<RunResult> 
 
   return new Promise((resolve) => {
     const start = performance.now();
-    let stdout = "";
+    // Batched stdout chunks are lines; collect them verbatim and join once so
+    // empty lines (including a leading blank line) survive.
+    const stdoutLines: string[] = [];
     let stderr = "";
     let settled = false;
 
@@ -104,7 +126,7 @@ export function runPython(code: string, timeoutMs = 15_000): Promise<RunResult> 
       resolve({
         ok: ok && !timedOut,
         exitCode: ok ? 0 : 1,
-        stdout: stdout ? stdout + "\n" : "",
+        stdout: stdoutLines.length ? stdoutLines.join("\n") + "\n" : "",
         stderr:
           stderr +
           (timedOut ? (stderr ? "\n" : "") + `Timed out after ${timeoutMs / 1000}s (infinite loop?)` : ""),
@@ -123,7 +145,7 @@ export function runPython(code: string, timeoutMs = 15_000): Promise<RunResult> 
 
     const onMessage = (e: MessageEvent<{ type: string; text?: string; ok?: boolean }>) => {
       const m = e.data;
-      if (m.type === "stdout") stdout += (stdout ? "\n" : "") + (m.text ?? "");
+      if (m.type === "stdout") stdoutLines.push(m.text ?? "");
       else if (m.type === "stderr") stderr += (m.text ?? "") + "\n";
       else if (m.type === "done") finish(Boolean(m.ok), false);
     };
