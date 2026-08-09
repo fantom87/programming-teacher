@@ -153,6 +153,9 @@ export interface Settings {
   editor: { fontSize: number; autocomplete: boolean };
   layout?: { paneSizes: number[] };
   onboarded: boolean;
+  /** Absolute path to the learner's own Claude Code, for installs the
+   *  automatic lookup can't find. Empty/absent means "go and find it". */
+  claudePath?: string;
 }
 
 export const DEFAULT_SETTINGS: Settings = {

@@ -15,7 +15,8 @@ import { getCurriculum } from "./curriculum/loader.js";
 import { detectRuntimes } from "./preflight.js";
 import { setJudge } from "./checks/run.js";
 import { judgeCheck } from "./tutor/judge.js";
-import { getAuthStatus, selfTestAuth } from "./tutor/service.js";
+import { getAuthStatus, getTutorStatus, refreshTutorStatus, selfTestAuth } from "./tutor/service.js";
+import { setClaudePathProvider } from "./tutor/claudeBinary.js";
 import { readJson } from "./store/jsonStore.js";
 import { resolvePaths } from "./paths.js";
 import { DEFAULT_SETTINGS, type Settings } from "@teacher/shared";
@@ -47,14 +48,28 @@ app.use((req, res, next) => {
 
 app.use(express.json({ limit: "2mb" }));
 
+// Settings may name an unusual Claude Code install; the resolver asks here
+// rather than learning where settings live.
+setClaudePathProvider(async () => {
+  const settings = await readJson<Settings>(path.join(DATA_DIR, "settings.json"), DEFAULT_SETTINGS);
+  return settings.claudePath;
+});
+
 app.get("/api/health", async (_req, res) => {
+  // Installing Claude Code while the app is open should be enough — no restart.
+  await refreshTutorStatus().catch(() => {});
   const auth = getAuthStatus();
+  const tutor = getTutorStatus();
   res.json({
     ok: true,
     version: "0.1.0",
     runtimes: await detectRuntimes(),
+    // Coarse legacy view: "failed" covers both ways the tutor can be off.
     sdkAuth: auth.status,
     sdkAuthDetail: auth.detail,
+    // Which way it is off, and the executable we found — the two have
+    // different fixes, and the UI says so.
+    tutor: { state: tutor.state, detail: tutor.detail, executable: tutor.executable },
     // The desktop shell needs this: a dev-mode server answers /api/* but does
     // NOT serve the built UI, so attaching to one would show a blank 404.
     mode: isProd ? "production" : "development",

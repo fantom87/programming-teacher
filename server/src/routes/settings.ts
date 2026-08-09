@@ -25,6 +25,8 @@ function repairSettings(raw: unknown): Settings {
   };
   const layout = shape.layout.safeParse(r.layout);
   if (layout.success && layout.data) settings.layout = layout.data;
+  const claudePath = shape.claudePath.safeParse(r.claudePath);
+  if (claudePath.success && claudePath.data) settings.claudePath = claudePath.data;
   return settings;
 }
 

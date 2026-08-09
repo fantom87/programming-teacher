@@ -46,8 +46,33 @@ export interface Health {
     bash: string | null;
     sql: string;
   };
+  /** Coarse view kept for compatibility: "failed" means the tutor is off,
+   *  without saying which of the two reasons applies. */
   sdkAuth: "unknown" | "checking" | "ok" | "failed";
   sdkAuthDetail?: string;
+  /** Why the tutor is off, when it is: no Claude Code at all, or one that
+   *  isn't signed in. Absent from servers older than this field. */
+  tutor?: {
+    state: TutorState;
+    detail?: string;
+    /** the Claude Code the server resolved, or null when it found none */
+    executable?: string | null;
+  };
+}
+
+export type TutorState = "unknown" | "checking" | "ok" | "not-installed" | "not-logged-in";
+
+/** The tutor pane renders optimistically until health answers, so this is
+ *  deliberately three-valued: undefined = don't know yet. */
+export function tutorAvailability(health: Health | null | undefined): {
+  available: boolean | undefined;
+  state: TutorState;
+} {
+  if (!health) return { available: undefined, state: "unknown" };
+  const state: TutorState = health.tutor?.state ?? (health.sdkAuth === "failed" ? "not-logged-in" : health.sdkAuth);
+  if (state === "ok") return { available: true, state };
+  if (state === "not-installed" || state === "not-logged-in") return { available: false, state };
+  return { available: undefined, state };
 }
 
 /** A non-2xx API response, carrying the server's `error` text and the status

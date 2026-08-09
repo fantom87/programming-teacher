@@ -20,7 +20,7 @@ import { allDocSlugs } from "../routes/docs.js";
 import { resolvePaths } from "../paths.js";
 import { detectRuntimes } from "../preflight.js";
 import { missingRuntimeHint } from "../runtimeHints.js";
-import { getAuthStatus } from "./service.js";
+import { tutorOfflineReason } from "./service.js";
 import { oneShot } from "./judge.js";
 
 // Custom lesson generator ("teach me to do X", plan §17.2): a one-shot SDK
@@ -445,11 +445,8 @@ export async function generateCustomLesson(
   dataDir: string,
   req: CustomLessonRequest,
 ): Promise<GeneratedLesson> {
-  if (getAuthStatus().status === "failed") {
-    throw new Error(
-      "The AI tutor can't sign in to Claude, so lessons can't be written right now — Settings shows the fix.",
-    );
-  }
+  const offline = tutorOfflineReason();
+  if (offline) throw new Error(`${offline} Custom lessons can't be written without it.`);
   const cur = await getCurriculum(contentDir);
   const track = cur.tracks.find((t) => t.id === req.trackId);
   if (!track) throw new Error(`no track "${req.trackId}"`);

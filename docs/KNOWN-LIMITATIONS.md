@@ -38,6 +38,24 @@ The plan's "auto-commit content/ changes" idea is deferred to v1.5 alongside
 `author_lesson` — until the tutor writes content, every content change comes
 through a human-reviewed commit anyway.
 
+## The tutor needs Claude Code installed separately
+The app ships no Anthropic binaries — the tutor runs on the user's own Claude
+Code (`server/src/tutor/claudeBinary.ts` finds it; the Agent SDK gets it as
+`pathToClaudeCodeExecutable`). So a fresh machine gets a working app with no
+tutor until Claude Code is installed and `claude setup-token` has been run.
+That is the deliberate trade: 241 MB and ~50s of portable-build startup, and
+no redistribution of a proprietary binary. Consequences worth knowing:
+
+- The lookup covers `PT_CLAUDE_PATH`, Settings, `PATH`, and the conventional
+  install locations. An install somewhere else needs the Settings path field.
+- A version skew between the user's Claude Code and the SDK is now possible;
+  the SDK pins a `claudeCodeVersion` it was built against, and a much older
+  local CLI could refuse an option the SDK sends. Not seen in practice.
+- In a **dev checkout** the SDK's bundled binary is still present in
+  `node_modules`, so a query with no resolved path silently falls back to it.
+  Packaged builds have no such fallback — test tutor-absence against the
+  staged build (`build/server-dist`), not the repo.
+
 ## Transcript reseeding shows tutor turns only
 After a reconnect/remount, the rebuilt chat shows the tutor's replies and
 tool chips (from the server's SSE replay buffer) but not your own past

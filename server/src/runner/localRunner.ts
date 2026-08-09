@@ -228,25 +228,41 @@ export async function sweepStaleWorkspaces(dataDir: string, maxAgeMs = 60 * 60 *
 const RESOLVE_TTL_MS = 60_000;
 const resolveCache = new Map<string, { at: number; bin: string }>();
 
-/** Is a bare command name resolvable? Windows asks where.exe; POSIX walks
- *  PATH itself, which beats shelling out to `which` (absent from slim
- *  containers) and costs no process. */
-async function foundOnPath(name: string): Promise<boolean> {
+/** Where a bare command name lives on PATH, or null. Windows asks where.exe
+ *  (which honours PATHEXT and prints real paths); POSIX walks PATH itself,
+ *  which beats shelling out to `which` (absent from slim containers) and
+ *  costs no process. Callers that need the path itself — not just "is it
+ *  installed" — use this: the tutor hands the Agent SDK an absolute path to
+ *  the learner's own Claude Code. */
+export async function lookupOnPath(name: string): Promise<string | null> {
   if (IS_WINDOWS) {
-    return new Promise<boolean>((resolve) => {
-      const child = execFile("where.exe", [name], { timeout: 5_000, windowsHide: true }, (err) => resolve(!err));
-      child.on("error", () => resolve(false));
+    return new Promise<string | null>((resolve) => {
+      const child = execFile("where.exe", [name], { timeout: 5_000, windowsHide: true }, (err, stdout) => {
+        if (err) {
+          resolve(null);
+          return;
+        }
+        // where.exe prints every match, newest PATH entry first.
+        resolve(stdout.split(/\r?\n/).map((line) => line.trim()).find(Boolean) ?? null);
+      });
+      child.on("error", () => resolve(null));
     });
   }
   for (const entry of (process.env.PATH ?? "").split(path.delimiter)) {
     if (!entry) continue; // an empty PATH entry means cwd — never trust it here
-    const ok = await fs.access(path.join(entry, name), fsConstants.X_OK).then(
+    const full = path.join(entry, name);
+    const ok = await fs.access(full, fsConstants.X_OK).then(
       () => true,
       () => false,
     );
-    if (ok) return true;
+    if (ok) return full;
   }
-  return false;
+  return null;
+}
+
+/** Is a bare command name resolvable? */
+async function foundOnPath(name: string): Promise<boolean> {
+  return (await lookupOnPath(name)) !== null;
 }
 
 /** First candidate that exists: bare names checked against PATH, absolute

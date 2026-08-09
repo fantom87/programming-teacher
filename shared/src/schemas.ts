@@ -102,6 +102,7 @@ export const settingsSchema = z.object({
   editor: z.object({ fontSize: z.number().int().min(10).max(24), autocomplete: z.boolean() }),
   layout: z.object({ paneSizes: z.array(z.number()) }).optional(),
   onboarded: z.boolean(),
+  claudePath: z.string().max(500).optional(),
 });
 
 export type LessonFrontmatter = z.infer<typeof lessonFrontmatterSchema>;

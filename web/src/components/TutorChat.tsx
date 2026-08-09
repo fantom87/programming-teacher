@@ -2,8 +2,11 @@ import { useEffect, useRef, useState } from "react";
 import type { AssistanceLevel, RunResult } from "@teacher/shared";
 import AssistanceSlider from "./AssistanceSlider";
 import { openTutorStream, type TutorEvent } from "../api/tutorStream";
+import type { TutorState } from "../api/client";
 import { renderMarkdown } from "../md";
 import { SAMPLE_TRANSCRIPT } from "../data/sampleTranscript";
+
+export const CLAUDE_CODE_URL = "https://claude.com/product/claude-code";
 
 export interface ChatItem {
   role: "user" | "assistant" | "chip";
@@ -23,8 +26,10 @@ interface Props {
   /** Set from outside to send a canned message (e.g. "explain this error"). */
   pendingMessage?: string | null;
   onPendingConsumed?: () => void;
-  /** false when /api/health reports the Claude login is unavailable. */
+  /** false when /api/health reports the tutor can't be reached. */
   tutorAvailable?: boolean;
+  /** which kind of unreachable — the two have different fixes. */
+  tutorState?: TutorState;
 }
 
 const CHIP_LABEL: Record<string, string> = {
@@ -54,6 +59,7 @@ export default function TutorChat({
   pendingMessage,
   onPendingConsumed,
   tutorAvailable,
+  tutorState,
 }: Props) {
   const [items, setItems] = useState<ChatItem[]>([]);
   const [input, setInput] = useState("");
@@ -255,23 +261,38 @@ export default function TutorChat({
     el.style.height = `${Math.min(el.scrollHeight, 120)}px`;
   }
 
-  // No Claude login (a fresh clone, a codespace, expired auth): don't offer a
-  // chat that can only fail. Explain what the tutor does and show a real
-  // recorded exchange, plainly labelled — everything else in the app still works.
+  // No tutor (no Claude Code installed, a fresh clone, a codespace, expired
+  // auth): don't offer a chat that can only fail. Explain what the tutor does,
+  // name the actual fix, and show a real recorded exchange, plainly labelled —
+  // everything else in the app still works.
   if (tutorAvailable === false) {
+    const notInstalled = tutorState === "not-installed";
     return (
       <div className="tutor-chat">
         <div className="tutor-header">
-          <strong>AI tutor — not connected</strong>
+          <strong>{notInstalled ? "AI tutor — needs Claude Code" : "AI tutor — not signed in"}</strong>
         </div>
         <div className="chat-scroll tutor-offline">
           <p className="dim small">
-            The tutor needs a Claude Code login of your own. Everything else works without it: run your code, check
-            your work, and complete lessons — an AI-graded check that can't be reached never blocks you.
+            The tutor runs on your own copy of Claude Code — this app doesn't ship one. Everything else works without
+            it: run your code, check your work, and complete lessons — an AI-graded check that can't be reached never
+            blocks you.
           </p>
-          <p className="dim small">
-            To switch it on, run <code>claude setup-token</code> in a terminal and restart the app.
-          </p>
+          {notInstalled ? (
+            <p className="dim small">
+              To switch it on, install{" "}
+              <a href={CLAUDE_CODE_URL} target="_blank" rel="noreferrer">
+                Claude Code
+              </a>
+              , run <code>claude setup-token</code> in a terminal, and restart the app. Already installed somewhere
+              unusual? Point Settings at it.
+            </p>
+          ) : (
+            <p className="dim small">
+              Claude Code is installed but isn't signed in. Run <code>claude setup-token</code> in a terminal, then
+              restart the app.
+            </p>
+          )}
           <div className="transcript-label">Recorded example — a real session, not live</div>
           {SAMPLE_TRANSCRIPT.map((block, bi) => (
             <div key={bi} className="transcript-block">

@@ -1,7 +1,28 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { AssistanceLevel, Settings as SettingsType } from "@teacher/shared";
 import { ASSISTANCE_NAMES } from "@teacher/shared";
-import { api, type Health } from "../api/client";
+import { api, tutorAvailability, type Health } from "../api/client";
+
+/** One line saying whether the tutor works and, when it doesn't, which of the
+ *  two fixes applies — installing Claude Code, or signing the one you have in. */
+function tutorLine(health: Health): { ok: boolean; text: string } {
+  const { state } = tutorAvailability(health);
+  const detail = health.tutor?.detail ?? health.sdkAuthDetail ?? "";
+  if (state === "ok") {
+    const where = health.tutor?.executable;
+    return { ok: true, text: `Tutor connection: ✓ using your own Claude Code${where ? ` at ${where}` : ""}` };
+  }
+  if (state === "not-installed") {
+    return {
+      ok: false,
+      text: "Tutor connection: ✗ no Claude Code found — install it from claude.com/product/claude-code, or set its path above.",
+    };
+  }
+  if (state === "not-logged-in") {
+    return { ok: false, text: `Tutor connection: ✗ Claude Code isn't signed in — run "claude setup-token" in a terminal. ${detail}` };
+  }
+  return { ok: true, text: "Tutor connection: checking…" };
+}
 
 export default function Settings({ onSettingsChange }: { onSettingsChange: (s: SettingsType) => void }) {
   const [settings, setSettings] = useState<SettingsType | null>(null);
@@ -136,11 +157,27 @@ export default function Settings({ onSettingsChange }: { onSettingsChange: (s: S
             <option value="claude-fable-5">Fable 5 (deepest)</option>
           </select>
         </label>
-        {health && (
-          <p className={`small ${health.sdkAuth === "ok" ? "dim" : "auth-warn"}`}>
-            Tutor connection: {health.sdkAuth === "ok" ? "✓ using your Claude Code login" : `✗ ${health.sdkAuth} — try running "claude setup-token" in a terminal. ${health.sdkAuthDetail ?? ""}`}
-          </p>
-        )}
+        <label className="setting-row">
+          Claude Code path
+          <input
+            type="text"
+            className="mono"
+            placeholder="(found automatically)"
+            defaultValue={settings.claudePath ?? ""}
+            aria-describedby="claude-path-help"
+            onBlur={(e) => {
+              const next = e.target.value.trim();
+              if (next === (settings.claudePath ?? "")) return;
+              const { claudePath: _drop, ...rest } = settings;
+              void save(next ? { ...rest, claudePath: next } : rest);
+            }}
+          />
+        </label>
+        <p id="claude-path-help" className="dim small">
+          Only needed if your Claude Code lives somewhere unusual — otherwise leave it blank. Takes effect on the next
+          message to the tutor.
+        </p>
+        {health && <p className={`small ${tutorLine(health).ok ? "dim" : "auth-warn"}`}>{tutorLine(health).text}</p>}
       </section>
 
       <section>

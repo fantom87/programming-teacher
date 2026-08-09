@@ -40,8 +40,7 @@ claude setup-token          # follow the link it prints
 bash .devcontainer/start-dev.sh restart
 ```
 
-Setting `ANTHROPIC_API_KEY` in the Codespace's secrets works too. Settings will
-then report `using your Claude Code login`.
+Settings will then report `using your own Claude Code`, with the path it found.
 
 **Keep the forwarded port Private.** That's the default, and it matters: port
 5173 proxies to `/api/run`, which executes arbitrary code by design. Setting the
@@ -89,6 +88,33 @@ local toolchains when a lesson needs them (Python, Node, .NET, Go, Rust,
 PowerShell, Bash). The SQL result formatter is shared between browser and
 server so expected output is byte-identical either way.
 
+## The AI tutor is optional
+
+The app ships **no Anthropic binaries**. The tutor runs on the copy of Claude
+Code *you* installed — the server finds it and points the Agent SDK at it — so
+a distributable build carries only the SDK's JavaScript.
+
+**Without it, everything still works** except three things: the tutor chat, the
+AI-judged checks (they report "couldn't reach the tutor" and never block
+completion), and the custom-lesson generator. All 357 lessons still open, run,
+check and complete; progress, docs, playground and stats are untouched.
+
+**To switch it on:** install [Claude Code](https://claude.com/product/claude-code),
+run `claude setup-token`, and restart the app.
+
+The server looks for it in this order — the first hit wins, and an explicit
+path that doesn't exist is an error rather than a silent fallback:
+
+1. `PT_CLAUDE_PATH` (env)
+2. **Claude Code path** in Settings — for unusual installs
+3. `claude` on `PATH`
+4. the usual install locations: `~/.local/bin`, `%LOCALAPPDATA%\Programs\claude`,
+   `/usr/local/bin`, `/opt/homebrew/bin`, and your npm global prefix
+
+Settings shows which executable it found. `/api/health` distinguishes the two
+ways this can be off — `not-installed` and `not-logged-in` — because they have
+different fixes, and the UI says which one applies.
+
 ## Tracks
 
 | Track | Lessons | Status |
@@ -108,10 +134,10 @@ schema-validated and solution-executed before it's offered.
 
 ## Running it
 
-Prerequisites: **Node 22+**, and a **Claude Code** login for the tutor
-(everything except the tutor and AI-judged checks works without it). Python,
-.NET, Go, Rust, and Git Bash are optional — only lessons that need them will
-ask, and the app tells you the install command.
+Prerequisites: **Node 22+**, and your own **Claude Code** install for the tutor
+(see above — everything else works without it). Python, .NET, Go, Rust, and Git
+Bash are optional — only lessons that need them will ask, and the app tells you
+the install command.
 
 ```bash
 npm install
@@ -147,7 +173,7 @@ scripts/      content lint, asset copying, icon and shortcut generation
 ## Checks
 
 ```bash
-npm test            # unit + integration (81)
+npm test            # unit + integration (127)
 npm run lint-content # execute every lesson solution against its own checks
 npm run typecheck -w web
 ```

@@ -9,7 +9,8 @@ import Stats from "./views/Stats";
 import SettingsView from "./views/Settings";
 import Onboarding from "./views/Onboarding";
 import DocsDrawer from "./components/DocsDrawer";
-import { API_OFFLINE_EVENT, API_ONLINE_EVENT, api, type TrackView } from "./api/client";
+import { CLAUDE_CODE_URL } from "./components/TutorChat";
+import { API_OFFLINE_EVENT, API_ONLINE_EVENT, api, tutorAvailability, type TutorState, type TrackView } from "./api/client";
 import { SettingsContext } from "./settingsContext";
 
 export type Route =
@@ -49,7 +50,7 @@ export default function App() {
   const [toast, setToast] = useState<string | null>(null);
   const toastTimer = useRef<number | undefined>(undefined);
   const [offline, setOffline] = useState(false);
-  const [sdkAuth, setSdkAuth] = useState<string | null>(null);
+  const [tutorState, setTutorState] = useState<TutorState>("unknown");
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -70,7 +71,7 @@ export default function App() {
       })
       .catch(() => setBootFailed(true));
     api.curriculum().then((c) => setTracks(c.tracks)).catch(console.error);
-    api.health().then((h) => setSdkAuth(h.sdkAuth)).catch(() => {});
+    api.health().then((h) => setTutorState(tutorAvailability(h).state)).catch(() => {});
   }, []);
 
   useEffect(boot, [boot]);
@@ -189,11 +190,23 @@ export default function App() {
           </button>
         </div>
       )}
-      {sdkAuth === "failed" && (
+      {tutorState === "not-installed" && (
         <div className="app-banner" role="alert">
           <span>
-            ⚠ The AI tutor can't sign in to Claude. Run <code>claude setup-token</code> in a terminal, then restart the
-            app. Lessons, runs, and checks still work without it.
+            ⚠ The AI tutor runs on your own{" "}
+            <a href={CLAUDE_CODE_URL} target="_blank" rel="noreferrer">
+              Claude Code
+            </a>
+            , which isn't installed here. Install it, run <code>claude setup-token</code>, and restart the app. Lessons,
+            runs, and checks still work without it.
+          </span>
+        </div>
+      )}
+      {tutorState === "not-logged-in" && (
+        <div className="app-banner" role="alert">
+          <span>
+            ⚠ Claude Code is installed but isn't signed in, so the AI tutor is off. Run <code>claude setup-token</code>{" "}
+            in a terminal, then restart the app. Lessons, runs, and checks still work without it.
           </span>
         </div>
       )}

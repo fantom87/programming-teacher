@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
 import type { AssistanceLevel } from "@teacher/shared";
 import { ASSISTANCE_NAMES } from "@teacher/shared";
-import TutorChat from "../components/TutorChat";
+import TutorChat, { CLAUDE_CODE_URL } from "../components/TutorChat";
 import type { TutorEvent } from "../api/tutorStream";
-import { api, type Health, type TrackView } from "../api/client";
+import { api, tutorAvailability, type Health, type TrackView } from "../api/client";
 import type { Route } from "../App";
 
 interface Recommendation {
@@ -56,7 +56,8 @@ export default function Onboarding({ tracks, navigate, onDone }: Props) {
     else navigate({ view: "home" });
   }
 
-  const authBroken = health?.sdkAuth === "failed";
+  const { available: tutorAvailable, state: tutorState } = tutorAvailability(health);
+  const notInstalled = tutorState === "not-installed";
 
   if (!trackId) {
     return (
@@ -84,12 +85,27 @@ export default function Onboarding({ tracks, navigate, onDone }: Props) {
   return (
     <div className="view-pad onboarding">
       <h1>Quick placement chat</h1>
-      {authBroken ? (
+      {tutorAvailable === false ? (
         <div className="auth-warn-card">
-          <strong>The AI tutor can't sign in to Claude right now,</strong> so the placement chat won't work yet.
+          <strong>
+            {notInstalled
+              ? "The AI tutor needs Claude Code, which isn't installed here,"
+              : "Claude Code is installed but isn't signed in,"}
+          </strong>{" "}
+          so the placement chat won't work yet.
           <p>
-            To fix it: run <code>claude setup-token</code> in a terminal, then restart the app. Every lesson, run, and
-            check still works without the tutor — you can start learning right away and redo setup later.
+            To fix it:{" "}
+            {notInstalled && (
+              <>
+                install{" "}
+                <a href={CLAUDE_CODE_URL} target="_blank" rel="noreferrer">
+                  Claude Code
+                </a>
+                , then{" "}
+              </>
+            )}
+            run <code>claude setup-token</code> in a terminal and restart the app. Every lesson, run, and check still
+            works without the tutor — you can start learning right away and redo setup later.
           </p>
           <button className="primary" onClick={() => void finish(null, 3)}>
             Skip placement — start from the very beginning

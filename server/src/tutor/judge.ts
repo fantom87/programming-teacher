@@ -1,7 +1,8 @@
 import { query } from "@anthropic-ai/claude-agent-sdk";
 import type { CheckResult, Lesson, RunResult, Settings } from "@teacher/shared";
 import { JUDGE_SYSTEM, judgePrompt } from "./prompts.js";
-import { getAuthStatus } from "./service.js";
+import { tutorOfflineReason } from "./service.js";
+import { claudeExecutableOption } from "./claudeBinary.js";
 
 // One-shot ai-judge query: no tools, single turn, strict JSON verdict.
 // An unreachable judge (SDK down, auth broken, unparseable twice) reports
@@ -40,6 +41,8 @@ export async function oneShot(prompt: string, systemPrompt: string, model: strin
     for await (const message of query({
       prompt,
       options: {
+        // The learner's own Claude Code, when they have one — we ship none.
+        ...(await claudeExecutableOption()),
         model,
         systemPrompt,
         maxTurns: 1,
@@ -92,10 +95,10 @@ export async function judgeCheck(
   run: RunResult | null,
   solution?: Record<string, string> | null,
 ): Promise<CheckResult> {
-  // Known-broken auth: don't burn two doomed attempts, and say what's wrong.
-  if (getAuthStatus().status === "failed") {
-    return unreachableResult("(The tutor connection is down — Settings shows the fix.)");
-  }
+  // Known-unavailable tutor: don't burn two doomed attempts, and say what's
+  // wrong — "not installed" and "not signed in" have different fixes.
+  const offline = tutorOfflineReason();
+  if (offline) return unreachableResult(`(${offline})`);
 
   const model = await getModel();
   const sol = solution !== undefined ? solution : await loadSolution(lesson);

@@ -12,6 +12,7 @@ import { runPython, warmPyodide, onPyodideStatus, isPyodideWarm } from "../runne
 import { runSql, warmSqlJs } from "../runners/sqlRunner";
 import { buildSrcdoc } from "../runners/htmlPreview";
 import { api } from "../api/client";
+import { useTutorStatus } from "../api/useTutorStatus";
 import { useSettings } from "../settingsContext";
 import { renderMarkdown } from "../md";
 import type { Route } from "../App";
@@ -133,14 +134,7 @@ export default function LessonView({ lessonKey, theme, navigate, onProgressChang
   const [pendingTutorMsg, setPendingTutorMsg] = useState<string | null>(null);
   // Undefined until /api/health answers — the panes render optimistically and
   // only switch to their offline forms once we know the tutor is unreachable.
-  const [tutorAvailable, setTutorAvailable] = useState<boolean | undefined>(undefined);
-
-  useEffect(() => {
-    api
-      .health()
-      .then((h) => setTutorAvailable(h.sdkAuth === "ok"))
-      .catch(() => setTutorAvailable(undefined));
-  }, []);
+  const { available: tutorAvailable, state: tutorState } = useTutorStatus();
   const [paneSizes, setPaneSizes] = useState<number[]>(
     () => cachedPaneSizes ?? validPaneSizes(settings.layout?.paneSizes) ?? [30, 45, 25],
   );
@@ -535,6 +529,7 @@ export default function LessonView({ lessonKey, theme, navigate, onProgressChang
           pendingMessage={pendingTutorMsg}
           onPendingConsumed={() => setPendingTutorMsg(null)}
           tutorAvailable={tutorAvailable}
+          tutorState={tutorState}
         />
       </section>
     </div>

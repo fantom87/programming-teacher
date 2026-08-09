@@ -57,17 +57,30 @@ function readPackageJson(dir) {
   }
 }
 
+// The Agent SDK's platform packages (@anthropic-ai/claude-agent-sdk-win32-x64
+// and friends) are a single 241 MB proprietary claude.exe each. The app runs
+// the tutor on the USER'S OWN Claude Code instead (server/src/tutor/
+// claudeBinary.ts passes pathToClaudeCodeExecutable), so they are excluded
+// here: nothing we distribute contains an Anthropic binary. The SDK's own
+// JavaScript stays — it is what talks to that executable.
+const PLATFORM_BINARY = /^@anthropic-ai\/claude-agent-sdk-/;
+
 // Breadth-first over dependencies + optionalDependencies. Optional deps are
-// the platform binaries (@anthropic-ai/claude-agent-sdk-win32-x64 and
-// friends): only the ones actually installed for THIS platform resolve, and
-// a missing one is not an error — that is what "optional" means.
+// the platform binaries: only the ones actually installed for THIS platform
+// resolve, and a missing one is not an error — that is what "optional" means.
 const found = new Map(); // package name -> absolute source dir
 const missingOptional = [];
+const excluded = []; // { name, bytes } — deliberately not shipped
 const queue = manifest.externals.map((name) => ({ name, from: ROOT }));
 
 while (queue.length > 0) {
   const { name, from, optional } = queue.shift();
   if (found.has(name)) continue;
+  if (PLATFORM_BINARY.test(name)) {
+    const installed = resolvePackageDir(name, from);
+    excluded.push({ name, bytes: installed ? dirSize(installed) : 0 });
+    continue;
+  }
   const dir = resolvePackageDir(name, from);
   if (!dir) {
     if (optional) {
@@ -149,8 +162,16 @@ pruneModules(STAGE_MODULES);
 fs.copyFileSync(entryFile, path.join(STAGE, manifest.entry));
 bytes += fs.statSync(entryFile).size;
 
-console.log(`[stage] ${path.relative(ROOT, STAGE)} — ${found.size} package(s), ${(bytes / 1024 / 1024).toFixed(1)} MB`);
+const mb = (n) => `${(n / 1024 / 1024).toFixed(1)} MB`;
+
+console.log(`[stage] ${path.relative(ROOT, STAGE)} — ${found.size} package(s), ${mb(bytes)}`);
 console.log(`[stage] ${copied} copied, ${reused} already current`);
+if (excluded.length > 0) {
+  const saved = excluded.reduce((sum, e) => sum + e.bytes, 0);
+  console.log(`[stage] excluded ${excluded.length} Claude Code platform binary package(s) — ${mb(saved)} saved:`);
+  for (const e of excluded) console.log(`          ${e.name}${e.bytes ? ` (${mb(e.bytes)})` : " (not installed here)"}`);
+  console.log("[stage] the tutor uses the user's own Claude Code instead (PT_CLAUDE_PATH / Settings / PATH).");
+}
 if (missingOptional.length > 0) {
   console.log(`[stage] skipped ${missingOptional.length} optional dep(s) not installed for this platform:`);
   for (const name of missingOptional) console.log(`          ${name}`);

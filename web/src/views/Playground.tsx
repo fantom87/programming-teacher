@@ -8,6 +8,7 @@ import { runPython, warmPyodide } from "../runners/pyodideRunner";
 import { runSql, warmSqlJs } from "../runners/sqlRunner";
 import { buildSrcdoc } from "../runners/htmlPreview";
 import { api } from "../api/client";
+import { useTutorStatus } from "../api/useTutorStatus";
 import { tabListKeyDown } from "./Lesson";
 
 const ENTRY: Record<Language, string> = {
@@ -49,6 +50,7 @@ export default function Playground({ theme }: { theme: "dark" | "light" }) {
   const [notice, setNotice] = useState<string | null>(null);
   const [running, setRunning] = useState(false);
   const [level, setLevel] = useState<AssistanceLevel>(3);
+  const { available: tutorAvailable, state: tutorState } = useTutorStatus();
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pendingSave = useRef<{ draftId: string; entry: string; language: Language } | null>(null);
   const genCounter = useRef(0);
@@ -185,6 +187,8 @@ export default function Playground({ theme }: { theme: "dark" | "light" }) {
           onLevelChange={setLevel}
           getContext={() => ({ files: { [entry]: codeMapRef.current[language] ?? "" }, lastRun: resultRef.current })}
           onEvent={noop}
+          tutorAvailable={tutorAvailable}
+          tutorState={tutorState}
         />
       </section>
     </div>

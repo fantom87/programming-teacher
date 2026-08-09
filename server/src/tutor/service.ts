@@ -8,6 +8,7 @@ import type { AssistanceLevel, CheckResult, Lesson, RunResult, Settings } from "
 import { DEFAULT_SETTINGS, completionVerdict } from "@teacher/shared";
 import { buildPlacementPrompt, buildPlaygroundPrompt, buildSystemPrompt, wrapTurn } from "./prompts.js";
 import { sdkEnv } from "./judge.js";
+import { claudeExecutableOption, locateClaude } from "./claudeBinary.js";
 import { runLocal } from "../runner/localRunner.js";
 import { evaluateDomAssertions } from "../runner/domCheck.js";
 import { runCheckPass } from "../checks/run.js";
@@ -540,6 +541,8 @@ async function startSession(deps: TutorDeps, session: TutorSession): Promise<voi
     const q = query({
       prompt: turns(),
       options: {
+        // The learner's own Claude Code, when they have one — we ship none.
+        ...(await claudeExecutableOption()),
         model: settings.tutorModel,
         systemPrompt,
         mcpServers: { tutor: buildTools(deps, session) },
@@ -652,22 +655,82 @@ export async function sendMessage(
   }
 }
 
-// ---------- startup auth self-test ----------
+// ---------- startup self-test ----------
 
 export type SdkAuthStatus = "unknown" | "checking" | "ok" | "failed";
-let authStatus: SdkAuthStatus = "unknown";
-let authDetail = "";
+
+/** The two ways the tutor can be off are fixed by different things, so they
+ *  are reported separately: install Claude Code, or sign the one you have in.
+ *  `sdkAuth` below stays as the coarse legacy view of the same state. */
+export type TutorState = "unknown" | "checking" | "ok" | "not-installed" | "not-logged-in";
+
+let tutorState: TutorState = "unknown";
+let tutorDetail = "";
+let tutorExecutable: string | null = null;
+
+const COARSE: Record<TutorState, SdkAuthStatus> = {
+  unknown: "unknown",
+  checking: "checking",
+  ok: "ok",
+  "not-installed": "failed",
+  "not-logged-in": "failed",
+};
 
 export function getAuthStatus(): { status: SdkAuthStatus; detail: string } {
-  return { status: authStatus, detail: authDetail };
+  return { status: COARSE[tutorState], detail: tutorDetail };
 }
 
+export function getTutorStatus(): { state: TutorState; detail: string; executable: string | null } {
+  return { state: tutorState, detail: tutorDetail, executable: tutorExecutable };
+}
+
+/** One sentence naming the actual fix, or null when the tutor is usable.
+ *  Shared by everything that has to decline AI work: judging, authoring. */
+export function tutorOfflineReason(): string | null {
+  if (tutorState === "not-installed") {
+    return "The AI tutor runs on your own Claude Code, which isn't installed on this machine.";
+  }
+  if (tutorState === "not-logged-in") {
+    return 'Claude Code is installed but not signed in — run "claude setup-token" in a terminal, then restart the app.';
+  }
+  return null;
+}
+
+/** An executable that exists but won't start is an install problem, not a
+ *  login problem — the SDK says so in the failure text. */
+function looksLikeMissingBinary(detail: string): boolean {
+  return /not found|ENOENT|failed to launch|no such file/i.test(detail);
+}
+
+let selfTest: Promise<void> | null = null;
+
+/** Locate the learner's Claude Code and, if there is one, spend a single
+ *  cheap turn proving it is signed in. Concurrent callers share one run. */
 export async function selfTestAuth(): Promise<void> {
-  authStatus = "checking";
+  selfTest ??= runSelfTest().finally(() => {
+    selfTest = null;
+  });
+  return selfTest;
+}
+
+async function runSelfTest(): Promise<void> {
+  const location = await locateClaude();
+  if (!location) {
+    tutorState = "not-installed";
+    tutorExecutable = null;
+    tutorDetail = "Claude Code was not found on this machine.";
+    console.log("[tutor] no Claude Code executable found — the tutor is off (everything else still works)");
+    return; // nothing to spawn: skip the self-test entirely
+  }
+  tutorExecutable = location.path;
+  console.log(`[tutor] using Claude Code at ${location.path} (found via ${location.source})`);
+
+  tutorState = "checking";
   try {
     for await (const message of query({
       prompt: "Reply with exactly: ok",
       options: {
+        pathToClaudeCodeExecutable: location.path,
         model: "claude-haiku-4-5-20251001",
         maxTurns: 1,
         allowedTools: [],
@@ -676,17 +739,34 @@ export async function selfTestAuth(): Promise<void> {
     })) {
       if (message.type === "result") {
         if (message.subtype === "success") {
-          authStatus = "ok";
-          authDetail = "";
+          tutorState = "ok";
+          tutorDetail = "";
         } else {
-          authStatus = "failed";
-          authDetail = message.subtype;
+          tutorState = "not-logged-in";
+          tutorDetail = message.subtype;
         }
       }
     }
   } catch (err) {
-    authStatus = "failed";
-    authDetail = String(err);
+    tutorDetail = String(err);
+    tutorState = looksLikeMissingBinary(tutorDetail) ? "not-installed" : "not-logged-in";
   }
-  console.log(`[tutor] SDK auth self-test: ${authStatus}${authDetail ? ` (${authDetail})` : ""}`);
+  console.log(`[tutor] self-test: ${tutorState}${tutorDetail ? ` (${tutorDetail})` : ""}`);
+}
+
+/** /api/health calls this, so installing Claude Code (or pointing Settings at
+ *  it) takes effect without a restart. Cheap: the lookup is filesystem-only
+ *  and memoized for a minute, and the paid self-test only re-runs when the
+ *  executable we would use actually changed. */
+export async function refreshTutorStatus(): Promise<void> {
+  if (selfTest) return; // a run is already in flight
+  const found = (await locateClaude())?.path ?? null;
+  if (found === tutorExecutable && tutorState !== "unknown") return;
+  if (!found) {
+    tutorState = "not-installed";
+    tutorExecutable = null;
+    tutorDetail = "Claude Code was not found on this machine.";
+    return;
+  }
+  await selfTestAuth();
 }
