@@ -1,0 +1,20 @@
+{
+  "pages": [
+    { "slug": "program-structure", "title": "Program structure", "keywords": ["cargo new", "cargo run", "cargo build", "cargo check", "main.rs", "fn main", "println!", "macro", "Cargo.toml", "rustc"] },
+    { "slug": "variables-and-mutability", "title": "Variables and mutability", "keywords": ["let", "mut", "immutable", "shadowing", "const", "cannot assign twice", "binding"] },
+    { "slug": "types-and-functions", "title": "Types and functions", "keywords": ["i32", "u64", "f64", "bool", "char", "usize", "tuple", "array", "fn", "->", "expression", "statement", "type inference"] },
+    { "slug": "control-flow", "title": "Control flow", "keywords": ["if", "else", "loop", "while", "for", "range", "break", "continue", "if is an expression", "break with value"] },
+    { "slug": "ownership", "title": "Ownership", "keywords": ["ownership", "move", "moved value", "stack", "heap", "String", "Copy", "Clone", "drop", "scope", "memory safety"] },
+    { "slug": "borrowing-and-references", "title": "Borrowing and references", "keywords": ["reference", "&", "&mut", "borrow", "borrow checker", "mutable reference", "aliasing", "dangling reference", "cannot borrow"] },
+    { "slug": "structs-and-enums", "title": "Structs and enums", "keywords": ["struct", "impl", "method", "self", "&self", "&mut self", "associated function", "new", "enum", "variant", "derive", "Debug"] },
+    { "slug": "pattern-matching", "title": "Pattern matching", "keywords": ["match", "arm", "exhaustive", "_", "if let", "let else", "destructuring", "binding", "range pattern"] },
+    { "slug": "collections", "title": "Collections", "keywords": ["Vec", "vec!", "push", "get", "HashMap", "insert", "entry", "or_insert", "iter", "iter_mut", "into_iter", "borrow in loops"] },
+    { "slug": "strings-and-slices", "title": "Strings and slices", "keywords": ["String", "&str", "push_str", "format!", "to_string", "UTF-8", "chars", "string slice", "&[T]", "indexing"] },
+    { "slug": "option-and-result", "title": "Option and Result", "keywords": ["Option", "Some", "None", "Result", "Ok", "Err", "unwrap", "expect", "unwrap_or", "panic!", "parse", "no null"] },
+    { "slug": "the-question-mark-operator", "title": "The ? operator", "keywords": ["?", "error propagation", "early return", "From", "Box<dyn Error>", "main returning Result", "io::Error"] },
+    { "slug": "traits", "title": "Traits", "keywords": ["trait", "impl for", "Display", "default method", "derive", "impl Trait", "dyn Trait", "trait object", "shared behavior"] },
+    { "slug": "generics", "title": "Generics", "keywords": ["generic", "<T>", "trait bound", "where clause", "impl Trait", "monomorphization", "zero-cost", "PartialOrd", "generic struct"] },
+    { "slug": "modules-and-cargo", "title": "Modules and Cargo", "keywords": ["mod", "use", "pub", "crate", "module tree", "Cargo.toml", "dependencies", "cargo add", "crates.io", "cargo fmt", "clippy", "cargo test", "#[test]"] },
+    { "slug": "lifetimes-first-look", "title": "Lifetimes: a first look", "keywords": ["lifetime", "'a", "annotation", "elision", "does not live long enough", "missing lifetime specifier", "struct with references", "dangling"] }
+  ]
+}

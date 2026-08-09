@@ -1,0 +1,19 @@
+{
+  "pages": [
+    { "slug": "program-structure", "title": "Program structure", "keywords": ["package main", "func main", "import", "go run", "go build", "go mod init", "fmt.Println", "gofmt", "main.go", "toolchain"] },
+    { "slug": "variables-and-types", "title": "Variables and types", "keywords": ["var", ":=", "zero value", "int", "string", "float64", "bool", "const", "type conversion", "strconv", "static typing"] },
+    { "slug": "control-flow", "title": "Control flow", "keywords": ["if", "else", "switch", "case", "for", "range", "break", "continue", "no while loop", "init statement"] },
+    { "slug": "functions", "title": "Functions", "keywords": ["func", "return", "multiple return values", "parameter", "variadic", "closure", "first-class functions", "error return"] },
+    { "slug": "slices-and-maps", "title": "Slices and maps", "keywords": ["slice", "append", "len", "make", "map", "comma ok", "delete", "range", "backing array", "subslice"] },
+    { "slug": "structs", "title": "Structs", "keywords": ["struct", "field", "struct literal", "zero value", "pointer", "&", "embedding", "composition", "value semantics"] },
+    { "slug": "methods", "title": "Methods", "keywords": ["method", "receiver", "pointer receiver", "value receiver", "func (t T)", "constructor", "NewType", "named types"] },
+    { "slug": "interfaces", "title": "Interfaces", "keywords": ["interface", "implicit implementation", "io.Reader", "io.Writer", "fmt.Stringer", "any", "empty interface", "type assertion", "type switch", "polymorphism"] },
+    { "slug": "error-handling", "title": "Error handling", "keywords": ["error", "if err != nil", "errors.New", "fmt.Errorf", "%w", "errors.Is", "errors.As", "sentinel error", "defer", "panic", "recover"] },
+    { "slug": "packages-and-modules", "title": "Packages and modules", "keywords": ["package", "exported", "capitalization", "go.mod", "module", "go get", "import path", "internal", "go doc", "go mod tidy"] },
+    { "slug": "goroutines", "title": "Goroutines", "keywords": ["goroutine", "go keyword", "sync.WaitGroup", "concurrency", "data race", "race detector", "sync.Mutex", "scheduler"] },
+    { "slug": "channels", "title": "Channels", "keywords": ["channel", "chan", "make", "send", "receive", "buffered channel", "close", "select", "range over channel", "worker pool", "time.After"] },
+    { "slug": "files-and-json", "title": "Files and JSON", "keywords": ["os.ReadFile", "os.WriteFile", "os.Open", "bufio.Scanner", "encoding/json", "json.Marshal", "json.Unmarshal", "struct tags", "defer Close"] },
+    { "slug": "http-client-and-server", "title": "HTTP client and server", "keywords": ["net/http", "http.Get", "resp.Body", "io.ReadAll", "ServeMux", "HandleFunc", "ListenAndServe", "handler", "PathValue", "middleware", "status code"] },
+    { "slug": "testing-basics", "title": "Testing basics", "keywords": ["go test", "_test.go", "testing.T", "t.Errorf", "t.Run", "table-driven tests", "subtests", "benchmark", "httptest", "go vet", "-race"] }
+  ]
+}
