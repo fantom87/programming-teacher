@@ -1,0 +1,3 @@
+node handles files natively
+paths differ across platforms
+never build paths by hand

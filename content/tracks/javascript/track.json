@@ -98,8 +98,17 @@
       "title": "Node and Tooling",
       "tier": "advanced",
       "summary": "The Node runtime, npm, testing, bundling, linting (local runner).",
-      "lessons": [],
-      "planned": true,
+      "lessons": [
+        "01-the-node-runtime",
+        "02-files-and-paths",
+        "03-npm-and-package-json",
+        "04-fetch-and-apis",
+        "05-testing-with-vitest",
+        "06-eslint-and-prettier",
+        "07-bundlers-and-builds",
+        "08-debugging-node",
+        "09-environment-config"
+      ],
       "topics": ["Node runtime and globals", "npm and package.json", "file system and paths", "fetch and APIs", "vitest testing", "ESLint and Prettier", "bundlers and builds", "debugging", "environment config"]
     },
     {
@@ -107,8 +116,17 @@
       "title": "Advanced Patterns and Types",
       "tier": "advanced",
       "summary": "Event loop depth, advanced TS, architecture; ends with the Advanced capstone.",
-      "lessons": [],
-      "planned": true,
+      "lessons": [
+        "01-event-loop-and-microtasks",
+        "02-generators-and-iterators",
+        "03-advanced-async-patterns",
+        "04-keyof-and-mapped-types",
+        "05-conditional-and-template-literal-types",
+        "06-declaration-files",
+        "07-module-architecture",
+        "08-performance-profiling",
+        "09-capstone-typed-shelf-cli"
+      ],
       "topics": ["event loop and microtasks", "generators and iterators", "advanced async patterns", "mapped/conditional/template-literal types", "declaration files", "module architecture", "performance profiling", "capstone: tested, typed Node CLI"]
     },
     {
@@ -116,8 +134,14 @@
       "title": "JS/TS Refresher",
       "tier": "refresher",
       "summary": "Dense recap including TypeScript, for returning developers.",
-      "lessons": [],
-      "planned": true,
+      "lessons": [
+        "01-syntax-and-scoping-sprint",
+        "02-functional-data-drills",
+        "03-async-and-the-event-loop",
+        "04-typescript-speedrun",
+        "05-dom-and-browser-apis",
+        "06-node-tooling-testing"
+      ],
       "topics": ["syntax and scoping sprint", "arrays, objects, functional patterns", "async and the event loop", "TypeScript speedrun", "DOM and browser APIs", "Node, tooling, testing"]
     }
   ]

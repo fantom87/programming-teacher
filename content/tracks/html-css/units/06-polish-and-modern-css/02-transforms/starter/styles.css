@@ -1,0 +1,56 @@
+body {
+  margin: 0;
+  font-family: "Segoe UI", Arial, sans-serif;
+  background-color: #2b2d31;
+  color: #e6e2d8;
+}
+
+main {
+  max-width: 44rem;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem;
+}
+
+h1 {
+  margin: 0 0 0.25rem;
+}
+
+.wall {
+  display: flex;
+  gap: 2rem;
+  margin-top: 2.5rem;
+  justify-content: center;
+}
+
+.polaroid {
+  margin: 0;
+  padding: 0.75rem 0.75rem 1rem;
+  background-color: #f7f4ec;
+  color: #33302a;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.45);
+  transition: transform 0.2s ease;
+}
+
+.photo {
+  width: 9rem;
+  height: 9rem;
+}
+
+.photo-harbor {
+  background: linear-gradient(160deg, #9fb4c7, #46586b 70%);
+}
+
+.photo-gulls {
+  background: linear-gradient(200deg, #d8d3c5, #8a94a1 65%);
+}
+
+.photo-rope {
+  background: linear-gradient(140deg, #c7a37c, #6e5335 75%);
+}
+
+figcaption {
+  margin-top: 0.6rem;
+  font-size: 0.85rem;
+  font-style: italic;
+  text-align: center;
+}

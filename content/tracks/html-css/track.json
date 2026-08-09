@@ -97,17 +97,30 @@
       "title": "Polish and Modern CSS",
       "tier": "advanced",
       "summary": "Animation, custom properties, CSS architecture, performance.",
-      "lessons": [],
-      "planned": true,
+      "lessons": [
+        "01-transitions",
+        "02-transforms",
+        "03-keyframe-animations",
+        "04-custom-properties",
+        "05-dark-mode",
+        "06-nesting-and-layers",
+        "07-css-architecture",
+        "08-rendering-performance"
+      ],
       "topics": ["transitions", "transforms", "keyframe animations", "custom properties and theming", "dark mode", "CSS nesting and layers", "organization at scale", "rendering performance"]
     },
     {
       "id": "07-capstone-site",
       "title": "Capstone: Complete Site",
       "tier": "advanced",
-      "summary": "Multi-session capstone: a responsive, accessible multi-page site.",
-      "lessons": [],
-      "planned": true,
+      "summary": "Multi-session capstone: one client site from brief to launch — responsive, themed, accessible.",
+      "lessons": [
+        "01-brief-and-wireframe",
+        "02-semantic-structure",
+        "03-responsive-layout",
+        "04-theming",
+        "05-audit-and-launch"
+      ],
       "topics": ["brief and wireframe", "semantic structure build", "responsive layout pass", "theming", "accessibility audit and final polish"]
     },
     {
@@ -115,8 +128,13 @@
       "title": "HTML/CSS Refresher",
       "tier": "refresher",
       "summary": "Dense recap for returning developers.",
-      "lessons": [],
-      "planned": true,
+      "lessons": [
+        "01-semantic-sprint",
+        "02-selector-specificity-drills",
+        "03-flexbox-grid-drills",
+        "04-responsive-patterns",
+        "05-modern-css-a11y-audit"
+      ],
       "topics": ["semantic HTML sprint", "cascade, selectors, specificity", "flexbox and grid drills", "responsive patterns", "modern CSS and a11y audit"]
     }
   ]

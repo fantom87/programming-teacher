@@ -97,8 +97,17 @@
       "title": "Async, Testing, Architecture",
       "tier": "advanced",
       "summary": "async/await, xUnit, dependency injection, layering, performance.",
-      "lessons": [],
-      "planned": true,
+      "lessons": [
+        "01-tasks-and-await",
+        "02-whenall-and-composition",
+        "03-cancellation",
+        "04-parallelism-basics",
+        "05-testing-with-xunit",
+        "06-test-doubles-and-mocking",
+        "07-dependency-injection",
+        "08-layered-architecture",
+        "09-span-and-performance"
+      ],
       "topics": ["Task and async/await", "cancellation", "parallelism basics", "xUnit testing and mocking", "dependency injection", "layered architecture", "Span<T> and performance awareness", "benchmarking intro"]
     },
     {
@@ -115,8 +124,14 @@
       "title": "C# Refresher",
       "tier": "refresher",
       "summary": "Dense recap including modern language features.",
-      "lessons": [],
-      "planned": true,
+      "lessons": [
+        "01-syntax-and-types-sprint",
+        "02-oop-and-interfaces-drills",
+        "03-linq-workout",
+        "04-modern-language-features",
+        "05-async-in-anger",
+        "06-dotnet-tooling-and-testing"
+      ],
       "topics": ["syntax and types sprint", "OOP and interfaces drills", "LINQ workout", "modern language features", "async in anger", ".NET tooling and testing"]
     }
   ]

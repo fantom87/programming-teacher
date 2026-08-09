@@ -1,0 +1,66 @@
+body {
+  margin: 0;
+  font-family: "Segoe UI", Arial, sans-serif;
+  background-color: #191b20;
+  color: #dcd8cf;
+}
+
+header {
+  padding: 2rem 2rem 1rem;
+  border-bottom: 1px solid #2e323b;
+}
+
+h1 {
+  margin: 0 0 0.5rem;
+  letter-spacing: 0.04em;
+}
+
+.live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: bold;
+  letter-spacing: 0.12em;
+  color: #ff6b6b;
+}
+
+.live-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #ff4d4d;
+  animation-name: pulse;
+  animation-duration: 1.6s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+@keyframes pulse {
+  from {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .live-dot {
+    animation-play-state: paused;
+  }
+}
+
+main {
+  max-width: 34rem;
+  padding: 1.5rem 2rem;
+}
+
+.schedule {
+  color: #9aa0ab;
+  font-size: 0.9rem;
+}

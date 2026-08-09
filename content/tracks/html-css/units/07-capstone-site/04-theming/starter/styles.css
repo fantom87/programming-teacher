@@ -1,0 +1,62 @@
+/* Responsive pass, mobile-first: the base rules ARE the phone layout;
+   min-width queries add columns as the screen earns them. */
+body {
+  font-family: system-ui, sans-serif;
+  margin: 0;
+  line-height: 1.6;
+}
+.site-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.25rem 1.5rem;
+  padding: 1rem 1.25rem;
+}
+.site-header nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+main {
+  max-width: 70rem;
+  margin-inline: auto;
+  padding-inline: 1.25rem;
+}
+.hero {
+  padding-block: 3rem;
+}
+img {
+  max-width: 100%;
+  height: auto;
+}
+.film-grid {
+  display: grid;
+  gap: 1.25rem;
+  list-style: none;
+  padding: 0;
+}
+.film-card {
+  border: 1px solid;
+  border-radius: 8px;
+  padding: 1rem;
+}
+.times {
+  font-style: italic;
+}
+figure {
+  margin: 1.5rem 0;
+}
+footer {
+  padding: 1.5rem 1.25rem;
+}
+@media (min-width: 40rem) {
+  .film-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (min-width: 64rem) {
+  .film-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}

@@ -1,0 +1,71 @@
+/* ============ BASE — nothing above the DRILLS line changes ============ */
+
+body {
+  font-family: "Segoe UI", Arial, sans-serif;
+  margin: 0;
+  background-color: #f7f8fa;
+  color: #26303a;
+  line-height: 1.6;
+}
+
+.top {
+  background-color: #26303a;
+  color: #f7f8fa;
+  padding: 1.25rem 2rem;
+}
+
+.top h1 {
+  margin: 0 0 0.5rem;
+}
+
+.menu a {
+  color: #c6ccd4;
+  text-decoration: none;
+  margin-right: 1rem;
+}
+
+.content {
+  max-width: 40rem;
+  margin: 2rem auto;
+  padding: 0 1.5rem;
+}
+
+a {
+  color: #2f6f8f;
+}
+
+.card {
+  background-color: #ffffff;
+  border: 1px solid #d9dde3;
+  border-radius: 6px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Legacy promo styling — the redesign never got sign-off to delete it. */
+#promo p.title {
+  color: #8a8f98;
+  font-weight: 700;
+  font-size: 1.15rem;
+  margin: 0 0 0.5rem;
+}
+
+.roster {
+  list-style: none;
+  margin: 0 0 1.5rem;
+  padding: 0;
+  border: 1px solid #d9dde3;
+  border-radius: 6px;
+  overflow: hidden;
+  background-color: #ffffff;
+}
+
+.roster li {
+  padding: 0.6rem 0.9rem;
+}
+
+.terms {
+  font-size: 0.9rem;
+}
+
+/* ============ DRILLS — your four rules go below this line ============ */

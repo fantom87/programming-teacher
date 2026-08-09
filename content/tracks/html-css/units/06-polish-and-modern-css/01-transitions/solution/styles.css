@@ -1,0 +1,61 @@
+body {
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  background-color: #1c1a22;
+  color: #e8e4da;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 1.25rem 2rem;
+  border-bottom: 1px solid #35313f;
+}
+
+.brand {
+  margin: 0;
+  font-size: 1.1rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+nav a {
+  color: #b9b2a6;
+  text-decoration: none;
+  margin-left: 1.25rem;
+  transition: color 0.15s ease;
+}
+
+nav a:hover {
+  color: #ffd166;
+}
+
+main {
+  max-width: 34rem;
+  margin: 0 auto;
+  padding: 3rem 2rem;
+}
+
+h1 {
+  font-size: 2rem;
+  margin: 0 0 0.75rem;
+}
+
+.cta {
+  display: inline-block;
+  margin-top: 1.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  background-color: #ffd166;
+  color: #1c1a22;
+  font-weight: bold;
+  text-decoration: none;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.cta:hover {
+  background-color: #ffe09d;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+}

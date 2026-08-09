@@ -1,0 +1,94 @@
+/* Theming pass: every color lives in a custom property on :root.
+   Dark mode re-declares tokens — never component rules. */
+:root {
+  --paper: #f7f2e7;
+  --ink: #221d2b;
+  --brass: #7c5210;
+  --curtain: #5a1f24;
+  --marquee: #f6ead8;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #171420;
+    --ink: #ece5d4;
+    --brass: #e0b458;
+  }
+}
+body {
+  font-family: system-ui, sans-serif;
+  margin: 0;
+  line-height: 1.6;
+  background-color: var(--paper);
+  color: var(--ink);
+}
+.site-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.25rem 1.5rem;
+  padding: 1rem 1.25rem;
+  background-color: var(--curtain);
+}
+.brand {
+  color: var(--marquee);
+  font-weight: 700;
+}
+.site-header nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+.site-header a {
+  color: var(--marquee);
+}
+main {
+  max-width: 70rem;
+  margin-inline: auto;
+  padding-inline: 1.25rem;
+}
+.hero {
+  padding: 3rem 1.25rem;
+  background-color: var(--curtain);
+  color: var(--marquee);
+}
+a {
+  color: var(--brass);
+}
+h2 {
+  color: var(--brass);
+}
+img {
+  max-width: 100%;
+  height: auto;
+}
+.film-grid {
+  display: grid;
+  gap: 1.25rem;
+  list-style: none;
+  padding: 0;
+}
+.film-card {
+  border: 1px solid var(--brass);
+  border-radius: 8px;
+  padding: 1rem;
+}
+.times {
+  font-style: italic;
+}
+figure {
+  margin: 1.5rem 0;
+}
+footer {
+  padding: 1.5rem 1.25rem;
+}
+@media (min-width: 40rem) {
+  .film-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (min-width: 64rem) {
+  .film-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}

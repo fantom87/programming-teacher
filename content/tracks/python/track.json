@@ -124,8 +124,17 @@
       "title": "Language Depth and Concurrency",
       "tier": "advanced",
       "summary": "Decorators, metaclasses, asyncio, performance; ends with the Advanced capstone.",
-      "lessons": [],
-      "planned": true,
+      "lessons": [
+        "01-decorators",
+        "02-context-managers",
+        "03-properties-and-descriptors",
+        "04-metaclasses-and-protocols",
+        "05-async-and-await",
+        "06-gather-and-concurrency",
+        "07-threads-and-the-gil",
+        "08-profiling-and-optimization",
+        "09-capstone-async-aggregator"
+      ],
       "topics": ["decorators", "context managers", "descriptors and properties", "metaclasses and protocols", "asyncio and async/await", "threads vs processes and the GIL", "profiling and optimization", "capstone: async multi-source aggregator with test suite"]
     },
     {
@@ -133,8 +142,14 @@
       "title": "Python Refresher",
       "tier": "refresher",
       "summary": "Dense recap for returning developers, with challenging checks.",
-      "lessons": [],
-      "planned": true,
+      "lessons": [
+        "01-syntax-sprint",
+        "02-collections-and-comprehensions",
+        "03-oop-typing-protocols",
+        "04-generators-decorators-context-managers",
+        "05-async-and-concurrency",
+        "06-tooling-testing-packaging"
+      ],
       "topics": ["syntax sprint", "collections and comprehensions", "OOP, typing, protocols", "generators, decorators, context managers", "async and concurrency", "tooling, testing, packaging"]
     }
   ]

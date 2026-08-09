@@ -1,0 +1,67 @@
+:root {
+  color-scheme: light dark;
+  --surface: #f6f3ec;
+  --card: #fffdf8;
+  --ink: #2b2e33;
+  --muted: #6d6a63;
+  --accent: #366e54;
+}
+
+body {
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  background-color: var(--surface);
+  color: var(--ink);
+}
+
+main {
+  max-width: 36rem;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem;
+}
+
+h1 {
+  margin: 0 0 0.5rem;
+}
+
+.intro {
+  margin: 0 0 2rem;
+  color: var(--muted);
+}
+
+.note {
+  background-color: var(--card);
+  border: 1px solid var(--muted);
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.note h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.1rem;
+  color: var(--accent);
+}
+
+.note p {
+  margin: 0 0 0.75rem;
+}
+
+a {
+  color: var(--accent);
+}
+
+.meta {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --surface: #14161a;
+    --card: #1e2127;
+    --ink: #d7dae1;
+    --muted: #a19d94;
+    --accent: #7fc8a4;
+  }
+}

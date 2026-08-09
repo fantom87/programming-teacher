@@ -1,0 +1,78 @@
+body {
+  font-family: Georgia, "Times New Roman", serif;
+  margin: 0;
+  background-color: #f5f3ec;
+  color: #2c3530;
+  line-height: 1.6;
+}
+
+/* Drill 1 — the fluid frame: capped width, centered, fluid gutters. */
+.wrap {
+  max-width: 64rem;
+  margin-inline: auto;
+  padding-inline: clamp(1rem, 4vw, 2.5rem);
+}
+
+.masthead {
+  padding-block: 1.5rem;
+  border-bottom: 2px solid #2c3530;
+  margin-bottom: 1.5rem;
+}
+
+/* Drill 3 — replace the fixed size with a clamp() of your own design. */
+.site-title {
+  font-size: clamp(1.5rem, 4vw, 2.75rem);
+  margin: 0 0 0.75rem;
+}
+
+/* Base nav: stacked for phones. Drill 2 lays it in a row from 720px up. */
+.nav-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.nav-list a {
+  color: #4a6b57;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+/* Base layout: one column. Drill 2 makes it 2fr 1fr from 720px up. */
+.layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  padding-bottom: 2rem;
+}
+
+.story h2 {
+  margin-top: 0;
+}
+
+.facts {
+  background-color: #e7e3d5;
+  border-left: 4px solid #4a6b57;
+  padding: 1rem 1.25rem;
+  align-self: start;
+}
+
+.facts h2 {
+  margin-top: 0;
+  font-size: 1.05rem;
+}
+
+/* Drill 2 — additive wide-screen overrides, mobile-first. */
+@media (min-width: 720px) {
+  .layout {
+    grid-template-columns: 2fr 1fr;
+  }
+
+  .nav-list {
+    flex-direction: row;
+    gap: 1.25rem;
+  }
+}

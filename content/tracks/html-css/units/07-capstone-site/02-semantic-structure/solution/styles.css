@@ -1,0 +1,5 @@
+/* Structure pass: the wireframe is gone; every box became a real element.
+   This sheet stays nearly empty on purpose — layout is next session. */
+body {
+  font-family: system-ui, sans-serif;
+}

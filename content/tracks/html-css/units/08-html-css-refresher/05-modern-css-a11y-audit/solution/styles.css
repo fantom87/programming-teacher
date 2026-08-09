@@ -1,0 +1,73 @@
+:root {
+  --paper: #fdfbf7;
+  --ink: #2b2b2b;
+  --accent: #9c4221;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #15181d;
+    --ink: #e9e4da;
+    --accent: #d97a4a;
+  }
+}
+
+body {
+  font-family: "Segoe UI", Arial, sans-serif;
+  margin: 0;
+  background-color: var(--paper);
+  color: var(--ink);
+  line-height: 1.6;
+}
+
+a {
+  color: var(--accent);
+}
+
+a:focus-visible {
+  outline: 3px solid var(--accent);
+}
+
+.masthead {
+  border-bottom: 3px solid var(--accent);
+  padding: 1.5rem 2rem 1rem;
+}
+
+.masthead h1 {
+  margin: 0 0 0.5rem;
+}
+
+.menu a {
+  font-weight: 700;
+  text-decoration: none;
+  margin-right: 1rem;
+}
+
+.content {
+  max-width: 38rem;
+  margin: 2rem auto;
+  padding: 0 1.5rem;
+}
+
+.hero-photo {
+  max-width: 100%;
+  border-radius: 8px;
+}
+
+.order {
+  display: inline-block;
+  background-color: var(--accent);
+  color: var(--paper);
+  border: 0;
+  border-radius: 6px;
+  font: inherit;
+  font-weight: 700;
+  padding: 0.6rem 1.25rem;
+  cursor: pointer;
+}
+
+.bottom {
+  border-top: 1px solid #d9d2c4;
+  padding: 1rem 2rem;
+  font-size: 0.85rem;
+}

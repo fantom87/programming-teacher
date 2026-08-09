@@ -1,0 +1,58 @@
+body {
+  font-family: "Segoe UI", Arial, sans-serif;
+  margin: 0;
+  background-color: #171b22;
+  color: #e8e6df;
+  line-height: 1.5;
+}
+
+/* Drill 1 — one row: brand left, links right, everything vertically centered. */
+.toolbar {
+  background-color: #10131a;
+  padding: 1rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.brand {
+  font-weight: 700;
+  font-size: 1.25rem;
+}
+
+.actions a {
+  color: #ffd166;
+  text-decoration: none;
+  margin-left: 1rem;
+}
+
+/* Drill 2 — as many columns as fit, each at least 180px wide. */
+.gallery {
+  padding: 1.5rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+}
+
+/* Drill 3 — make the card a column so the link can pin to the bottom. */
+.card {
+  background-color: #232936;
+  border: 1px solid #323a4a;
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.card h2 {
+  margin-top: 0;
+  font-size: 1.1rem;
+}
+
+.visit {
+  color: #ffd166;
+  text-decoration: none;
+  font-weight: 700;
+  margin-top: auto;
+}

@@ -1,0 +1,30 @@
+/* Wireframe pass: gray boxes stand in for real content.
+   Proportions matter; pixels don't. Real styling starts in session 3. */
+body {
+  font-family: system-ui, sans-serif;
+  margin: 0;
+  padding: 1rem;
+}
+.wire {
+  border: 2px dashed slategray;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+.wire-label {
+  margin: 0;
+  color: dimgray;
+  font-size: 0.875rem;
+  letter-spacing: 0.05em;
+}
+.wire-hero {
+  min-height: 8rem;
+}
+.wire-row {
+  display: flex;
+  gap: 1rem;
+}
+.wire-card {
+  flex: 1;
+  min-height: 7rem;
+  margin-bottom: 0;
+}
