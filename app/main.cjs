@@ -39,6 +39,19 @@ const RES = PACKAGED ? process.resourcesPath : path.join(__dirname, "..");
  * nothing with the repo layout, which is exactly why the server reads all of
  * them from PT_* env vars instead of deriving them (server/src/paths.ts).
  */
+/** Can we actually create and write files here? Probed, not guessed. */
+function writableDir(dir) {
+  try {
+    fs.mkdirSync(dir, { recursive: true });
+    const probe = path.join(dir, `.write-probe-${process.pid}`);
+    fs.writeFileSync(probe, "");
+    fs.rmSync(probe, { force: true });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function resolveLayout() {
   if (!PACKAGED) {
     return {
@@ -50,7 +63,12 @@ function resolveLayout() {
       dataDir: path.join(RES, "data"),
     };
   }
-  const userData = app.getPath("userData");
+  // Portable by default: everything lives in the app's own folder, so the whole
+  // thing is one directory you can copy, move, or delete. If that folder isn't
+  // writable (installed under Program Files, run from a read-only share), fall
+  // back to the per-user location rather than failing.
+  const beside = path.join(path.dirname(process.execPath), "data");
+  const userData = writableDir(beside) ? beside : app.getPath("userData");
   return {
     serverEntry: path.join(RES, "server", "server.cjs"),
     repoFallback: null,
