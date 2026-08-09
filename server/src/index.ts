@@ -55,6 +55,10 @@ app.get("/api/health", async (_req, res) => {
     runtimes: await detectRuntimes(),
     sdkAuth: auth.status,
     sdkAuthDetail: auth.detail,
+    // The desktop shell needs this: a dev-mode server answers /api/* but does
+    // NOT serve the built UI, so attaching to one would show a blank 404.
+    mode: isProd ? "production" : "development",
+    servesUi: isProd,
   });
 });
 

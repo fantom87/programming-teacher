@@ -9,8 +9,13 @@ const path = require("node:path");
 const fs = require("node:fs");
 
 const APP_URL = "http://localhost:4517";
+const DEV_UI_URL = "http://localhost:5173"; // Vite, when a dev session is running
 const DEFAULT_REPO = "B:\\Claude\\Programming Teacher";
 const KEEP_LOGS = 5;
+
+// Where the window actually points — APP_URL normally, the Vite dev UI when a
+// development server owns the API port.
+let appUrl = APP_URL;
 
 let serverProc = null;
 let serverLog = null;
@@ -82,6 +87,22 @@ function ping() {
   });
 }
 
+/** True when the URL returns an HTML document — i.e. something serving the app. */
+function servesHtml(url) {
+  return new Promise((resolve) => {
+    const req = http.get(url, (res) => {
+      const type = String(res.headers["content-type"] ?? "");
+      res.resume();
+      resolve(res.statusCode === 200 && type.includes("html"));
+    });
+    req.on("error", () => resolve(false));
+    req.setTimeout(1500, () => {
+      req.destroy();
+      resolve(false);
+    });
+  });
+}
+
 function healthJson() {
   return new Promise((resolve) => {
     const req = http.get(`${APP_URL}/api/health`, (res) => {
@@ -107,9 +128,26 @@ async function ensureServer() {
   serverLog = openServerLog();
 
   if (await ping()) {
-    // Reusing an already-running dev/prod server: note its version so a
-    // stale orphaned server after a code update is at least diagnosable.
+    // Something already owns the port. Only a PRODUCTION server serves the
+    // app itself — a dev server (npm run dev) answers /api/* but returns 404
+    // for "/", which would open an empty window with a cryptic error.
     const health = await healthJson();
+    if (health?.servesUi === false || health?.mode === "development") {
+      logLine(`a development server owns ${APP_URL}; it serves the API but not the app UI.`);
+      // Vite serves the UI in that setup — use it so a running dev session
+      // opens the real app instead of failing.
+      if (await servesHtml(DEV_UI_URL)) {
+        logLine(`using the Vite dev UI at ${DEV_UI_URL} instead.`);
+        appUrl = DEV_UI_URL;
+        return true;
+      }
+      dialog.showErrorBox(
+        "Programming Teacher",
+        "A development server is already using port 4517, and it doesn't serve the app.\n\n" +
+          "Close it (the terminal running 'npm run dev'), then start Programming Teacher again.",
+      );
+      return false;
+    }
     logLine(
       `attached to an already-running server on ${APP_URL} (version ${health?.version ?? "unknown"}) — ` +
         "if the app looks out of date, close that server and relaunch.",
@@ -165,7 +203,7 @@ function stopServer() {
 
 function isAppUrl(url) {
   try {
-    return new URL(url).origin === APP_URL;
+    return new URL(url).origin === appUrl;
   } catch {
     return false;
   }
@@ -193,7 +231,7 @@ function createWindow() {
     }
   });
   win.once("ready-to-show", () => win.show());
-  win.loadURL(APP_URL);
+  win.loadURL(appUrl);
   win.on("closed", () => {
     win = null;
   });
