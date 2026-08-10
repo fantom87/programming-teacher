@@ -166,19 +166,33 @@ closure, then produces three things in `app/dist`:
 
 `npm run app:zip` re-zips an existing build without rebuilding it.
 
-The Linux AppImage builds in a container, so it doesn't need a Linux machine —
-and, usefully, it proves the app still builds from a clean checkout with
-nothing cached:
+### Releasing
+
+Push a tag and GitHub builds all three artifacts — Linux on a real Linux
+machine — and attaches them to the release:
+
+```bash
+git tag v1.1.0 && git push --tags
+```
+
+`.github/workflows/release.yml` also runs from the Actions tab on demand, which
+builds everything and leaves it as run artifacts without touching a release.
+
+### Building Linux locally
+
+Only needed if you're changing something Linux-specific and don't want to wait
+on CI. It builds inside a container, so no Linux machine required:
 
 ```bash
 npm run app:dist:linux
 node scripts/test-linux.mjs
 ```
 
-The test is the real gate: it runs the AppImage in a bare Debian container with
-no Node, no Python and no toolchain, then checks the server came up, the
-curriculum loaded, the app page serves, a lesson completes, and progress landed
-somewhere that outlives the process.
+The test is the real gate, and worth running against a CI build too: it puts
+the AppImage in a bare Debian container with no Node, no Python and no
+toolchain, then checks the server came up, the curriculum loaded, the app page
+serves, a lesson completes, and progress landed somewhere that outlives the
+process.
 
 ## Look at the code in a browser
 
