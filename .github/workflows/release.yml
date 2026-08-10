@@ -1,0 +1,83 @@
+# Builds the desktop apps on GitHub's runners and attaches them to a release.
+#
+# Push a tag (`git tag v1.1.0 && git push --tags`) and all three artifacts
+# appear on the release a few minutes later. Or run it by hand from the Actions
+# tab, which builds them and leaves them as downloadable run artifacts without
+# touching any release.
+#
+# Public repos get free minutes on the standard runners, so the Linux build no
+# longer needs a Docker round-trip on a Windows laptop — an actual Linux
+# machine does it, which is also a better test than a container ever was.
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false # a Windows failure shouldn't throw away a good Linux build
+      matrix:
+        include:
+          - os: ubuntu-latest
+            name: linux
+            build: npm run dist:linux --prefix app
+            artifacts: app/dist/*.AppImage
+          - os: windows-latest
+            name: windows
+            # Not `app:dist`: that also writes a .lnk shortcut into the repo,
+            # which is only useful on the machine you develop on.
+            build: npm run dist --prefix app && node scripts/pack-zip.mjs
+            artifacts: |
+              app/dist/*.zip
+              app/dist/*.exe
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # Two installs: the root workspaces, then app/, which sits outside the
+      # workspace list so electron stays out of every other package's tree.
+      - run: npm ci --no-audit --no-fund
+      - run: npm ci --prefix app --no-audit --no-fund
+
+      - run: npm test
+
+      # Frontend, bundled server, its trimmed dependency closure, and the icons.
+      - run: npm run app:pack
+
+      - run: ${{ matrix.build }}
+        shell: bash
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.name }}
+          path: ${{ matrix.artifacts }}
+          if-no-files-found: error
+
+  publish:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - run: ls -la dist
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
+          fail_on_unmatched_files: true
