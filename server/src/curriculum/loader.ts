@@ -3,9 +3,13 @@ import path from "node:path";
 import matter from "gray-matter";
 import {
   lessonFrontmatterSchema,
+  projectFrontmatterSchema,
+  stageFrontmatterSchema,
   trackSchema,
   tracksIndexSchema,
   type Lesson,
+  type Project,
+  type ProjectStage,
   type Track,
 } from "@teacher/shared";
 
@@ -16,9 +20,17 @@ export interface ContentError {
 
 export interface Curriculum {
   tracks: Track[];
-  /** key = "trackId/unitId/lessonId" */
+  /**
+   * key = "trackId/unitId/lessonId", and "trackId/unitId/projectId/stageId"
+   * for a project's stages. Stages live in this same map on purpose: every
+   * consumer below the loader — the runners, the check pass, the tutor, the
+   * content lint, the snapshot key guard — takes a Lesson by value and needs
+   * no idea that projects exist.
+   */
   lessons: Map<string, Lesson>;
-  /** solution files per lesson key (tutor-only — never sent to the frontend) */
+  /** key = "trackId/unitId/projectId" */
+  projects: Map<string, Project>;
+  /** solution files per lesson OR stage key (tutor-only — never sent to the frontend) */
   solutions: Map<string, Record<string, string>>;
   errors: ContentError[];
 }
@@ -27,7 +39,15 @@ export function lessonKey(trackId: string, unitId: string, lessonId: string): st
   return `${trackId}/${unitId}/${lessonId}`;
 }
 
-async function readDirFiles(dir: string, prefix = ""): Promise<Record<string, string>> {
+export function projectKey(trackId: string, unitId: string, projectId: string): string {
+  return `${trackId}/${unitId}/${projectId}`;
+}
+
+export function stageKey(trackId: string, unitId: string, projectId: string, stageId: string): string {
+  return `${trackId}/${unitId}/${projectId}/${stageId}`;
+}
+
+export async function readDirFiles(dir: string, prefix = ""): Promise<Record<string, string>> {
   // Recursive: a solution dir may nest files (e.g. an html project's css/).
   const out: Record<string, string> = {};
   let entries;
@@ -56,6 +76,7 @@ export async function loadCurriculum(contentDir: string): Promise<Curriculum> {
   const errors: ContentError[] = [];
   const tracks: Track[] = [];
   const lessons = new Map<string, Lesson>();
+  const projects = new Map<string, Project>();
   const solutions = new Map<string, Record<string, string>>();
 
   const indexFile = path.join(contentDir, "tracks.json");
@@ -66,7 +87,7 @@ export async function loadCurriculum(contentDir: string): Promise<Curriculum> {
     else errors.push(...zodIssues(indexFile, parsed.error));
   } catch (err) {
     errors.push({ file: indexFile, message: String(err) });
-    return { tracks, lessons, solutions, errors };
+    return { tracks, lessons, projects, solutions, errors };
   }
 
   for (const trackId of order) {
@@ -78,7 +99,7 @@ export async function loadCurriculum(contentDir: string): Promise<Curriculum> {
         errors.push(...zodIssues(trackFile, parsed.error));
         continue;
       }
-      track = parsed.data as Track;
+      track = parsed.data;
     } catch (err) {
       errors.push({ file: trackFile, message: String(err) });
       continue;
@@ -153,10 +174,128 @@ export async function loadCurriculum(contentDir: string): Promise<Curriculum> {
         const sol = await readDirFiles(path.join(lessonDir, "solution"));
         if (Object.keys(sol).length > 0) solutions.set(key, sol);
       }
+
+      for (const projectId of unit.projects) {
+        const projectDir = path.join(contentDir, "tracks", trackId, "units", unit.id, "projects", projectId);
+        const projectFile = path.join(projectDir, "project.md");
+        let projectRaw: string;
+        try {
+          projectRaw = await fs.readFile(projectFile, "utf8");
+        } catch {
+          errors.push({
+            file: trackFile,
+            message: `project "${projectId}" listed in unit "${unit.id}" but ${projectFile} is missing`,
+          });
+          continue;
+        }
+        const { data: projectData, content: projectBody } = matter(projectRaw);
+        const projectParsed = projectFrontmatterSchema.safeParse(projectData);
+        if (!projectParsed.success) {
+          errors.push(...zodIssues(projectFile, projectParsed.error));
+          continue;
+        }
+        const pMeta = projectParsed.data;
+        if (pMeta.id !== projectId) {
+          errors.push({ file: projectFile, message: `project id "${pMeta.id}" doesn't match folder "${projectId}"` });
+        }
+
+        const workspaceFiles = await readDirFiles(path.join(projectDir, pMeta.workspace));
+        if (Object.keys(workspaceFiles).length === 0) {
+          errors.push({ file: projectFile, message: `workspace folder "${pMeta.workspace}/" is empty or missing` });
+          continue;
+        }
+        if (!(pMeta.entry in workspaceFiles)) {
+          errors.push({
+            file: projectFile,
+            message: `entry "${pMeta.entry}" is not one of the workspace files (${Object.keys(workspaceFiles).join(", ")})`,
+          });
+        }
+
+        // Each stage is projected into a Lesson whose starterFiles are the
+        // workspace as it stands when that stage BEGINS: the seed plus every
+        // earlier stage's solution delta, layered in order. That one decision
+        // is what lets the existing check pass and the content lint grade a
+        // stage without either of them knowing what a project is.
+        const stageList: ProjectStage[] = [];
+        let cumulative: Record<string, string> = { ...workspaceFiles };
+        const pKey = projectKey(trackId, unit.id, projectId);
+
+        for (const [index, stageId] of pMeta.stages.entries()) {
+          const stageDir = path.join(projectDir, "stages", stageId);
+          const stageFile = path.join(stageDir, "stage.md");
+          let stageRaw: string;
+          try {
+            stageRaw = await fs.readFile(stageFile, "utf8");
+          } catch {
+            errors.push({
+              file: projectFile,
+              message: `stage "${stageId}" listed in project "${projectId}" but ${stageFile} is missing`,
+            });
+            continue;
+          }
+          const { data: stageData, content: stageBody } = matter(stageRaw);
+          const stageParsed = stageFrontmatterSchema.safeParse(stageData);
+          if (!stageParsed.success) {
+            errors.push(...zodIssues(stageFile, stageParsed.error));
+            continue;
+          }
+          const stage = stageParsed.data;
+          if (stage.id !== stageId) {
+            errors.push({ file: stageFile, message: `stage id "${stage.id}" doesn't match folder "${stageId}"` });
+          }
+
+          const stageTests: Record<string, string> = {};
+          for (const check of stage.checks) {
+            if (check.type === "tests") {
+              try {
+                stageTests[check.testFile] = await fs.readFile(path.join(stageDir, check.testFile), "utf8");
+              } catch {
+                errors.push({ file: stageFile, message: `check "${check.id}": test file "${check.testFile}" not found` });
+              }
+            }
+          }
+
+          const sKey = stageKey(trackId, unit.id, projectId, stageId);
+          lessons.set(sKey, {
+            ...stage,
+            language: pMeta.language,
+            runner: pMeta.runner,
+            // The editor's tab list. `starter` is unused for a stage because
+            // starterFiles is computed cumulatively rather than read per file.
+            files: Object.keys(cumulative).map((p) => ({ path: p, starter: p })),
+            trackId,
+            unitId: unit.id,
+            body: stageBody.trim(),
+            starterFiles: cumulative,
+            testFiles: stageTests,
+            stage: {
+              projectKey: pKey,
+              projectTitle: pMeta.title,
+              stageIndex: index,
+              stageCount: pMeta.stages.length,
+            },
+          });
+
+          // Stage solutions are deltas — only the files that stage touches.
+          const delta = await readDirFiles(path.join(stageDir, "solution"));
+          if (Object.keys(delta).length > 0) solutions.set(sKey, delta);
+          stageList.push(stage);
+          cumulative = { ...cumulative, ...delta };
+        }
+
+        projects.set(pKey, {
+          ...pMeta,
+          trackId,
+          unitId: unit.id,
+          body: projectBody.trim(),
+          workspaceFiles,
+          stageList,
+        });
+      }
     }
   }
 
-  return { tracks, lessons, solutions, errors };
+  return { tracks, lessons, projects, solutions, errors };
 }
 
 // ---------- cached singleton ----------
@@ -169,7 +308,7 @@ let cacheLoadedAt = 0;
 let cachedContentDir: string | null = null;
 let lastWalk = { at: 0, newest: 0 };
 
-const CONTENT_FILES = new Set(["tracks.json", "track.json", "lesson.md"]);
+const CONTENT_FILES = new Set(["tracks.json", "track.json", "lesson.md", "project.md", "stage.md"]);
 
 async function newestContentMtime(contentDir: string): Promise<number> {
   const now = Date.now();

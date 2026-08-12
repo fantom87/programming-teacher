@@ -38,7 +38,19 @@
         "08-json",
         "09-closures-first-look"
       ],
-      "topics": ["arrow functions", "callbacks", "map/filter/reduce", "array methods tour", "object methods and this", "nested data", "closures first look", "JSON"]
+      "topics": [
+        "arrow functions",
+        "callbacks",
+        "map/filter/reduce",
+        "array methods tour",
+        "object methods and this",
+        "nested data",
+        "closures first look",
+        "JSON"
+      ],
+      "projects": [
+        "snake"
+      ]
     },
     {
       "id": "03-the-dom-and-events",
@@ -56,7 +68,16 @@
         "08-rendering-lists-from-data",
         "09-capstone-todo-widget"
       ],
-      "topics": ["querySelector", "creating and modifying elements", "classList", "event listeners", "forms and input values", "event delegation", "rendering lists from data", "capstone: interactive todo-list widget"]
+      "topics": [
+        "querySelector",
+        "creating and modifying elements",
+        "classList",
+        "event listeners",
+        "forms and input values",
+        "event delegation",
+        "rendering lists from data",
+        "capstone: interactive todo-list widget"
+      ]
     },
     {
       "id": "04-modern-javascript",
@@ -73,7 +94,16 @@
         "07-async-await",
         "08-async-error-handling"
       ],
-      "topics": ["ES modules", "destructuring and spread/rest", "optional chaining", "classes and prototypes", "closures in depth", "promises", "async/await", "error handling in async code"]
+      "topics": [
+        "ES modules",
+        "destructuring and spread/rest",
+        "optional chaining",
+        "classes and prototypes",
+        "closures in depth",
+        "promises",
+        "async/await",
+        "error handling in async code"
+      ]
     },
     {
       "id": "05-typescript-essentials",
@@ -91,7 +121,17 @@
         "08-migrating-js-to-ts",
         "09-capstone-typed-task-board"
       ],
-      "topics": ["type annotations", "interfaces vs type aliases", "unions and narrowing", "generics", "unknown/any/never", "typing functions and objects", "tsconfig basics", "migrating JS to TS", "capstone: typed browser app"]
+      "topics": [
+        "type annotations",
+        "interfaces vs type aliases",
+        "unions and narrowing",
+        "generics",
+        "unknown/any/never",
+        "typing functions and objects",
+        "tsconfig basics",
+        "migrating JS to TS",
+        "capstone: typed browser app"
+      ]
     },
     {
       "id": "06-node-and-tooling",
@@ -109,7 +149,17 @@
         "08-debugging-node",
         "09-environment-config"
       ],
-      "topics": ["Node runtime and globals", "npm and package.json", "file system and paths", "fetch and APIs", "vitest testing", "ESLint and Prettier", "bundlers and builds", "debugging", "environment config"]
+      "topics": [
+        "Node runtime and globals",
+        "npm and package.json",
+        "file system and paths",
+        "fetch and APIs",
+        "vitest testing",
+        "ESLint and Prettier",
+        "bundlers and builds",
+        "debugging",
+        "environment config"
+      ]
     },
     {
       "id": "07-advanced-patterns-and-types",
@@ -127,7 +177,16 @@
         "08-performance-profiling",
         "09-capstone-typed-shelf-cli"
       ],
-      "topics": ["event loop and microtasks", "generators and iterators", "advanced async patterns", "mapped/conditional/template-literal types", "declaration files", "module architecture", "performance profiling", "capstone: tested, typed Node CLI"]
+      "topics": [
+        "event loop and microtasks",
+        "generators and iterators",
+        "advanced async patterns",
+        "mapped/conditional/template-literal types",
+        "declaration files",
+        "module architecture",
+        "performance profiling",
+        "capstone: tested, typed Node CLI"
+      ]
     },
     {
       "id": "08-js-ts-refresher",
@@ -142,7 +201,14 @@
         "05-dom-and-browser-apis",
         "06-node-tooling-testing"
       ],
-      "topics": ["syntax and scoping sprint", "arrays, objects, functional patterns", "async and the event loop", "TypeScript speedrun", "DOM and browser APIs", "Node, tooling, testing"]
+      "topics": [
+        "syntax and scoping sprint",
+        "arrays, objects, functional patterns",
+        "async and the event loop",
+        "TypeScript speedrun",
+        "DOM and browser APIs",
+        "Node, tooling, testing"
+      ]
     }
   ]
 }

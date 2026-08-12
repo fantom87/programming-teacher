@@ -143,6 +143,21 @@ for (const [key, lesson] of cur.lessons) {
   }
 }
 
+/**
+ * A stage has to ask for real work. Its checks are run against the workspace as
+ * it stands BEFORE the stage's own solution is layered on — if they all pass
+ * there, the stage is a no-op that the previous stage already satisfied, and a
+ * learner would "complete" it by pressing Check.
+ *
+ * At least one deterministic check must fail, not all of them: a stage may
+ * legitimately re-assert an earlier invariant as a regression guard, and those
+ * checks are supposed to keep passing.
+ */
+async function stageDemandsWork(key: string, stage: Lesson): Promise<boolean> {
+  const before = await checkLesson(key, stage, {});
+  return before.length === 0 || before.some((r) => !r.passed);
+}
+
 const runtimes = await detectRuntimes();
 // Lessons whose runtime this machine doesn't have get structural checks only.
 // Which runtimes are missing differs by OS (no pwsh on a bare Ubuntu box, no
@@ -166,9 +181,15 @@ for (const [key, lesson] of cur.lessons) {
     failures += bad.length;
     console.error(`✗ ${key}:`);
     for (const b of bad) console.error(`    [${b.checkId}] ${b.message}${b.actual ? ` — actual: ${JSON.stringify(b.actual).slice(0, 120)}` : ""}`);
-  } else {
-    console.log(`✓ ${key} (${results.length} checks)`);
+    continue;
   }
+  // Stages get the extra gate: proven solvable AND proven to be worth doing.
+  if (lesson.stage && !(await stageDemandsWork(key, lesson))) {
+    failures++;
+    console.error(`✗ ${key}: every check already passes before this stage's solution — the stage asks for nothing`);
+    continue;
+  }
+  console.log(`✓ ${key} (${results.length} checks)`);
 }
 
 if (runtimeless.size > 0) {
@@ -176,5 +197,10 @@ if (runtimeless.size > 0) {
   for (const hint of new Set(runtimeless.values())) console.log(`    ${hint}`);
 }
 
-console.log(failures === 0 ? `\nAll content checks passed (${cur.lessons.size} lessons).` : `\n${failures} failure(s).`);
+const stageCount = [...cur.lessons.values()].filter((l) => l.stage).length;
+const summary =
+  cur.projects.size > 0
+    ? `${cur.lessons.size - stageCount} lessons, ${cur.projects.size} project(s) across ${stageCount} stages`
+    : `${cur.lessons.size} lessons`;
+console.log(failures === 0 ? `\nAll content checks passed (${summary}).` : `\n${failures} failure(s).`);
 process.exit(failures === 0 ? 0 : 1);

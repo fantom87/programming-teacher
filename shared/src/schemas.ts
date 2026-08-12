@@ -56,20 +56,48 @@ export const checkSpecSchema = z.discriminatedUnion("type", [
   }),
 ]);
 
-export const lessonFrontmatterSchema = z.object({
-  id: z.string().regex(/^[a-z0-9-]+$/, "kebab-case only"),
-  title: z.string().min(1),
-  language: languageSchema,
-  runner: runnerSchema,
-  estMinutes: z.number().int().positive().default(10),
-  files: z
-    .array(z.object({ path: z.string(), starter: z.string() }))
-    .min(1),
+/**
+ * The half of a lesson that describes a unit of work: a goal, how it's checked,
+ * and how to help. A project stage is exactly this and nothing else — the
+ * language, runner and files belong to the project, not to each stage. Shared
+ * so the two kinds can never drift into having different check rules.
+ */
+const workUnitSchema = z.object({
   goal: z.string().min(1),
   docs: z.array(z.string()).optional(),
   checks: z.array(checkSpecSchema).min(1),
   hints: z.array(z.string()).optional(),
+  estMinutes: z.number().int().positive().default(10),
   timeoutMs: z.number().int().positive().optional(),
+});
+
+export const lessonFrontmatterSchema = workUnitSchema.extend({
+  id: z.string().regex(/^[a-z0-9-]+$/, "kebab-case only"),
+  title: z.string().min(1),
+  language: languageSchema,
+  runner: runnerSchema,
+  files: z
+    .array(z.object({ path: z.string(), starter: z.string() }))
+    .min(1),
+});
+
+export const stageFrontmatterSchema = workUnitSchema.extend({
+  id: z.string().regex(/^[a-z0-9-]+$/, "kebab-case only"),
+  title: z.string().min(1),
+});
+
+export const projectFrontmatterSchema = z.object({
+  id: z.string().regex(/^[a-z0-9-]+$/, "kebab-case only"),
+  title: z.string().min(1),
+  language: languageSchema,
+  runner: runnerSchema,
+  // Named, never inferred from files[0]: a project's workspace has many files
+  // and readdir order is not a design decision.
+  entry: z.string().min(1),
+  summary: z.string().min(1),
+  workspace: z.string().default("workspace"),
+  stages: z.array(z.string()).min(1),
+  estMinutes: z.number().int().positive().default(45),
 });
 
 export const unitSchema = z.object({
@@ -78,6 +106,10 @@ export const unitSchema = z.object({
   tier: tierSchema,
   summary: z.string().min(1),
   lessons: z.array(z.string()).default([]),
+  // Beside `lessons`, deliberately not a `kind` discriminator on the unit:
+  // 27 units already carry zero lessons, and making units polymorphic would
+  // fork every one of the ten places that iterate them.
+  projects: z.array(z.string()).default([]),
   planned: z.boolean().optional(),
   plannedLessons: z.array(z.string()).optional(), // ids of lessons designed but not yet authored
   topics: z.array(z.string()).optional(),
