@@ -1558,3 +1558,87 @@ textarea.chat-input {
   margin: 0;
   white-space: pre-wrap;
 }
+
+/* ---------- tutorial projects ---------- */
+
+.badge-project {
+  margin-left: 8px;
+  font-size: 11px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+}
+
+/* The stage rail sits above the goal in the lesson pane: where you are in a
+   build, and a way to step back to a stage you've already passed. */
+.stage-rail {
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.stage-rail-title {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+  margin-bottom: 6px;
+}
+
+.stage-rail ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.stage-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: none;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+}
+
+.stage-row:hover {
+  background: var(--bg-raised);
+}
+
+.stage-row.current {
+  border-color: var(--accent);
+  background: var(--bg-raised);
+}
+
+.stage-row .check {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+}
+
+.stage-row .stage-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Deliberately plain: an escape hatch should be findable, never inviting. */
+.unstick-btn {
+  margin-top: 10px;
+  width: 100%;
+  font-size: 13px;
+  color: var(--text-dim);
+}

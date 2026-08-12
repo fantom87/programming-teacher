@@ -1,16 +1,18 @@
 import { useCallback, useEffect, useState } from "react";
 import type { JournalEntry, Progress, Tier } from "@teacher/shared";
 import { api, type TrackView } from "../api/client";
+import { completionCounts } from "../counts";
 
 const TIER_ORDER: Tier[] = ["foundations", "core", "intermediate", "advanced", "refresher", "custom"];
 
 function tierRollup(track: TrackView): Map<Tier, { done: number; total: number }> {
   const rollup = new Map<Tier, { done: number; total: number }>();
   for (const u of track.units) {
-    if (u.lessons.length === 0) continue; // planned units have nothing to complete
+    const projects = u.projects ?? [];
+    if (u.lessons.length === 0 && projects.length === 0) continue; // planned units have nothing to complete
     const entry = rollup.get(u.tier) ?? { done: 0, total: 0 };
-    entry.total += u.lessons.length;
-    entry.done += u.lessons.filter((l) => l.completedAt).length;
+    entry.total += u.lessons.length + projects.length;
+    entry.done += u.lessons.filter((l) => l.completedAt).length + projects.filter((p) => p.completedAt).length;
     rollup.set(u.tier, entry);
   }
   return rollup;
@@ -44,14 +46,14 @@ export default function Stats() {
   }
   if (!progress) return <div className="view-pad">Loading…</div>;
 
-  const completed = Object.values(progress.lessons).filter((l) => l.completedAt).length;
+  const counts = completionCounts(tracks);
 
   return (
     <div className="view-pad">
       <h1>Your progress</h1>
       <div className="stats-grid">
         <div className="stat-card">
-          <div className="stat-value">{completed}</div>
+          <div className="stat-value">{counts.lessons}</div>
           <div className="dim small">lessons completed</div>
         </div>
         <div className="stat-card">

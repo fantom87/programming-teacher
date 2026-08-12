@@ -12,8 +12,9 @@ import { claudeExecutableOption, locateClaude } from "./claudeBinary.js";
 import { runLocal } from "../runner/localRunner.js";
 import { evaluateDomAssertions } from "../runner/domCheck.js";
 import { runCheckPass } from "../checks/run.js";
-import { completeLesson, getProgress, recordChecks } from "../store/progress.js";
-import { appendJournal, appendProfileNote, getProfile } from "../store/profile.js";
+import { getProgress, recordChecks } from "../store/progress.js";
+import { appendProfileNote, getProfile } from "../store/profile.js";
+import { recordCompletion } from "../store/completion.js";
 import { readJson, writeJson } from "../store/jsonStore.js";
 import { detectRuntimes } from "../preflight.js";
 import { missingRuntimeHint } from "../runtimeHints.js";
@@ -396,13 +397,7 @@ function buildTools(deps: TutorDeps, session: TutorSession) {
           isError: true,
         };
       }
-      await completeLesson(dataDir, key);
-      await appendJournal(dataDir, {
-        lessonId: key,
-        trackId: lesson.trackId,
-        completedAt: new Date().toISOString(),
-        summary: args.journalSummary,
-      });
+      await recordCompletion(dataDir, key, lesson, args.journalSummary);
       hub.send(key, { type: "check-results", checks: pass.checks, completed: true });
       hub.send(key, { type: "complete" });
       return { content: [{ type: "text" as const, text: "Lesson marked complete. Congratulate the learner briefly." }] };
@@ -639,6 +634,13 @@ export async function sendMessage(
     files: opts.files,
     lastRun: session.lastRun,
     lastChecks: session.lastChecks,
+    stage: session.lesson.stage
+      ? {
+          index: session.lesson.stage.stageIndex,
+          count: session.lesson.stage.stageCount,
+          title: session.lesson.title,
+        }
+      : null,
   });
   session.levelChanged = false;
   session.queue.push({ wrapped });

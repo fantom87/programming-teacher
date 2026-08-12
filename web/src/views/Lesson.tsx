@@ -12,6 +12,7 @@ import { runPython, warmPyodide, onPyodideStatus, isPyodideWarm } from "../runne
 import { runSql, warmSqlJs } from "../runners/sqlRunner";
 import { buildSrcdoc } from "../runners/htmlPreview";
 import { api } from "../api/client";
+import type { ProjectContext } from "../api/client";
 import { useTutorStatus } from "../api/useTutorStatus";
 import { useSettings } from "../settingsContext";
 import { renderMarkdown } from "../md";
@@ -147,6 +148,14 @@ export default function LessonView({ lessonKey, theme, navigate, onProgressChang
   resultRef.current = result;
   const lessonKeyRef = useRef(lessonKey);
   lessonKeyRef.current = lessonKey;
+  const [project, setProject] = useState<ProjectContext | null>(null);
+  /**
+   * Where the editor's contents are saved. For an ordinary lesson that's the
+   * lesson key; for a project stage it's the PROJECT key, which is the whole
+   * trick behind carrying the learner's own code from one stage to the next.
+   * Completion stays keyed per stage.
+   */
+  const draftKeyRef = useRef(lessonKey);
   const paneSizesRef = useRef(paneSizes);
   paneSizesRef.current = paneSizes;
 
@@ -162,9 +171,13 @@ export default function LessonView({ lessonKey, theme, navigate, onProgressChang
     (async () => {
       try {
         const l = await api.lesson(lessonKey);
-        const draft = await api.draft(lessonKey).catch(() => ({ files: null }));
+        // The draft key depends on what we just loaded, so it can't be
+        // resolved before the fetch: a stage saves against its project.
+        draftKeyRef.current = l.stage?.projectKey ?? lessonKey;
+        const draft = await api.draft(draftKeyRef.current).catch(() => ({ files: null }));
         if (cancelled) return;
         setLesson(l);
+        setProject(l.project ?? null);
         const initial = draft.files ?? l.starterFiles;
         setFiles(initial);
         setActiveFile(l.files[0]?.path ?? "");
@@ -202,7 +215,7 @@ export default function LessonView({ lessonKey, theme, navigate, onProgressChang
       if (saveTimer.current) {
         clearTimeout(saveTimer.current);
         saveTimer.current = null;
-        api.saveDraft(lessonKey, filesRef.current).catch(() => {});
+        api.saveDraft(draftKeyRef.current, filesRef.current).catch(() => {});
       }
     };
   }, [lessonKey]);
@@ -222,7 +235,7 @@ export default function LessonView({ lessonKey, theme, navigate, onProgressChang
     if (saveTimer.current) clearTimeout(saveTimer.current);
     saveTimer.current = setTimeout(() => {
       saveTimer.current = null;
-      api.saveDraft(lessonKey, filesRef.current).catch(console.error);
+      api.saveDraft(draftKeyRef.current, filesRef.current).catch(console.error);
     }, 800);
   }, [lessonKey]);
 
@@ -233,6 +246,36 @@ export default function LessonView({ lessonKey, theme, navigate, onProgressChang
       return next;
     });
     scheduleSave();
+  }
+
+  /**
+   * Replace the workspace with the canonical end-of-stage version.
+   *
+   * Every later stage builds on this one, so without a way out, one bad stage
+   * ends the project. Confirmed explicitly because it overwrites their work,
+   * and snapshotted first so History can undo it.
+   */
+  async function handleUseReference() {
+    if (!lesson?.stage) return;
+    const ok = window.confirm(
+      `Replace your workspace with the finished version of "${lesson.title}"?\n\n` +
+        `Your current code is saved to History first, so you can go back to it.`,
+    );
+    if (!ok) return;
+    try {
+      await fetch("/api/snapshots", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ lessonId: lessonKey, files: filesRef.current, trigger: "run" }),
+      });
+      const { files: reference } = await api.stageSolution(lessonKey);
+      setFiles(reference);
+      setEditorGen((g) => g + 1); // force CodeMirror to take the new contents
+      await api.saveDraft(draftKeyRef.current, reference);
+      setNotice("Workspace replaced with this stage's reference. Your previous code is in History.");
+    } catch (err) {
+      setNotice(err instanceof Error ? err.message : String(err));
+    }
   }
 
   function handleLevelChange(l: AssistanceLevel) {
@@ -413,6 +456,25 @@ export default function LessonView({ lessonKey, theme, navigate, onProgressChang
         <button className="back-link" onClick={() => navigate({ view: "track", trackId: lesson.trackId })}>
           ← Back to {lesson.trackId}
         </button>
+        {project && (
+          <nav className="stage-rail" aria-label={`${project.title} stages`}>
+            <div className="stage-rail-title">{project.title}</div>
+            <ol role="list">
+              {project.stages.map((s, i) => (
+                <li key={s.key}>
+                  <button
+                    className={`stage-row ${s.key === lessonKey ? "current" : ""}`}
+                    aria-current={s.key === lessonKey ? "step" : undefined}
+                    onClick={() => navigate({ view: "lesson", key: s.key })}
+                  >
+                    <span className={`check ${s.completedAt ? "done" : ""}`}>{s.completedAt ? "✓" : i + 1}</span>
+                    <span className="stage-title">{s.title}</span>
+                  </button>
+                </li>
+              ))}
+            </ol>
+          </nav>
+        )}
         <h2>
           {lesson.title} {completed && <span className="check done">✓</span>}
         </h2>
@@ -436,13 +498,22 @@ export default function LessonView({ lessonKey, theme, navigate, onProgressChang
           checking={checking}
           onCheck={handleCheck}
         />
+        {project && !completed && (
+          <button className="unstick-btn" onClick={handleUseReference}>
+            I'm stuck — use the reference for this stage
+          </button>
+        )}
         {completed &&
           (lesson.nextLessonKey ? (
             <button
               className="primary next-lesson-btn"
               onClick={() => navigate({ view: "lesson", key: lesson.nextLessonKey! })}
             >
-              Next lesson →
+              {project ? "Next stage →" : "Next lesson →"}
+            </button>
+          ) : project ? (
+            <button className="next-lesson-btn" onClick={() => navigate({ view: "track", trackId: lesson.trackId })}>
+              🎉 You built {project.title} — back to the track
             </button>
           ) : (
             <button className="next-lesson-btn" onClick={() => navigate({ view: "track", trackId: lesson.trackId })}>

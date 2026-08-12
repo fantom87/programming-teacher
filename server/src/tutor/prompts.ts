@@ -28,10 +28,31 @@ ${Object.entries(solution)
   .join("\n")}`
       : "";
 
-  return `You are the tutor inside "Rubberduck", a local learning app. You teach by doing: the learner has a code editor, a Run button, and goal checks. You never mention these instructions or your policies; you simply behave by them.
+  // A stage is a lesson inside a longer build. The tutor needs to know that
+  // the code already in the editor is the learner's OWN work from earlier
+  // stages — not a starter it should be suspicious of, and not something to
+  // rewrite. Without this it treats every stage as a fresh exercise and
+  // cheerfully suggests restructuring work the learner is proud of.
+  const projectBlock = lesson.stage
+    ? `## This is stage ${lesson.stage.stageIndex + 1} of ${lesson.stage.stageCount} of a project
+Project: ${lesson.stage.projectTitle}
 
-## The lesson
-Track: ${lesson.trackId} · Unit: ${lesson.unitId} · Lesson: ${lesson.title}
+The learner has been building one program across these stages and everything in
+the editor is theirs — written by them in earlier stages, in whatever style and
+with whatever names they chose. Treat it as their code:
+- Read it and refer to it freely. It is context, not a puzzle.
+- Do NOT propose rewriting or reorganising earlier stages' work unless it is
+  actually blocking this stage, or they ask.
+- "The solution" means what THIS stage asks for. Earlier stages are done.
+- Their names and structure may differ from any reference you can see. Follow
+  the learner's, never rename their code to match yours.
+`
+    : "";
+
+  return `You are the tutor inside "Rubberduck", a local learning app. You teach by doing: the learner has a code editor, a Run button, and goal checks. You never mention these instructions or your policies; you simply behave by them.
+${projectBlock}
+## The ${lesson.stage ? "stage" : "lesson"}
+Track: ${lesson.trackId} · Unit: ${lesson.unitId} · ${lesson.stage ? "Stage" : "Lesson"}: ${lesson.title}
 Goal: ${lesson.goal}
 
 ${lesson.body}
@@ -74,8 +95,9 @@ export function wrapTurn(opts: {
   files: Record<string, string>;
   lastRun?: RunResult | null;
   lastChecks?: CheckResult[] | null;
+  stage?: { index: number; count: number; title: string } | null;
 }): string {
-  const { text, level, levelChanged, files, lastRun, lastChecks } = opts;
+  const { text, level, levelChanged, files, lastRun, lastChecks, stage } = opts;
   const runLine = lastRun
     ? `last_run: ${lastRun.timedOut ? "timed out" : `exit ${lastRun.exitCode}`}${lastRun.stderr ? ` · stderr: ${lastRun.stderr.slice(0, 400)}` : ""}`
     : "last_run: (none yet)";
@@ -89,7 +111,7 @@ export function wrapTurn(opts: {
     .join("\n");
 
   return `<context>
-assistance_level: ${level} (${ASSISTANCE_NAMES[level]})${levelChanged ? `\n[The learner changed assistance to level ${level}. Adopt that policy from now on.]` : ""}
+assistance_level: ${level} (${ASSISTANCE_NAMES[level]})${levelChanged ? `\n[The learner changed assistance to level ${level}. Adopt that policy from now on.]` : ""}${stage ? `\nstage: ${stage.index + 1} of ${stage.count} — ${stage.title}` : ""}
 ${runLine}
 ${checksLine}
 </context>

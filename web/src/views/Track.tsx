@@ -45,7 +45,7 @@ export default function Track({ trackId, navigate }: { trackId: string; navigate
           <section key={tier}>
             <h2 className="tier-heading">{TIER_LABEL[tier]}</h2>
             {units.map((u) => (
-              <details key={u.id} className="unit" open={!u.planned && u.lessons.length > 0}>
+              <details key={u.id} className="unit" open={!u.planned && (u.lessons.length > 0 || (u.projects?.length ?? 0) > 0)}>
                 <summary>
                   <span className="unit-title">{u.title}</span>
                   <span className="dim small"> — {u.summary}</span>
@@ -61,6 +61,28 @@ export default function Track({ trackId, navigate }: { trackId: string; navigate
                           </span>
                           <span className="lesson-title">{l.title}</span>
                           <span className="dim small">~{l.estMinutes} min</span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                {(u.projects?.length ?? 0) > 0 && (
+                  <ul className="lesson-list">
+                    {u.projects.map((p) => (
+                      <li key={p.key}>
+                        <button
+                          className="lesson-row"
+                          disabled={!p.resumeKey}
+                          onClick={() => p.resumeKey && navigate({ view: "lesson", key: p.resumeKey })}
+                        >
+                          <span className={`check ${p.completedAt ? "done" : ""}`}>{p.completedAt ? "✓" : "▸"}</span>
+                          <span className="lesson-title">
+                            {p.title}
+                            <span className="badge-project">project</span>
+                          </span>
+                          <span className="dim small">
+                            {p.stagesDone}/{p.stagesTotal} stages · ~{p.estMinutes} min
+                          </span>
                         </button>
                       </li>
                     ))}

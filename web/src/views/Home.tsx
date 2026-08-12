@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import type { Progress } from "@teacher/shared";
+import { completionCounts } from "../counts";
 import { api, type CurriculumResponse, type TrackView } from "../api/client";
 import ProgressBar from "../components/ProgressBar";
 import type { Route } from "../App";
@@ -9,10 +10,11 @@ function trackStats(track: TrackView) {
   let authored = 0;
   let planned = 0;
   for (const u of track.units) {
-    authored += u.lessons.length;
+    const projects = u.projects ?? [];
+    authored += u.lessons.length + projects.length;
     planned += u.plannedLessons?.length ?? 0;
     if (u.planned && u.topics) planned += u.topics.length; // rough size of unauthored units
-    done += u.lessons.filter((l) => l.completedAt).length;
+    done += u.lessons.filter((l) => l.completedAt).length + projects.filter((p) => p.completedAt).length;
   }
   return { done, authored, planned };
 }
@@ -45,15 +47,15 @@ export default function Home({ navigate }: { navigate: (r: Route) => void }) {
   }
   if (!data) return <div className="view-pad">Loading…</div>;
 
-  const lessonsDone = progress ? Object.values(progress.lessons).filter((l) => l.completedAt).length : 0;
+  const counts = completionCounts(data.tracks);
 
   return (
     <div className="view-pad home">
       <h1>Welcome back</h1>
       {progress && (
         <p className="stats-strip dim small">
-          🔥 {progress.streak.current}-day streak · {lessonsDone} lesson{lessonsDone === 1 ? "" : "s"} completed ·{" "}
-          {progress.totals.runs} code runs
+          🔥 {progress.streak.current}-day streak · {counts.lessons} lesson{counts.lessons === 1 ? "" : "s"} completed ·{" "}
+          {counts.projects > 0 ? `${counts.projects} project${counts.projects === 1 ? "" : "s"} built · ` : ""}{progress.totals.runs} code runs
         </p>
       )}
       {lastLesson && (

@@ -25,6 +25,28 @@ export function curriculumRoutes(contentDir: string, dataDir: string): Router {
             completedAt: progress.lessons[key]?.completedAt ?? null,
           };
         }),
+        // A project is one row in the same list, carrying its stage tally.
+        // `resumeKey` is the stage to open: the first unfinished one, or the
+        // last if the whole thing is done — so the row is always clickable.
+        projects: u.projects.map((projectId) => {
+          const key = `${t.id}/${u.id}/${projectId}`;
+          const project = cur.projects.get(key);
+          const stageKeys = (project?.stages ?? []).map((sid) => `${key}/${sid}`);
+          const done = stageKeys.filter((sk) => progress.lessons[sk]?.completedAt);
+          const firstUnfinished = stageKeys.find((sk) => !progress.lessons[sk]?.completedAt);
+          return {
+            id: projectId,
+            key,
+            title: project?.title ?? projectId,
+            summary: project?.summary ?? "",
+            estMinutes: project?.estMinutes ?? 45,
+            runner: project?.runner ?? "browser",
+            stagesTotal: stageKeys.length,
+            stagesDone: done.length,
+            completedAt: stageKeys.length > 0 && done.length === stageKeys.length ? done.at(-1)! : null,
+            resumeKey: firstUnfinished ?? stageKeys.at(-1) ?? null,
+          };
+        }),
       })),
     }));
     res.json({ tracks, errors: cur.errors });
@@ -37,6 +59,31 @@ export function curriculumRoutes(contentDir: string, dataDir: string): Router {
     const lesson = cur.lessons.get(key);
     if (!lesson) {
       res.status(404).json({ error: `no lesson "${key}"` });
+      return;
+    }
+
+    // A project stage's neighbours are its sibling stages, never the unit's
+    // lessons — and the rail needs the whole roster with its completion state.
+    if (lesson.stage) {
+      const project = cur.projects.get(lesson.stage.projectKey);
+      const progress = await getProgress(dataDir);
+      const stageKeys = (project?.stages ?? []).map((sid) => `${lesson.stage!.projectKey}/${sid}`);
+      const index = lesson.stage.stageIndex;
+      res.json({
+        ...lesson,
+        nextLessonKey: index + 1 < stageKeys.length ? stageKeys[index + 1] : null,
+        project: {
+          key: lesson.stage.projectKey,
+          title: lesson.stage.projectTitle,
+          entry: project?.entry ?? null,
+          stages: (project?.stageList ?? []).map((s, i) => ({
+            id: s.id,
+            key: stageKeys[i],
+            title: s.title,
+            completedAt: progress.lessons[stageKeys[i]]?.completedAt ?? null,
+          })),
+        },
+      });
       return;
     }
 
@@ -57,6 +104,29 @@ export function curriculumRoutes(contentDir: string, dataDir: string): Router {
     }
 
     res.json({ ...lesson, nextLessonKey });
+  });
+
+  /**
+   * The escape hatch: the workspace as it should look at the END of a stage.
+   *
+   * For a learner who has painted themselves into a corner, this is the only
+   * way out that doesn't mean abandoning the project — every later stage
+   * builds on this one. It is deliberately a separate, explicit endpoint
+   * rather than anything the tutor can reach: the model never sees or pastes
+   * these files, it's a decision the learner makes with a confirm dialog.
+   *
+   * Stages only. A lesson's solution stays unreachable, as it always has been.
+   */
+  r.get("/api/curriculum/stage-solution", async (req, res) => {
+    const key = String(req.query.id ?? "");
+    const cur = await getCurriculum(contentDir);
+    const stage = cur.lessons.get(key);
+    if (!stage?.stage) {
+      res.status(404).json({ error: `no project stage "${key}"` });
+      return;
+    }
+    const delta = cur.solutions.get(key) ?? {};
+    res.json({ files: { ...stage.starterFiles, ...delta } });
   });
 
   r.post("/api/curriculum/validate", async (_req, res) => {

@@ -7,8 +7,8 @@ import { getCurriculum } from "../curriculum/loader.js";
 import { runLocal, sweepStaleWorkspaces } from "../runner/localRunner.js";
 import { evaluateDomAssertions } from "../runner/domCheck.js";
 import { runCheckPass } from "../checks/run.js";
-import { completeLesson, getProgress, recordAttempt, recordChecks } from "../store/progress.js";
-import { appendJournal } from "../store/profile.js";
+import { recordAttempt, recordChecks } from "../store/progress.js";
+import { recordCompletion } from "../store/completion.js";
 import { readJson, withFileLock, writeJsonInLock } from "../store/jsonStore.js";
 import { updateChecks } from "../tutor/service.js";
 import { takeSnapshot, listSnapshots, getSnapshot } from "../store/snapshots.js";
@@ -109,19 +109,7 @@ export function runRoutes(contentDir: string, dataDir: string): Router {
 
     let completed = false;
     if (completionVerdict(pass.checks).complete) {
-      const before = await getProgress(dataDir);
-      const firstCompletion = !before.lessons[String(lessonId)]?.completedAt;
-      await completeLesson(dataDir, String(lessonId));
-      if (firstCompletion) {
-        // The Check button and the tutor's mark_complete must both journal —
-        // learners at low assistance levels complete lessons without the tutor.
-        await appendJournal(dataDir, {
-          lessonId: String(lessonId),
-          trackId: lesson.trackId,
-          completedAt: new Date().toISOString(),
-          summary: `Completed "${lesson.title}" — ${lesson.goal}`,
-        });
-      }
+      await recordCompletion(dataDir, String(lessonId), lesson);
       await markCheckSnapshotPassed(dataDir, String(lessonId));
       completed = true;
     }

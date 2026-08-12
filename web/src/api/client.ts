@@ -9,15 +9,38 @@ export interface LessonRow {
   completedAt: string | null;
 }
 
+export interface ProjectRow {
+  id: string;
+  key: string;
+  title: string;
+  summary: string;
+  estMinutes: number;
+  runner: RunnerKind;
+  stagesTotal: number;
+  stagesDone: number;
+  completedAt: string | null;
+  /** the stage to open: first unfinished, or the last one when it's all done */
+  resumeKey: string | null;
+}
+
 export interface UnitView {
   id: string;
   title: string;
   tier: Tier;
   summary: string;
   lessons: LessonRow[];
+  projects: ProjectRow[];
   planned?: boolean;
   plannedLessons?: string[];
   topics?: string[];
+}
+
+/** The stage roster a project's rail renders, sent with any stage lesson. */
+export interface ProjectContext {
+  key: string;
+  title: string;
+  entry: string | null;
+  stages: { id: string; key: string; title: string; completedAt: string | null }[];
 }
 
 export interface TrackView {
@@ -183,7 +206,11 @@ export interface CustomLessonStatus {
 
 export const api = {
   curriculum: () => get<CurriculumResponse>("/api/curriculum"),
-  lesson: (key: string) => get<Lesson>(`/api/curriculum/lesson?id=${encodeURIComponent(key)}`),
+  lesson: (key: string) =>
+    get<Lesson & { project?: ProjectContext }>(`/api/curriculum/lesson?id=${encodeURIComponent(key)}`),
+  /** The canonical end-of-stage workspace — the learner's way out of a corner. */
+  stageSolution: (key: string) =>
+    get<{ files: Record<string, string> }>(`/api/curriculum/stage-solution?id=${encodeURIComponent(key)}`),
   progress: () => get<Progress>("/api/progress"),
   reportActivity: (seconds: number, lessonKey?: string) =>
     send("POST", "/api/progress/activity", { seconds, lessonKey }).then(() => undefined),
